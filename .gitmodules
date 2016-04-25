@@ -1,0 +1,6 @@
+[submodule "epicsarchiverap"]
+	path = epicsarchiverap
+	url = https://github.com/slacmshankar/epicsarchiverap
+	branch = master
+	ignore = dirty
+
