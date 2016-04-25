@@ -29,7 +29,7 @@ git submodule update
 
 * Command set 2
 ```
-git clone --recursive -b work https://github.com/jeonghanlee/epicsarchiverap-sites.git
+git clone --recursive  https://github.com/jeonghanlee/epicsarchiverap-sites.git
 ```
 
 # add a submodule
