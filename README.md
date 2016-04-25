@@ -12,7 +12,10 @@ EPICS Archiver Appliance Site Specific Test Environment
 
   So I DO NOT change any sub modules in this branch (work), DO NOT commit my local changes to the original repositories. 
 
-
+# License
+* All works done by the original Archiver Appliance follows its original Licenses. Please check them in
+  https://github.com/slacmshankar/epicsarchiverap/blob/master/NOTICE
+* My tiny works can be distributed under the GPL-2 license.
 
 # Commands
 
