@@ -1,0 +1,11 @@
+ <appliances>
+   <appliance>
+     <identity>appliance0</identity>
+     <cluster_inetport>ip4-111.esss.lu.se:16670</cluster_inetport>
+     <mgmt_url>http://ip4-111.esss.lu.se:17665/mgmt/bpl</mgmt_url>
+     <engine_url>http://ip4-111.esss.lu.se:17666/engine/bpl</engine_url>
+     <etl_url>http://ip4-111.esss.lu.se:17667/etl/bpl</etl_url>
+     <retrieval_url>http://localhost:17668/retrieval/bpl</retrieval_url>
+     <data_retrieval_url>http://ip4-111.esss.lu.se:17668/retrieval</data_retrieval_url>
+   </appliance>
+ </appliances>
