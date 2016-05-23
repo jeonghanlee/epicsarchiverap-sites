@@ -1,78 +1,106 @@
 html {
-  background: #b2b2b2;
+  background: white;
 }
 
+/* site_header */
 
 body {
-  background: white;
-  color: black;
-  width: 1024px;
-  margin: 0 auto;
-  padding-bottom: 50px;
-  font-family: Helvetica,Arial,'Liberation Sans',FreeSans,sans-serif;
-  font-size: 13px;
+    color: black;
+    width: 1024px; 
+    margin: 0 auto;
+    padding-bottom: 50px;
+    font-family: Helvetica,Arial,'Liberation Sans',FreeSans,sans-serif;
+    font-size: 14px;
+    /* background-color: #029FE0; */
+    
 }
 
-.page { 
+.page {
 	min-height: 600px;
 }
 
 .pageheader {
-	height: 100px;
-	background-color: #029FE0;
+    height: 110px;
+    background-color: #029FE0;
 }
 
 
 .apptitle {
-	padding-left: 1.00em;
-	padding-top: 0.75em;
-	font-family: helvetica,sans-serif; 
-	color: white;
-	font-size: 30px;
-	display: inline-block;
+    padding-left: 1.00em;
+    padding-top: 1.0em;
+    font-family: Helvetica,sans-serif;
+    color: white;
+    font-size: 30px;
+    display: inline-block;
+    font-weight: bold;
+    float:left;
 }
 
 #siteimages{
-	float: right;
-	padding-top: 0.75em;
+    float: right;
+    padding-top: 0.5em;
 }
 
-.navbar {
-	 background-color: #029FE0;
+/* site_navbar */
+
+
+
+.navbar{
+    background-color: #029FE0;
 }
 
-div.nav {
-	overflow: hidden;
-	display:block;
-	height: 30px;
-	background-color:  #029FE0;
-	margin-bottom: 20px;
+.nav {
+    border-top-style: solid;
+    border-top-color: white;
+    border-top-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: white;
+    border-bottom-width: 1px;
+    
 }
 
 ul.mainmenu {
-	list-style-position: inside;
-	margin: 0;
-	padding: 0;
-	padding-left: 5px;
-	font-weight: bold;
-	color: white;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+
 }
 
-ul.mainmenu li, ul.mainmenu li a, ul.mainmenu li a:visited {
-	display: inline;
-	line-height: 29px;
-	padding: 0 0 0 0;
-	padding-left: 0.5em;
-	list-style-type: none;
-	text-decoration: none;
-	color: white;
+/* Float the list items side by side */
+ul.mainmenu li {
+    float: left;
 }
 
 
-#navigation li {
-  display: inline;
+
+/* Style the links inside the list items */
+ul.mainmenu li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    transition: 0.5s;
+    font-size: 14px;
 }
 
-.dialogheader {
-	font-size: medium;
+
+/* Change background color of links on hover */
+ul.mainmenu li a:hover {
+    background-color:#1272A9;
+    /* #357EC7; */
 }
+
+ul.mainmenu li a.active {
+    border-style: solid;
+    border-color: white;
+    border-width: 1px;
+}
+
+
+/* Hide the list item that contains the link that should open and close the topnav on small screens */
+ul.mainmenu li.icon {
+    display: none;
+}
+
