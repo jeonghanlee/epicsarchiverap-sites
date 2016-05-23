@@ -126,6 +126,11 @@ Empty set (0.00 sec)
 * I put them into a source directory :
   ${HOME}/apps_foe_aa/aa_src
 
+## Tomcat at Debian 8
+
+```
+root@kaffee:/opt/archiver_appliance# aptitude install  tomcat7
+```
 
 # Configuration for Archiver Appliance
 
