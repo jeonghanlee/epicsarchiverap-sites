@@ -1,12 +1,3 @@
-jhlee@ip4-111:~$ git clone https://github.com/jeonghanlee/epicsarchiverap.git
-
-jhlee@ip4-111:~$ cd epicsarchiverap/
-
-jhlee@ip4-111:~/epicsarchiverap (essdev)$ git checkout tags/v0.0.1_SNAPSHOT_30-March-2016 -b  essdev
-Switched to a new branch 'essdev'
-
-
-jhlee@ip4-111:~/epicsarchiverap/src/sitespecific (essdev)$ scp -r slacdev/ essdev
 
 
 There are three variables setup
@@ -182,6 +173,22 @@ Replacing site specific images
 Copying site specific CSS files into /opt/archiver_appliance
 
 
+
+
+
+
+
+# maybe useful for the real customized aa
+
+jhlee@ip4-111:~$ git clone https://github.com/jeonghanlee/epicsarchiverap.git
+
+jhlee@ip4-111:~$ cd epicsarchiverap/
+
+jhlee@ip4-111:~/epicsarchiverap (essdev)$ git checkout tags/v0.0.1_SNAPSHOT_30-March-2016 -b  essdev
+Switched to a new branch 'essdev'
+
+
+jhlee@ip4-111:~/epicsarchiverap/src/sitespecific (essdev)$ scp -r slacdev/ essdev
 
 
 

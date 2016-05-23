@@ -24,7 +24,7 @@ EPICS Archiver Appliance Site Specific Test Environment
 
 * Command set 1
 ```
-git clone -b workhttps://github.com/jeonghanlee/epicsarchiverap-sites.git
+git clone https://github.com/jeonghanlee/epicsarchiverap-sites.git
 cd epicsarchiverap-sites/
 git submodule init
 git submodule update

@@ -6,6 +6,26 @@
 
 http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
 
+
+
+### Using java-package
+
+```bash
+root@-# aptitude install java\-package
+```
+
+```bash
+jhlee@:~$ make-jpkg jdk-8u92-linux-x64.tar.gz
+```
+
+```
+root@-# dpkg -i oracle-java8-jdk\_8u92\_amd64.deb
+root@-# update-java-alternatives -l
+root@-# update-java-alternatives -s jdk-8-oracle-x64
+```
+
+### Manually
+
 * extract them in /opt/ directory
 
 ```
@@ -33,13 +53,14 @@ root@ip4-111:/opt/jdk1.8.0_77/bin# update-alternatives --install /usr/bin/jar  j
 
 * MySQL administrative "root" user, use ICS-Services MySQL root password defined at https://ess-ics.atlassian.net/wiki/display/DE/Passwords
 
-  Its password is  adMCQ52A9uT2wQZQTWA8
+  Its password is  *******************
 
 * install MySQL provided by the standard Debian package and set the MySQL root password (NB:this is not the password of your system)
 
 ```
 root@ip4-111:/home/jhlee# aptitude install mysql-server
-root@ip4-111:/home/jhlee# mysqladmin -u root password adMCQ52A9uT2wQZQTWA8
+root@ip4-111:/home/jhlee# mysqladmin -u root password
+ *******************
 ```
 
 * create DB and User
@@ -97,6 +118,7 @@ Empty set (0.00 sec)
 * download the mysql-connector-java-5 in the following link
   https://downloads.mysql.com/archives/c-j/
   Recommendation is 5.1.21
+  or the recent one is http://dev.mysql.com/downloads/connector/j/
 
 * But I am using 5.1.38 instead of 5.1.21
 * Please remember, the download file is "tar.gz" file. One should extract them, and put them in a directory.
