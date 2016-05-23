@@ -113,7 +113,7 @@ Replacing site specific images
 
 
 and start AA
-root@ip4-111:/opt/archiver_appliance# bash archiverapplianceservice.sh start
+root@ip4-111:/opt/archiver_appliance# bash  aaService.bash start
 
 
 if we don't have site_specific_content, it is 
@@ -137,5 +137,51 @@ root@ip4-111:/opt/archiver_appliance# ln -s /home/jhlee/github/epicsarchiverap-s
 root@ip4-111:/opt/archiver_appliance# ln -s /home/jhlee/github/epicsarchiverap-sites/archiverapplianceservice.sh archiverapplianceservice.sh 
 root@ip4-111:/opt/archiver_appliance# ln -s /home/jhlee/github/epicsarchiverap-sites/deployRelease.sh deployRelease.sh
 root@ip4-111:/opt/archiver_appliance# 
+
+
+
+root@ip4-111:/opt/archiver_appliance# bash aaService.bash stop
+Stopping tomcat at location /opt/archiver_appliance/engine
+/opt/archiver_appliance/engine/logs /opt/archiver_appliance
+/opt/archiver_appliance
+Stopping tomcat at location /opt/archiver_appliance/retrieval
+/opt/archiver_appliance/retrieval/logs /opt/archiver_appliance
+/opt/archiver_appliance
+Stopping tomcat at location /opt/archiver_appliance/etl
+/opt/archiver_appliance/etl/logs /opt/archiver_appliance
+/opt/archiver_appliance
+Stopping tomcat at location /opt/archiver_appliance/mgmt
+/opt/archiver_appliance/mgmt/logs /opt/archiver_appliance
+/opt/archiver_appliance
+
+
+
+
+root@ip4-111:/opt/archiver_appliance# bash deployRelease.sh  /home/jhlee/github/epicsarchiverap-sites/
+Deploying a new release from /home/jhlee/github/epicsarchiverap-sites/ onto /opt/archiver_appliance
+/opt/archiver_appliance/mgmt/webapps /opt/archiver_appliance
+/opt/archiver_appliance
+/opt/archiver_appliance/engine/webapps /opt/archiver_appliance
+/opt/archiver_appliance
+/opt/archiver_appliance/etl/webapps /opt/archiver_appliance
+/opt/archiver_appliance
+/opt/archiver_appliance/retrieval/webapps /opt/archiver_appliance
+/opt/archiver_appliance
+Done deploying a new release from /home/jhlee/github/epicsarchiverap-sites/ onto /opt/archiver_appliance
+Modifying static content to cater to site specific information
+Changing headers and footers for /opt/archiver_appliance/mgmt/webapps/mgmt/ui/integration.html
+Changing headers and footers for /opt/archiver_appliance/mgmt/webapps/mgmt/ui/pvdetails.html
+Changing headers and footers for /opt/archiver_appliance/mgmt/webapps/mgmt/ui/redirect.html
+Changing headers and footers for /opt/archiver_appliance/mgmt/webapps/mgmt/ui/reports.html
+Changing headers and footers for /opt/archiver_appliance/mgmt/webapps/mgmt/ui/storage.html
+Changing headers and footers for /opt/archiver_appliance/mgmt/webapps/mgmt/ui/appliance.html
+Changing headers and footers for /opt/archiver_appliance/mgmt/webapps/mgmt/ui/cacompare.html
+Changing headers and footers for /opt/archiver_appliance/mgmt/webapps/mgmt/ui/index.html
+Changing headers and footers for /opt/archiver_appliance/mgmt/webapps/mgmt/ui/metrics.html
+Replacing site specific images
+Copying site specific CSS files into /opt/archiver_appliance
+
+
+
 
 
