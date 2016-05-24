@@ -72,11 +72,12 @@ fi
 
 if [[ -d ${SITE_SPECIFIC_DIR}/css ]]
 then
-    echo "Copying site specific CSS files into ${DEPLOY_DIR}"
+    echo "Copying site specific main CSS files into ${DEPLOY_DIR}"
     cp -R ${SITE_SPECIFIC_DIR}/css/main.css ${DEPLOY_DIR}/mgmt/webapps/mgmt/ui/comm/css/
     cp -R ${SITE_SPECIFIC_DIR}/css/main.css ${DEPLOY_DIR}/engine/webapps/engine/ui/comm/css/
     cp -R ${SITE_SPECIFIC_DIR}/css/main.css ${DEPLOY_DIR}/etl/webapps/etl/ui/comm/css/
     cp -R ${SITE_SPECIFIC_DIR}/css/main.css ${DEPLOY_DIR}/retrieval/webapps/retrieval/ui/comm/css/
+    
 fi
 
 
