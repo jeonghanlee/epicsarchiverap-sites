@@ -1,6 +1,8 @@
-# Requirements
+# Installation
 
-## JAVA 8
+## Requirements
+
+### JAVA 8
 
 * download JDK from the following site
 
@@ -8,7 +10,7 @@ http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.h
 
 
 
-### Using java-package
+#### Using java-package
 
 ```bash
 root@-# aptitude install java\-package
@@ -24,7 +26,7 @@ root@-# update-java-alternatives -l
 root@-# update-java-alternatives -s jdk-8-oracle-x64
 ```
 
-### Manually
+#### Using manual configuration 
 
 * extract them in /opt/ directory
 
@@ -47,9 +49,9 @@ root@ip4-111:/opt/jdk1.8.0_77/bin# update-alternatives --install /usr/bin/java  
 root@ip4-111:/opt/jdk1.8.0_77/bin# update-alternatives --install /usr/bin/jar  jar /opt/jdk1.8.0_77/bin/jar 1041
 ```
 
-## MySQL
+### MySQL (Debian OS version)
 
-### MySQL server and its configuration
+#### MySQL server and its configuration
 
 * MySQL administrative "root" user, use ICS-Services MySQL root password defined at https://ess-ics.atlassian.net/wiki/display/DE/Passwords
 
@@ -112,8 +114,10 @@ mysql> show tables;
 Empty set (0.00 sec)
 ```
 
+#### Connector/J
 
-### MySQL Connector/J
+* Don't need to install C
+#### MySQL Connector/J
 
 * download the mysql-connector-java-5 in the following link
   https://downloads.mysql.com/archives/c-j/
@@ -126,22 +130,24 @@ Empty set (0.00 sec)
 * I put them into a source directory :
   ${HOME}/apps_foe_aa/aa_src
 
-## Tomcat at Debian 8
+
+
+### Tomcat at Debian 8
 
 ```
 root@kaffee:/opt/archiver_appliance# aptitude install  tomcat7
 ```
 
-# Configuration for Archiver Appliance
+## Configuration for Archiver Appliance
 
-## Prepare the target directory, where one wants to put arcihver appliance itself.
+### Prepare the target directory, where one wants to put arcihver appliance itself.
 
 * Create archiver_appliance dir in /opt/
 ```
 root@ip4-111:/opt# mkdir archiver_appliance
 ```
 
-## Download the "binary" file "tar.gz" and extract them into a source directory
+### Download the "binary" file "tar.gz" and extract them into a source directory
 * Download link :  https://github.com/slacmshankar/epicsarchiverap/releases/
 * A source directory : ${HOME}/apps_foe_aa/aa_src
 ```
@@ -188,7 +194,7 @@ root@ip4-111:/home/jhlee/apps_for_aa# tree -L 2
 ```
 
 
-# Install the Archiver Appliance by using the installation script for a single machine.
+## Install the Archiver Appliance by using the installation script for a single machine.
 
 * Set JAVA_HOME
 ```
@@ -345,7 +351,10 @@ Done with the installation. Please use /opt/archiver_appliance/sampleStartup.sh 
 >>> See /home/jhlee/Documents/log/aa_installation_imgs/8.png
 ```
 
-# Check the Archiver Appliance Deploy Status
+
+# Deploymenet if Archiver Appliance is needed to be upgraded
+
+## Check the Archiver Appliance Deploy Status
 
 * Check your system in /opt/archiver_appliance
 ```
@@ -439,7 +448,7 @@ mysql> show tables;
 ```
 
 
-# Prepare the storage in local directory
+## Prepare the storage in local directory
 * in this configuration, {s,m,l}ts in the local ext4 file system.
 ```
 root@ip4-111:/mnt/arch# mkdir -p {sts,mts,lts}/ArchiverStore
@@ -454,7 +463,7 @@ root@ip4-111:/mnt/arch# tree -L 2
 
 6 directories, 0 files
 ```
-# startup script
+## startup script
 
 * edit the startup script to replace the EPICS environment, and stroages
 
@@ -471,7 +480,7 @@ export ARCHAPPL_SHORT_TERM_FOLDER=/mnt/arch/sts/ArchiverStore
 export ARCHAPPL_MEDIUM_TERM_FOLDER=/mnt/arch/mts/ArchiverStore
 export ARCHAPPL_LONG_TERM_FOLDER=/mnt/arch/lts/ArchiverStore
 ```
-# Start / stop
+## Start / stop
 
 ```
 root@ip4-111:/opt/archiver_appliance# bash archiverapplianceservice.sh start
