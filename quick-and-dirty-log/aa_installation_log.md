@@ -10,7 +10,7 @@ http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.h
 
 
 
-#### Using java-package
+#### Using java-package on Debian
 
 ```bash
 root@-# aptitude install java\-package
@@ -25,6 +25,45 @@ root@-# dpkg -i oracle-java8-jdk\_8u92\_amd64.deb
 root@-# update-java-alternatives -l
 root@-# update-java-alternatives -s jdk-8-oracle-x64
 ```
+
+#### Using RPM package on CentOS 7.1
+
+```
+http://download.oracle.com/otn-pub/java/jdk/8u102-b14/jdk-8u102-linux-x64.rpm
+
+$ sudo yum install jdk-8u102-linux-x64.rpm 
+$ java -version
+java version "1.7.0_111"
+OpenJDK Runtime Environment (rhel-2.6.7.2.el7_2-x86_64 u111-b01)
+OpenJDK 64-Bit Server VM (build 24.111-b01, mixed mode)
+
+$ sudo alternatives --config java
+
+There are 2 programs which provide 'java'.
+
+  Selection    Command
+-----------------------------------------------
+*+ 1           /usr/lib/jvm/java-1.7.0-openjdk-1.7.0.111-2.6.7.2.el7_2.x86_64/jre/bin/java
+   2           /usr/java/jdk1.8.0_102/jre/bin/java
+
+Enter to keep the current selection[+], or type selection number: 2
+
+$ sudo alternatives --config javac
+
+There is 1 program that provides 'javac'.
+
+  Selection    Command
+-----------------------------------------------
+*+ 1           /usr/java/jdk1.8.0_102/bin/javac
+
+Enter to keep the current selection[+], or type selection number: 
+
+$ ls -ltar /usr/java/jdk1.8.0_102/bin/jar
+-rwxr-xr-x. 1 root root 7925 Jun 23 04:01 /usr/java/jdk1.8.0_102/bin/jar
+
+
+```
+
 
 #### Using manual configuration 
 
@@ -42,12 +81,21 @@ root@ip4-111:/opt/jdk1.8.0_77#
 root@ip4-111:/home/jhlee# aptitude install fastjar
 ```
 
+** CentOS with Orcle RPM, jar is linked correctly.
+```
+$ ls -lta /etc/alternatives/jar
+lrwxrwxrwx. 1 root root 30 Aug 23 17:01 /etc/alternatives/jar -> /usr/java/jdk1.8.0_102/bin/jar
+```
+
+
 * change the Open Java to Oracle Java. But it is not necessary step if we want to use JAVA_HOME in the startup script later.
 
 ```
 root@ip4-111:/opt/jdk1.8.0_77/bin# update-alternatives --install /usr/bin/java  java /opt/jdk1.8.0_77/bin/java 1041
 root@ip4-111:/opt/jdk1.8.0_77/bin# update-alternatives --install /usr/bin/jar  jar /opt/jdk1.8.0_77/bin/jar 1041
 ```
+
+
 
 ### MySQL (Debian OS version)
 
@@ -131,12 +179,170 @@ Empty set (0.00 sec)
   ${HOME}/apps_foe_aa/aa_src
 
 
+### MariaDB on CentOS 7
 
-### Tomcat at Debian 8
+https://www.linode.com/docs/databases/mariadb/how-to-install-mariadb-on-centos-7
+
+#### MariaDB server and its configuration
+
+* MariaDB administrative "root" user, use ICS-Services MySQL root password defined at https://ess-ics.atlassian.net/wiki/display/DE/Passwords
+
+
+```
+# yum install mariadb-server mariadb-libs
+
+# systemctl enable mariadb
+Created symlink from /etc/systemd/system/multi-user.target.wants/mariadb.service to /usr/lib/systemd/system/mariadb.service.
+
+# systemctl start mariadb
+
+# mysql_secure_installation
+/bin/mysql_secure_installation: line 379: find_mysql_client: command not found
+
+NOTE: RUNNING ALL PARTS OF THIS SCRIPT IS RECOMMENDED FOR ALL MariaDB
+      SERVERS IN PRODUCTION USE!  PLEASE READ EACH STEP CAREFULLY!
+
+In order to log into MariaDB to secure it, we'll need the current
+password for the root user.  If you've just installed MariaDB, and
+you haven't set the root password yet, the password will be blank,
+so you should just press enter here.
+
+Enter current password for root (enter for none): [[[ENTER]]]
+OK, successfully used password, moving on...
+
+Setting the root password ensures that nobody can log into the MariaDB
+root user without the proper authorisation.
+
+Set root password? [Y/n] [[[Y]]]
+New password: 
+Re-enter new password: 
+Password updated successfully!
+Reloading privilege tables..
+ ... Success!
+
+
+By default, a MariaDB installation has an anonymous user, allowing anyone
+to log into MariaDB without having to have a user account created for
+them.  This is intended only for testing, and to make the installation
+go a bit smoother.  You should remove them before moving into a
+production environment.
+
+Remove anonymous users? [Y/n] Y
+ ... Success!
+
+Normally, root should only be allowed to connect from 'localhost'.  This
+ensures that someone cannot guess at the root password from the network.
+
+Disallow root login remotely? [Y/n] y
+ ... Success!
+
+By default, MariaDB comes with a database named 'test' that anyone can
+access.  This is also intended only for testing, and should be removed
+before moving into a production environment.
+
+Remove test database and access to it? [Y/n] y
+ - Dropping test database...
+ ... Success!
+ - Removing privileges on test database...
+ ... Success!
+
+Reloading the privilege tables will ensure that all changes made so far
+will take effect immediately.
+
+Reload privilege tables now? [Y/n] y
+ ... Success!
+
+Cleaning up...
+
+All done!  If you've completed all of the above steps, your MariaDB
+installation should now be secure.
+
+Thanks for using MariaDB!
+
+
+# mysql -u root -p -e "CREATE DATABASE archappl; GRANT ALL PRIVILEGES ON archappl.* TO 'archappl'@'localhost' IDENTIFIED BY 'archappl'"
+Enter password: 
+
+# mysql -u root -p
+Enter password: 
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 15
+Server version: 5.5.50-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2016, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| archappl           |
+| mysql              |
+| performance_schema |
++--------------------+
+4 rows in set (0.00 sec)
+
+MariaDB [(none)]> select User, Host, Password from mysql.user;
++----------+-----------+-------------------------------------------+
+| User     | Host      | Password                                  |
++----------+-----------+-------------------------------------------+
+| root     | localhost | *7C2973139458FCEBB71E89E8DD5E196D2472AFE2 |
+| root     | 127.0.0.1 | *7C2973139458FCEBB71E89E8DD5E196D2472AFE2 |
+| root     | ::1       | *7C2973139458FCEBB71E89E8DD5E196D2472AFE2 |
+| archappl | localhost | *ECD434ACB728FD721CDCF3E08C2C35149E54B64A |
++----------+-----------+-------------------------------------------+
+4 rows in set (0.00 sec)
+
+MariaDB [(none)]> use archappl
+Database changed
+MariaDB [archappl]> show tables;
+Empty set (0.00 sec)
+
+MariaDB [archappl]> 
+
+```
+
+
+### Tomcat
+
+#### Debian 8 
 
 ```
 root@kaffee:/opt/archiver_appliance# aptitude install  tomcat7
 ```
+
+#### CentOS 7.2
+
+/usr/share/tomcat
+
+https://www.digitalocean.com/community/tutorials/how-to-install-apache-tomcat-7-on-centos-7-via-yum
+
+tomcat / 7.0.54-2.el7_1 / base
+```
+# yum install tomcat
+# yum install tomcat-webapps tomcat-admin-webapps 
+```
+
+Tomcat should run every time, so I need to enable the service:
+```
+systemctl enable tomcat
+Created symlink from /etc/systemd/system/multi-user.target.wants/tomcat.service to /usr/lib/systemd/system/tomcat.service.
+```
+
+The following commands are needed to start or restart tomcat
+```
+systemctl start tomcat
+systemctl restart tomcat
+```
+One can access the Web Interface via http://localhost:8080/
+
+
+
+
+
+
 
 ## Configuration for Archiver Appliance
 
