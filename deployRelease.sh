@@ -21,12 +21,12 @@
 
 
 
-export JAVA_HOME=/opt/jdk1.8.0_77/
-export PATH=${JAVA_HOME}/bin:${PATH}
+# export JAVA_HOME=/opt/jdk1.8.0_77/
+# export PATH=${JAVA_HOME}/bin:${PATH}
 
-export TOMCAT_HOME=/opt/archiver_appliance/apache-tomcat-7.0.68
-export CATALINA_HOME=/opt/archiver_appliance/apache-tomcat-7.0.68
-export DEPLOY_DIR=/opt/archiver_appliance
+export TOMCAT_HOME=/usr/share/tomcat
+export CATALINA_HOME=/usr/share/tomcat
+export DEPLOY_DIR=/opt/archappl
 
 if [[ $# -eq 0 ]]
 then
