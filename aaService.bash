@@ -19,8 +19,8 @@
 #source /opt/local/setEPICSEnv.sh
 source /home/aauser/epics/3.15.4/setEpicsEnv.sh
 
-export JAVA_HOME=/usr/java/latest
-export PATH=${JAVA_HOME}/bin:${PATH}
+#export JAVA_HOME=/usr/java/latest
+#export PATH=${JAVA_HOME}/bin:${PATH}
 
 #
 # http://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html#BABDJJFI
@@ -32,7 +32,7 @@ export JAVA_OPTS="-XX:MaxMetaspaceSize=128M -XX:+UseG1GC -Xmx1G -Xms1G -ea"
 
 # Set up Tomcat home
 export TOMCAT_HOME=/usr/share/tomcat
-
+export CLASS_PATH=/usr/share/java/
 # Set up the root folder of the individual Tomcat instances.
 export ARCHAPPL_DEPLOY_DIR=/opt/archappl
 
@@ -86,9 +86,9 @@ function startTomcatAtLocation() {
     fi
   
     pushd ${CATALINA_BASE}/logs
-    ${CATALINA_HOME}/bin/jsvc \
+    /bin/jsvc \
         -server \
-        -cp ${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
+        -cp ${CLASS_PATH}/apache-commons-daemon.jar:${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
         ${JAVA_OPTS} \
         -Dcatalina.base=${CATALINA_BASE} \
         -Dcatalina.home=${CATALINA_HOME} \
@@ -103,7 +103,7 @@ function startTomcatAtLocation() {
     # #JSVC re-exec requires execution with an absolute or relative path
     # /bin/jsvc \
     # 	-server \
-    # 	-cp ${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
+    # 	-cp commons-daemon.jar:${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
     # 	${JAVA_OPTS} \
     # 	-Dcatalina.base=${CATALINA_BASE} \
     # 	-Dcatalina.home=${CATALINA_HOME} \
@@ -129,7 +129,7 @@ function stopTomcatAtLocation() {
 #   ${CATALINA_HOME}/bin/jsvc \
     /bin/jsvc \
 	-server \
-	-cp ${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
+	-cp ${CLASS_PATH}/apache-commons-daemon.jar:${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
 	${JAVA_OPTS} \
 	-Dcatalina.base=${CATALINA_BASE} \
 	-Dcatalina.home=${CATALINA_HOME} \
