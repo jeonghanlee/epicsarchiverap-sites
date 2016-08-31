@@ -743,4 +743,10 @@ Starting tomcat at location /opt/archiver_appliance/retrieval
 Using 64 bit versions of libraries
 /opt/archiver_appliance/retrieval/logs /opt/archiver_appliance
 /opt/archiver_appliance
+
+
+
 ```
+
+
+https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/
