@@ -63,6 +63,41 @@ $ ls -ltar /usr/java/jdk1.8.0_102/bin/jar
 
 
 ```
+Somehow, the trouble is coming from apache-common-daemon.jar, so I would like to use the open-jdk instead of Orcle
+
+[root@ics-tag348 lib]# yum install java-1.8.0-openjdk  java-1.8.0-openjdk-devel
+
+
+[root@ics-tag348 lib]#  alternatives --config java
+
+There are 3 programs which provide 'java'.
+
+  Selection    Command
+-----------------------------------------------
+   1           /usr/lib/jvm/java-1.7.0-openjdk-1.7.0.111-2.6.7.2.el7_2.x86_64/jre/bin/java
+ + 2           /usr/java/jdk1.8.0_102/jre/bin/java
+*  3           /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.101-3.b13.el7_2.x86_64/jre/bin/java
+
+Enter to keep the current selection[+], or type selection number: 3
+
+
+[root@ics-tag348 ~]# alternatives --config javac
+
+There are 3 programs which provide 'javac'.
+
+  Selection    Command
+-----------------------------------------------
+ + 1           /usr/java/jdk1.8.0_102/bin/javac
+   2           /usr/lib/jvm/java-1.7.0-openjdk-1.7.0.111-2.6.7.2.el7_2.x86_64/bin/javac
+*  3           /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.101-3.b13.el7_2.x86_64/bin/javac
+
+Enter to keep the current selection[+], or type selection number: 3
+
+
+
+[root@ics-tag348 ~]# ls -ltar /etc/alternatives/jar
+lrwxrwxrwx. 1 root root 68 Aug 31 22:28 /etc/alternatives/jar -> /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.101-3.b13.el7_2.x86_64/bin/jar
+
 
 
 #### Using manual configuration 
@@ -94,6 +129,10 @@ lrwxrwxrwx. 1 root root 30 Aug 23 17:01 /etc/alternatives/jar -> /usr/java/jdk1.
 root@ip4-111:/opt/jdk1.8.0_77/bin# update-alternatives --install /usr/bin/java  java /opt/jdk1.8.0_77/bin/java 1041
 root@ip4-111:/opt/jdk1.8.0_77/bin# update-alternatives --install /usr/bin/jar  jar /opt/jdk1.8.0_77/bin/jar 1041
 ```
+
+
+
+[root@ics-tag348 lib]# yum install java-1.8.0-openjdk
 
 
 
@@ -341,6 +380,9 @@ MariaDB [archappl]> show tables;
 MariaDB [archappl]> 
 ```
 
+Copy java client into ${TOMCAT_HOME}/lib
+
+[root@ics-tag348 epicsarchiverap-sites]# cp /home/aauser/Downloads/mariadb-java-client-1.4.6.jar /usr/share/tomcat/lib/
 
 ### Tomcat
 
@@ -376,6 +418,34 @@ systemctl restart tomcat
 ```
 One can access the Web Interface via http://localhost:8080/
 
+
+ CentOS 7.2 with MariaDB, OpenJDK1.8, Tomcat7
+
+  In this time, I changed some parts, and now they are working again.
+
+  1)
+
+   FROM :
+
+   ${CATALINA_HOME}/bin/jsvc \
+   -server \
+   -cp ${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
+
+   TO :
+   /bin/jsvc \
+   -server \
+   -cp /usr/share/java/apache-commons-daemon.jar:${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
+
+
+  2) in mgmt/conf/context.xml
+
+  driverClassName="com.mysql.jdbc.Driver"
+  url="jdbc:mysql://localhost:3306/archappl"
+
+  should be changed as
+
+  driverClassName="org.mariadb.jdbc.Driver"
+  url="jdbc:mariadb://localhost:3306/archappl"
 
 
 

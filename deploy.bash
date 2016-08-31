@@ -146,6 +146,15 @@ AA_MYSQL_DB="archappl"
 AA_MYSQL_USERNAME="archappl"
 AA_MYSQL_PASSWORD="archappl"
 
+# mysql-connector
+#
+#AA_SQL_CLASSNAME="com.mysql.jdbc.Driver"
+#AA_URL="mysql"
+
+# mariadb-java-client-1.4.6.jar
+#
+AA_DRIVER_CLASSNAME="org.mariadb.jdbc.Driver"
+AA_URL="mariadb"
 
 #render_template ${TEMPLATE_DIR}/contex.template > ${TOMCAT_CONTEXTCONTAINER}
 
@@ -214,8 +223,8 @@ cat > ${TOMCAT_CONTEXTCONTAINER} <<EOF
          logAbandoned="true"
          minEvictableIdleTimeMillis="30000"
          jmxEnabled="true"
-         driverClassName="com.mysql.jdbc.Driver"
-         url="jdbc:mysql://localhost:3306/${AA_MYSQL_DB}"
+         driverClassName="${AA_DRIVER_CLASSNAME}"
+         url="jdbc:${AA_URL}://localhost:3306/${AA_MYSQL_DB}"
          username="${AA_MYSQL_USERNAME}"
          password="${AA_MYSQL_PASSWORD}"
      />
