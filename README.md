@@ -73,6 +73,8 @@ EPICS Archiver Appliance Site Specific Test Environment
 [root@ epicsarchiverap-sites]# bash aaService.bash start
 [root@ epicsarchiverap-sites]# bash aaService.bash stop
 ```
+![Connection Example](aa_site_specific.png)
+
 * Almost Full List
 ```
 [user@ ~]$ git clone https://github.com/jeonghanlee/epicsarchiverap-sites.git
