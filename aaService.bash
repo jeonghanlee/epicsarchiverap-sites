@@ -33,9 +33,14 @@ source /home/aauser/epics/3.15.4/setEpicsEnv.sh
 
 # The physical memory  :  64G, so I use 8G instead of 4G, since we don't have any other application on the server.
 # Set MaxMetaspaceSize : 256M, so it reduces the GC execution to compare with the original option.
-#
+# 
 JAVA_HEAPSIZE="8G"
 JAVA_MAXMETASPACE="256M"
+
+# Use the Garbage First (G1) collector
+# so, we have larger heapsize larger than 6G, we expect the stable and predictable pause time below 0.5 seconds.
+# according to http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/G1GettingStarted/index.html
+# 
 
 export JAVA_OPTS="-XX:MaxMetaspaceSize=${JAVA_MAXMETASPACE} -XX:+UseG1GC -Xms${JAVA_HEAPSIZE} -Xmx${JAVA_HEAPSIZE} -ea"
 
@@ -47,7 +52,7 @@ export TOMCAT_HOME=/usr/share/tomcat
 # Somehow jsvc doesn't know where apache-commons-daemon.jar. So the clear PATH
 # should be defined.
 #
-export CLASS_PATH=/usr/share/java/
+export CLASS_PATH=/usr/share/java
 
 # Set up the root folder of the individual Tomcat instances.
 export ARCHAPPL_DEPLOY_DIR=/opt/archappl
@@ -160,18 +165,44 @@ function stopTomcatAtLocation() {
     echo ""
 }
 
-function stop() { 
-    stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/engine"
-    stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/retrieval"
-    stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/etl"
-    stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/mgmt"
+tomcat_services=("mgmt" "engine" "etl" "retrieval")
+
+HOSTNAME=`hostname --all-fqdn`
+AA_HOSTNAME=$(tr -d ' ' <<< ${HOSTNAME})
+
+function status() {
+    echo "-- Status outputs " 
+    echo "-- http://${AA_HOSTNAME}:17665/mgmt/ui/index.html is the web address.";
+    echo "-- ${ARCHAPPL_DEPLOY_DIR}/mgmt/logs/catalina.err may help you.";
+    echo "-- If eight numbers are printed below, the jsvc processes are running";
+    pidof jsvc.exec;
+    echo "--";
+}
+
+function stop() {
+
+    # Stopping order is matter?
+
+    stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/engine";
+    stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/retrieval";
+    stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/etl";
+    stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/mgmt";
+  
+    status;
 }
 
 function start() { 
-    startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/mgmt"
-    startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/engine"
-    startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/etl"
-    startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/retrieval"
+
+    for service in ${tomcat_services[@]}; do
+	startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/${service}";
+    done
+
+#   startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/mgmt";
+#   startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/engine";
+#   startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/etl";
+#   startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/retrieval";
+    
+    status;
 }
 
 

@@ -1,63 +1,71 @@
 #!/bin/bash
+#
+# 
+# Shell  : aaSetup.bash
+# Author : Jeong Han Lee
+# email  : han.lee@esss.se
+# Date   : 
+# version : 0.9.0 CentOS 7.2
+#
+#
 
-# # The function is defined in the following article
-# # http://pempek.net/articles/2013/07/08/bash-sh-as-template-engine/
+# JAVA Environment is defined by the System.
+# If not, please set them properly.
 
-# render_template() 
-# {
-#     eval "echo \"$(cat $1)\""
-# }
-
-
-# if [[ -z ${JAVA_HOME} ]]
-# then
-#     echo "Please set JAVA_HOME to point to a 1.8 JDK"
-#     exit 1
-# fi
-
+# export JAVA_HOME=/usr/java/latest
 # export PATH=${JAVA_HOME}/bin:${PATH}
 
-# if [[ -z ${TOMCAT_HOME} ]]
-# then
-#     echo "Please set TOMCAT_HOME to point to a proper PATH"
-#     exit 1
-# fi
-# #
-# CENTOS, TOMCAT_HOME is /usr/share/tomcat
+# Set Tomcat home
 export TOMCAT_HOME=/usr/share/tomcat
-# TOMCAT_HOME=/usr/share/tomcat
-# export TOMCAT_HOME
+
 #
 # Variable with Prefix AA_ are used in heredoc cat >...
-# and were used in appliances.template and context.template
 #
 AA_SCRIPTNAME=`basename $0`
-AA_LOGDATE=`date +%Y.%m.%d.%H:%M`
+AA_LOGDATE=`date +%F-%H%M%Z`
 
 SCRIPTS_DIR=`dirname $0`
 AA_SCRIPTS_PATH=`cd ${SCRIPTS_DIR} && pwd`
-AA_HOSTNAME=`hostname -f`
+# Somehow, hostname is conflicted between what I set, and what IT assigned. 
+HOSTNAME=`hostname --all-fqdn`
+# HOSTNAME has the whitespace, so remove it
+AA_HOSTNAME=$(tr -d ' ' <<< ${HOSTNAME})
+#AA_HOSTNAME=`hostname -f`
 AA_USERNAME=`whoami`
 
- 
+#  ip4-22.esss.lu.se
+
 TEMPLATE_DIR=${AA_SCRIPTS_PATH}/template
-DEPLOY_DIR=/opt/archappl
+
+# 0) It is safe to create archappl directory according to date, time, 
+#    then, create symlink to point to the real directory
+#    So, TARGET_DIR is the symlink.
+
+
+printf "\n%s\n" "->"
+
+DEPLOY_DIR=/opt/archappl-${AA_LOGDATE}
+TARGET_DIR=/opt/archappl
+
+if [[ -L ${TARGET_DIR} && -d ${TARGET_DIR} ]]
+then
+    echo "${TARGET_DIR} is a symlink to a directory, so removing it."
+    rm ${TARGET_DIR}
+else
+    
+    echo "${TARGET_DIR} is the physical directory, it should NOT be."
+    echo "Please check it, the old ${TARGET_DIR} is renamed to ${TARGET_DIR}-PLEASECHECK-${AA_LOGDATE}"
+    mv ${TARGET_DIR} ${TARGET_DIR}-PLEASECHECK-${AA_LOGDATE}
+fi
 
 mkdir -p ${DEPLOY_DIR}
+ln -s ${DEPLOY_DIR} ${TARGET_DIR}
 
-##
-# The following two PATHs for only testing purpose, 
-# they override PATHS in order to create appliances.xml and context.xml
-# in the SCRIPTS_DIR. So they should comment out after testing.  
-# 
-# DEPLOY_DIR=${SCRIPTS_DIR}
-# TOMCAT_HOME=${SCRIPTS_DIR}
-# mkdir -p ${TOMCAT_HOME}/lib/
-# mkdir -p ${DEPLOY_DIR}/mgmt/conf/
-# one should remove them later.
-#
 
-#cp ${TEMPLATE_DIR}/log4j.properties ${TOMCAT_HOME}/lib/
+printf "\n%s\n" "-->"
+
+printf "Put log4j.properties in ${TOMCAT_HOME}/lib\n"
+# 1) Put log4j.properties in ${TOMCAT_HOME}/lib
 
 cat > ${TOMCAT_HOME}/lib/log4j.properties <<EOF
 # 
@@ -87,6 +95,9 @@ log4j.appender.A1.layout=org.apache.log4j.PatternLayout
 log4j.appender.A1.layout.ConversionPattern=%-4r [%t] %-5p %c %x - %m%n
 EOF
 
+printf "\n%s\n" "--->"
+printf  "Put appliances.xml in ${DEPLOY_DIR}\n"
+# 2) Put appliances.xml in ${DEPLOY_DIR}
 
 #
 # This approach is only valid for the single appliance installation.
@@ -98,7 +109,6 @@ AA_MYIDENTITY="appliance0"
 export ARCHAPPL_APPLIANCES=${DEPLOY_DIR}/appliances.xml
 export ARCHAPPL_MYIDENTITY=${AA_MYIDENTITY}
 
-#render_template ${TEMPLATE_DIR}/appliances.template > ${ARCHAPPL_APPLIANCES}
 
 cat > ${ARCHAPPL_APPLIANCES} <<EOF
 <?xml version='1.0' encoding='utf-8'?>
@@ -126,37 +136,42 @@ cat > ${ARCHAPPL_APPLIANCES} <<EOF
 </appliances>
 EOF
 
+printf "\n%s\n" "---->"
+
+printf " Deploy multiple tomcats into ${DEPLOY_DIR}\n"
+# 3) Deploy multiple tomcats into ${DEPLOY_DIR} via the original source
+#
 echo "Calling ${SCRIPTS_DIR}/aa_scripts/deployMultipleTomcats.py ${DEPLOY_DIR}"
 ${SCRIPTS_DIR}/aa_scripts/deployMultipleTomcats.py ${DEPLOY_DIR}
 
-TOMCAT_CONTEXTCONTAINER=${DEPLOY_DIR}/mgmt/conf/context.xml
 
-# Do we need to deploy the same context.xml file into
-# {mgmt,etl,retrieval,engine}/conf/?
-# In single_machine_install.sh, this was done only in {mgmt} directory with  addMysqlConnPool.py,
-# But in FRIB puppet/minifest/init.pp, four directories should have the same one. 
-# need to contact ...
-# 2016-08-30, Jeong Han Lee
-# 
-# Only the mgmt web app needs to talk to the MySQL database. 
-# It is an error/bug if the other components need to talk to MySQL;
-# 2016-08-31, Jeong Han Lee
+printf "\n%s\n" "----->"
+printf  "Put context.xml in to ${DEPLOY_DIR}/mgmt/conf/\n"
+
+# 4) Put context.xml in to ${DEPLOY_DIR}/mgmt/conf/
+#    in order that mgmt tomcat service can connect to
+#    mariadb (CentOS) or mysql (others). 
+#    Only the mgmt web app needs to talk to the MySQL database. 
+#    It is an error/bug if the other components need to talk to MySQL;
+
+TOMCAT_CONTEXTCONTAINER=${DEPLOY_DIR}/mgmt/conf/context.xml
 
 AA_MYSQL_DB="archappl"
 AA_MYSQL_USERNAME="archappl"
 AA_MYSQL_PASSWORD="archappl"
 
-# mysql-connector
+# with MySQL, use mysql-connector/j
 #
-#AA_SQL_CLASSNAME="com.mysql.jdbc.Driver"
+#AA_DRIVER_CLASSNAME="com.mysql.jdbc.Driver"
 #AA_URL="mysql"
 
+# with MariaDB, use mariadb-connector/j
 # mariadb-java-client-1.4.6.jar
+# This file should be in ${TOMCAT_HOME}/lib
 #
 AA_DRIVER_CLASSNAME="org.mariadb.jdbc.Driver"
 AA_URL="mariadb"
 
-#render_template ${TEMPLATE_DIR}/contex.template > ${TOMCAT_CONTEXTCONTAINER}
 
 cat > ${TOMCAT_CONTEXTCONTAINER} <<EOF
 <?xml version='1.0' encoding='utf-8'?>
@@ -230,3 +245,5 @@ cat > ${TOMCAT_CONTEXTCONTAINER} <<EOF
      />
 </Context>
 EOF
+
+printf "%s\n" "------|"
