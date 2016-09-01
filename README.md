@@ -1,4 +1,4 @@
-EPICS Archiver Appliance Site Specific Test Environment
+Pilot Project for a site-specific (ESS) EPICS Archiver Appliance Deployment
 =================
 
 # Purpose
@@ -228,3 +228,6 @@ Using 64 bit versions of libraries
 -- If eight numbers are printed below, the jsvc processes are running
 --
 ```
+
+# Acknowledgement
+A special word of thanks goes to Murali Shankar who develops the Archiver Appliance and answers my stupid questions again and again and again.
