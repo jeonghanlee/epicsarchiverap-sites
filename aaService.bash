@@ -1,38 +1,54 @@
 #!/bin/bash
 #
+# 
+# Shell  : aaService.bash
+# Author : Jeong Han Lee
+# email  : han.lee@esss.se
+# Date   : 
+# version : 0.9.0 CentOS 7.2
 #
-# Monday, May  2 11:46:32 CEST 2016, han.lee@esss.se
-# - tune the JAVA options, due to the limited test environment
-# - add ${CATALINA_HOME}/lib into java.library.path in order to \
-#   understand the following message
-#   "The APR based Apache Tomcat Native library which allows optimal \
-#    performance in production environments was not found on the java.library.path"
-#   But, it looks like we should install them while AA installtion.
-#   
 #
-# Sample startup script for the archiver appliance
-# Please change the various environment variables to suit your environment.
-
 # We assume that we inherit the EPICS environment variables from something that calls this script
 # However, if this is a init.d startup script, this is not going to be the case and we'll need to add them here.
 # This includes setting up the LD_LIBRARY_PATH to include the JCA .so file.
-#source /opt/local/setEPICSEnv.sh
+#
+# EPICS BASE is installed in the local directory
+# 
 source /home/aauser/epics/3.15.4/setEpicsEnv.sh
 
-#export JAVA_HOME=/usr/java/latest
-#export PATH=${JAVA_HOME}/bin:${PATH}
+# JAVA Environment is defined by the System.
+# If not, please set them properly.
+
+# export JAVA_HOME=/usr/java/latest
+# export PATH=${JAVA_HOME}/bin:${PATH}
 
 #
-# http://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html#BABDJJFI
+# The original options are
+# 
 # export JAVA_OPTS="-XX:MaxPermSize=128M -XX:+UseG1GC -Xmx4G -Xms4G -ea"
 #
-#  -XX:MaxPermSize=size  This option was deprecated in JDK 8, and superseded by the -XX:MaxMetaspaceSize option.
+#  -XX:MaxPermSize=size  This option was deprecated in JDK 8, 
+#   and superseded by the -XX:MaxMetaspaceSize option.
 #
-export JAVA_OPTS="-XX:MaxMetaspaceSize=128M -XX:+UseG1GC -Xmx1G -Xms1G -ea"
 
-# Set up Tomcat home
+# The physical memory  :  64G, so I use 8G instead of 4G, since we don't have any other application on the server.
+# Set MaxMetaspaceSize : 256M, so it reduces the GC execution to compare with the original option.
+#
+JAVA_HEAPSIZE="8G"
+JAVA_MAXMETASPACE="256M"
+
+export JAVA_OPTS="-XX:MaxMetaspaceSize=${JAVA_MAXMETASPACE} -XX:+UseG1GC -Xms${JAVA_HEAPSIZE} -Xmx${JAVA_HEAPSIZE} -ea"
+
+# Set Tomcat home
 export TOMCAT_HOME=/usr/share/tomcat
+
+# Set Path for apache-commons-daemon.jar, because I use the CentOS packages 
+# apache-commons-daemon.x86_64 and apache-commons-daemon-jsvc.x86_64
+# Somehow jsvc doesn't know where apache-commons-daemon.jar. So the clear PATH
+# should be defined.
+#
 export CLASS_PATH=/usr/share/java/
+
 # Set up the root folder of the individual Tomcat instances.
 export ARCHAPPL_DEPLOY_DIR=/opt/archappl
 
@@ -43,12 +59,20 @@ export ARCHAPPL_MYIDENTITY="appliance0"
 # If you have your own policies file, please change this line.
 # export ARCHAPPL_POLICIES=/nfs/epics/archiver/production_policies.py
 
-export ARCHAPPL_FOLDER_TOP=/home
 
+# It might be better to assign the proper directory, while the installating CentOS.
+# Anyway, /home has the most of space, so I created
+# Make tmpfs for the short term storage by editing /etc/fstab file.
+#  For 10G file size add this line: 
+# tmpfs    /srv/sts 		tmpfs 	defaults,size=10g 0 0 
+export ARCHAPPL_STORAGE_TOP=/home
+#
 # Set the location of short term and long term stores; this is necessary only if your policy demands it
-export ARCHAPPL_SHORT_TERM_FOLDER=${ARCHAPPL_FOLDER_TOP}/arch/sts/ArchiverStore
-export ARCHAPPL_MEDIUM_TERM_FOLDER=${ARCHAPPL_FOLDER_TOP}/arch/mts/ArchiverStore
-export ARCHAPPL_LONG_TERM_FOLDER=${ARCHAPPL_FOLDER_TOP}/arch/lts/ArchiverStore
+export ARCHAPPL_SHORT_TERM_FOLDER=/srv/sts/ArchiverStore
+export ARCHAPPL_MEDIUM_TERM_FOLDER=${ARCHAPPL_STORAGE_TOP}/arch/mts/ArchiverStore
+export ARCHAPPL_LONG_TERM_FOLDER=${ARCHAPPL_STORAGE_TOP}/arch/lts/ArchiverStore
+
+
 
 if [[ ! -d ${TOMCAT_HOME} ]]
 then
@@ -66,14 +90,20 @@ fi
 ulimit -c unlimited
 
 
+# # Redefine pushd and popd to reduce their output messages
+# #
+pushd() { builtin pushd "$@" > /dev/null; }
+popd()  { builtin popd  "$@" > /dev/null; }
+
 function startTomcatAtLocation() {
     
     if [ -z "$1" ]; then echo "startTomcatAtLocation called without any arguments"; exit 1; fi
-    
+    echo ""
+
     export CATALINA_HOME=$TOMCAT_HOME
     export CATALINA_BASE=$1
     
-    echo "Starting TOMCAT at location ${CATALINA_BASE}"
+    echo "> Starting TOMCAT at ${CATALINA_BASE}"
     
     ARCH=`uname -m`
     if [[ $ARCH == 'x86_64' || $ARCH == 'amd64' ]]
@@ -86,6 +116,8 @@ function startTomcatAtLocation() {
     fi
   
     pushd ${CATALINA_BASE}/logs
+    #    ${CATALINA_HOME}/bin/jsvc \
+    # JSVC re-exec requires execution with an absolute or relative path
     /bin/jsvc \
         -server \
         -cp ${CLASS_PATH}/apache-commons-daemon.jar:${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
@@ -98,22 +130,7 @@ function startTomcatAtLocation() {
         -pidfile ${CATALINA_BASE}/pid \
         org.apache.catalina.startup.Bootstrap start
      popd
-    # pushd ${CATALINA_BASE}/logs
-    # #    ${CATALINA_HOME}/bin/jsvc \
-    # #JSVC re-exec requires execution with an absolute or relative path
-    # /bin/jsvc \
-    # 	-server \
-    # 	-cp commons-daemon.jar:${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
-    # 	${JAVA_OPTS} \
-    # 	-Dcatalina.base=${CATALINA_BASE} \
-    # 	-Dcatalina.home=${CATALINA_HOME} \
-    # 	-cwd ${CATALINA_BASE}/logs \
-    # 	-outfile ${CATALINA_BASE}/logs/catalina.out \
-    # 	-errfile ${CATALINA_BASE}/logs/catalina.err \
-    # 	-pidfile ${CATALINA_BASE}/pid \
-    # 	org.apache.catalina.startup.Bootstrap start
-    # popd
-    echo ""
+     echo ""
 }
 
 function stopTomcatAtLocation() {
@@ -123,13 +140,13 @@ function stopTomcatAtLocation() {
     export CATALINA_HOME=$TOMCAT_HOME
     export CATALINA_BASE=$1
 
-    echo "Stopping tomcat at location ${CATALINA_BASE}"
+    echo "< Stopping Tomcat at ${CATALINA_BASE}"
 
     pushd ${CATALINA_BASE}/logs
-#   ${CATALINA_HOME}/bin/jsvc \
+    #   ${CATALINA_HOME}/bin/jsvc \
     /bin/jsvc \
 	-server \
-	-cp ${CLASS_PATH}/apache-commons-daemon.jar:${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
+        -cp ${CLASS_PATH}/apache-commons-daemon.jar:${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
 	${JAVA_OPTS} \
 	-Dcatalina.base=${CATALINA_BASE} \
 	-Dcatalina.home=${CATALINA_HOME} \
