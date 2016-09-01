@@ -82,6 +82,7 @@ export TOMCAT_HOME=/usr/share/tomcat
 export DEPLOY_DIR=/opt/archappl
 export CATALINA_HOME=${TOMCAT_HOME}
 
+
 tomcat_services=("mgmt" "engine" "etl" "retrieval")
 
 

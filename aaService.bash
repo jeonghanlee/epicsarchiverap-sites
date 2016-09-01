@@ -165,6 +165,7 @@ function stopTomcatAtLocation() {
     echo ""
 }
 
+# Service order is matter, don't change them
 tomcat_services=("mgmt" "engine" "etl" "retrieval")
 
 HOSTNAME=`hostname --all-fqdn`
@@ -181,7 +182,7 @@ function status() {
 
 function stop() {
 
-    # Stopping order is matter?
+    # Stopping order is matter! 
 
     stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/engine";
     stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/retrieval";

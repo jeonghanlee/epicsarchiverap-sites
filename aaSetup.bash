@@ -33,8 +33,6 @@ AA_HOSTNAME=$(tr -d ' ' <<< ${HOSTNAME})
 #AA_HOSTNAME=`hostname -f`
 AA_USERNAME=`whoami`
 
-#  ip4-22.esss.lu.se
-
 TEMPLATE_DIR=${AA_SCRIPTS_PATH}/template
 
 # 0) It is safe to create archappl directory according to date, time, 
