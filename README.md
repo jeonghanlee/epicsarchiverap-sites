@@ -242,7 +242,7 @@ Using 64 bit versions of libraries
 < Stopping Tomcat at /opt/archappl/mgmt
 
 -- Status outputs 
--- http://ip4-22.esss.lu.se:17665/mgmt/ui/index.html is the web address.
+-- http://localhost:17665/mgmt/ui/index.html is the web address.
 -- /opt/archappl/mgmt/logs/catalina.err may help you.
 -- If eight numbers are printed below, the jsvc processes are running
 --
