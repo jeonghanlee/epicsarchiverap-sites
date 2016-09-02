@@ -21,6 +21,8 @@ Pilot Project for a site-specific (ESS) EPICS Archiver Appliance Deployment
 * Apache Common Daemon
 * Storage Directories {sts,mts,lts}
 * EPICS Base 
+* git
+* ant
 
 # License
 
@@ -30,6 +32,14 @@ Pilot Project for a site-specific (ESS) EPICS Archiver Appliance Deployment
 
 # Things to know
 
+## aaBuild.bash 
+* allow an user to select a master or one of git tags 
+* TOMCAT_HOME : hard-coded and /usr/share/tomcat of the CentOS 7 package, should be replaced with your own environment
+* archappl_version : ${archappl_build_ver}_H_${archappl_git_hashver}_B_${archappl_build_date}
+* archappl_git_hashver : git rev-parse --short HEAD (in order to track the main git repository)
+* archappl_build_ver   : master or selected tag (in order to track an user's selection)
+* acrchapp_build_date  : date (in order to track when it is compiled)
+* BUILDS_ALL_TIME : use it as a container of ${archappl_version}
 
 ## aaSetup.bash
 * This approach is only valid for the single appliance installation.
@@ -60,14 +70,21 @@ Pilot Project for a site-specific (ESS) EPICS Archiver Appliance Deployment
 
 * Only Command List
 ```
-[user@ ~]$ git clone https://github.com/jeonghanlee/epicsarchiverap-sites.git
-[user@ ~]$ cd epicsarchiverap-sites/
-[user@ epicsarchiverap-sites]$ git clone https://github.com/slacmshankar/epicsarchiverap
-[user@ epicsarchiverap-sites]$ cd epicsarchiverap/
-[user@ epicsarchiverap]$ export TOMCAT_HOME=/usr/share/tomcat
-[user@ epicsarchiverap]$ ant
-[user@ epicsarchiverap]$ cd ..
-[user@ epicsarchiverap-sites]$ sudo su
+aauser@:~$ git clone https://github.com/jeonghanlee/epicsarchiverap-sites.git
+aauser@:~$ cd epicsarchiverap-sites/
+aauser@:~/epicsarchiverap-sites (master)$ bash aaBuild.bash 
+ 0: git src                             master
+ 1: git src   v0.0.1_SNAPSHOT_03-November-2015
+ 2: git src        v0.0.1_SNAPSHOT_10-Sep-2015
+ 3: git src        v0.0.1_SNAPSHOT_12-May-2016
+ 4: git src       v0.0.1_SNAPSHOT_22-June-2016
+ 5: git src        v0.0.1_SNAPSHOT_23-Sep-2015
+ 6: git src    v0.0.1_SNAPSHOT_26-January-2016
+ 7: git src       v0.0.1_SNAPSHOT_29-July-2015
+ 8: git src      v0.0.1_SNAPSHOT_30-March-2016
+Select master or one of tags which can be built: 0
+aauser@:~/epicsarchiverap-sites (master)$ sudo su
+[sudo] password for aauser: 
 [root@ epicsarchiverap-sites]# bash aaSetup.bash 
 [root@ epicsarchiverap-sites]# bash deployRelease.sh $PWD
 [root@ epicsarchiverap-sites]# bash aaService.bash start
@@ -77,85 +94,87 @@ Pilot Project for a site-specific (ESS) EPICS Archiver Appliance Deployment
 
 * Almost Full List
 ```
-[user@ ~]$ git clone https://github.com/jeonghanlee/epicsarchiverap-sites.git
+aauser@:~$ git clone https://github.com/jeonghanlee/epicsarchiverap-sites.git
 Cloning into 'epicsarchiverap-sites'...
-remote: Counting objects: 154, done.
-remote: Compressing objects: 100% (59/59), done.
-remote: Total 154 (delta 28), reused 0 (delta 0), pack-reused 95
-Receiving objects: 100% (154/154), 396.00 KiB | 0 bytes/s, done.
-Resolving deltas: 100% (65/65), done.
-
-[user@ ~]$ cd epicsarchiverap-sites/
-[user@ epicsarchiverap-sites]$ git clone https://github.com/slacmshankar/epicsarchiverap
+remote: Counting objects: 182, done.
+remote: Compressing objects: 100% (12/12), done.
+remote: Total 182 (delta 1), reused 0 (delta 0), pack-reused 170
+Receiving objects: 100% (182/182), 464.26 KiB | 705.00 KiB/s, done.
+Resolving deltas: 100% (83/83), done.
+aauser@:~$ cd epicsarchiverap-sites/
+aauser@:~/epicsarchiverap-sites (master)$ bash aaBuild.bash 
+No Archappl source repository in the expected location
 Cloning into 'epicsarchiverap'...
-remote: Counting objects: 5057, done.
-remote: Total 5057 (delta 0), reused 0 (delta 0), pack-reused 5057
-Receiving objects: 100% (5057/5057), 56.28 MiB | 12.57 MiB/s, done.
-Resolving deltas: 100% (2513/2513), done.
+remote: Counting objects: 5107, done.
+remote: Compressing objects: 100% (40/40), done.
+remote: Total 5107 (delta 14), reused 0 (delta 0), pack-reused 5057
+Receiving objects: 100% (5107/5107), 56.31 MiB | 6.51 MiB/s, done.
+Resolving deltas: 100% (2527/2527), done.
+ 0: git src                             master
+ 1: git src   v0.0.1_SNAPSHOT_03-November-2015
+ 2: git src        v0.0.1_SNAPSHOT_10-Sep-2015
+ 3: git src        v0.0.1_SNAPSHOT_12-May-2016
+ 4: git src       v0.0.1_SNAPSHOT_22-June-2016
+ 5: git src        v0.0.1_SNAPSHOT_23-Sep-2015
+ 6: git src    v0.0.1_SNAPSHOT_26-January-2016
+ 7: git src       v0.0.1_SNAPSHOT_29-July-2015
+ 8: git src      v0.0.1_SNAPSHOT_30-March-2016
+Select master or one of tags which can be built: 0
+master
 
-[user@ epicsarchiverap-sites]$ cd epicsarchiverap/
+master_H_3b5b300_B_2016-09-02-1709CEST
+Buildfile: /home/aauser/epicsarchiverap-sites/epicsarchiverap/build.xml
+     [echo] Building the archiver appliance for the site tests
 
-[user@ epicsarchiverap]$ export TOMCAT_HOME=/usr/share/tomcat
-[user@ epicsarchiverap]$ ant
-.........................
-.........................
-
-mgmt_war:
-      [war] Building war: /home/aauser/epicsarchiverap-sites/mgmt.war
+clean:
+.......................
 
 generate_release_notes:
 
 wars:
-      [tar] Building tar: /home/aauser/epicsarchiverap-sites/archappl_v0.0.1_SNAPSHOT_01-September-2016T17-16-44.tar.gz
+      [tar] Building tar: /home/aauser/epicsarchiverap-sites/archappl_v0.0.1_master_H_3b5b300_B_2016-09-02-1709CEST.tar.gz
 
 BUILD SUCCESSFUL
-Total time: 32 seconds
+Total time: 30 seconds
 
-[user@ epicsarchiverap]$ cd ..
-[user@ epicsarchiverap-sites]$ ls
-aa_scripts      archappl_v0.0.1_SNAPSHOT_01-September-2016T17-16-44.tar.gz  epicsarchiverap  mgmt.war             retrieval.war
-aaService.bash  deployRelease.sh                                            etl.war          quick-and-dirty-log  site_specific_content
-aaSetup.bash    engine.war                                                  LICENSE          README.md            template
 
-[user@ epicsarchiverap-sites]$ sudo su
-[sudo] password for user: 
+
+aauser@:~/epicsarchiverap-sites (master)$ sudo su
+[sudo] password for aauser: 
 [root@ epicsarchiverap-sites]# 
-
 [root@ epicsarchiverap-sites]# bash aaSetup.bash 
 
 ->
-/opt/archappl is a symlink to a directory, so removing it.
 
 -->
 Put log4j.properties in /usr/share/tomcat/lib
 
 --->
-Put appliances.xml in /opt/archappl-2016-09-01-1718CEST
+Put appliances.xml in /opt/archappl-2016-09-02-1725CEST
 
 ---->
- Deploy multiple tomcats into /opt/archappl-2016-09-01-1718CEST
-Calling ./aa_scripts/deployMultipleTomcats.py /opt/archappl-2016-09-01-1718CEST
+ Deploy multiple tomcats into /opt/archappl-2016-09-02-1725CEST
+Calling /home/aauser/epicsarchiverap-sites/aa_scripts/deployMultipleTomcats.py /opt/archappl-2016-09-02-1725CEST
 Using
 	tomcat installation at /usr/share/tomcat 
 	to generate deployments for appliance appliance0 
-	using configuration info from /opt/archappl-2016-09-01-1718CEST/appliances.xml 
-	into folder /opt/archappl-2016-09-01-1718CEST
+	using configuration info from /opt/archappl-2016-09-02-1725CEST/appliances.xml 
+	into folder /opt/archappl-2016-09-02-1725CEST
 The start/stop port is the standard Tomcat start/stop port. Changing it to something else random - 16000
 The stop/start ports for the new instance will being at  16001
-Generating tomcat folder for  mgmt  in location /opt/archappl-2016-09-01-1718CEST/mgmt
+Generating tomcat folder for  mgmt  in location /opt/archappl-2016-09-02-1725CEST/mgmt
 Commenting connector with protocol  AJP/1.3 . If you do need this connector, you should un-comment this.
-Generating tomcat folder for  engine  in location /opt/archappl-2016-09-01-1718CEST/engine
+Generating tomcat folder for  engine  in location /opt/archappl-2016-09-02-1725CEST/engine
 Commenting connector with protocol  AJP/1.3 . If you do need this connector, you should un-comment this.
-Generating tomcat folder for  etl  in location /opt/archappl-2016-09-01-1718CEST/etl
+Generating tomcat folder for  etl  in location /opt/archappl-2016-09-02-1725CEST/etl
 Commenting connector with protocol  AJP/1.3 . If you do need this connector, you should un-comment this.
-Generating tomcat folder for  retrieval  in location /opt/archappl-2016-09-01-1718CEST/retrieval
+Generating tomcat folder for  retrieval  in location /opt/archappl-2016-09-02-1725CEST/retrieval
 Commenting connector with protocol  AJP/1.3 . If you do need this connector, you should un-comment this.
 
 ----->
-Put context.xml in to /opt/archappl-2016-09-01-1718CEST/mgmt/conf/
+Put context.xml in to /opt/archappl-2016-09-02-1725CEST/mgmt/conf/
 ------|
 
-[root@ epicsarchiverap-sites]# 
 [root@ epicsarchiverap-sites]# bash deployRelease.sh $PWD
 Deploying a new release from /home/aauser/epicsarchiverap-sites onto /opt/archappl
 
@@ -188,7 +207,7 @@ Copying site specific CSS files from /home/aauser/epicsarchiverap-sites onto /op
 
 Done deploying a new release from /home/aauser/epicsarchiverap-sites onto /opt/archappl
 
-[root@ epicsarchiverap-sites]# 
+
 [root@ epicsarchiverap-sites]# bash aaService.bash start
 
 > Starting TOMCAT at /opt/archappl/mgmt
@@ -210,10 +229,10 @@ Using 64 bit versions of libraries
 -- http://localhost:17665/mgmt/ui/index.html is the web address.
 -- /opt/archappl/mgmt/logs/catalina.err may help you.
 -- If eight numbers are printed below, the jsvc processes are running
-15318 15315 15300 15297 15287 15286 15283 15282
+11117 11116 11110 11109 11106 11105 11102 11101
 --
-[root@ics-tag348 epicsarchiverap-sites]# 
-[root@ics-tag348 epicsarchiverap-sites]# bash aaService.bash stop
+
+[root@ epicsarchiverap-sites]# bash aaService.bash stop
 < Stopping Tomcat at /opt/archappl/engine
 
 < Stopping Tomcat at /opt/archappl/retrieval
@@ -223,10 +242,14 @@ Using 64 bit versions of libraries
 < Stopping Tomcat at /opt/archappl/mgmt
 
 -- Status outputs 
--- http://localhost:17665/mgmt/ui/index.html is the web address.
+-- http://ip4-22.esss.lu.se:17665/mgmt/ui/index.html is the web address.
 -- /opt/archappl/mgmt/logs/catalina.err may help you.
 -- If eight numbers are printed below, the jsvc processes are running
 --
+[root@ epicsarchiverap-sites]# 
+
+
+
 ```
 
 # Acknowledgement

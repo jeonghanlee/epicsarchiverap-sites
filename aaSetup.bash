@@ -52,8 +52,10 @@ if [[ -L ${TARGET_DIR} && -d ${TARGET_DIR} ]]
 then
     echo "${TARGET_DIR} is a symlink to a directory, so removing it."
     rm ${TARGET_DIR}
-else
-    
+fi
+
+if [[ -d ${TARGET_DIR} ]]
+then
     echo "${TARGET_DIR} is the physical directory, it should NOT be."
     echo "Please check it, the old ${TARGET_DIR} is renamed to ${TARGET_DIR}-PLEASECHECK-${AA_LOGDATE}"
     mv ${TARGET_DIR} ${TARGET_DIR}-PLEASECHECK-${AA_LOGDATE}
@@ -61,6 +63,7 @@ fi
 
 mkdir -p ${DEPLOY_DIR}
 ln -s ${DEPLOY_DIR} ${TARGET_DIR}
+
 
 
 printf "\n%s\n" "-->"
