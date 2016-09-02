@@ -21,11 +21,14 @@ export TOMCAT_HOME=/usr/share/tomcat
 #
 # Variable with Prefix AA_ are used in heredoc cat >...
 #
-AA_SCRIPTNAME=`basename $0`
+SCRIPT=`realpath $0`
+
+AA_SCRIPTNAME=`basename $SCRIPT`
 AA_LOGDATE=`date +%F-%H%M%Z`
 
+
 SCRIPTS_DIR=`dirname $0`
-AA_SCRIPTS_PATH=`cd ${SCRIPTS_DIR} && pwd`
+AA_SCRIPTS_PATH=`dirname $SCRIPT`
 # Somehow, hostname is conflicted between what I set, and what IT assigned. 
 HOSTNAME=`hostname --all-fqdn`
 # HOSTNAME has the whitespace, so remove it
@@ -139,8 +142,8 @@ printf "\n%s\n" "---->"
 printf " Deploy multiple tomcats into ${DEPLOY_DIR}\n"
 # 3) Deploy multiple tomcats into ${DEPLOY_DIR} via the original source
 #
-echo "Calling ${SCRIPTS_DIR}/aa_scripts/deployMultipleTomcats.py ${DEPLOY_DIR}"
-${SCRIPTS_DIR}/aa_scripts/deployMultipleTomcats.py ${DEPLOY_DIR}
+echo "Calling ${AA_SCRIPTS_PATH}/aa_scripts/deployMultipleTomcats.py ${DEPLOY_DIR}"
+${AA_SCRIPTS_PATH}/aa_scripts/deployMultipleTomcats.py ${DEPLOY_DIR}
 
 
 printf "\n%s\n" "----->"
