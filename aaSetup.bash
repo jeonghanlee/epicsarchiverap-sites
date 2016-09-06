@@ -32,7 +32,7 @@ AA_SCRIPTS_PATH=`dirname $SCRIPT`
 # Somehow, hostname is conflicted between what I set, and what IT assigned. 
 HOSTNAME=`hostname --all-fqdn`
 # HOSTNAME has the whitespace, so remove it
-AA_HOSTNAME=$(tr -d ' ' <<< ${HOSTNAME})
+AA_HOSTNAME="$(tr -d ' ' <<< ${HOSTNAME})"
 #AA_HOSTNAME=`hostname -f`
 AA_USERNAME=`whoami`
 
