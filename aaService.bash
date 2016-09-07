@@ -95,10 +95,11 @@ fi
 ulimit -c unlimited
 
 
-# # Redefine pushd and popd to reduce their output messages
-# #
-pushd() { builtin pushd "$@" > /dev/null; }
-popd()  { builtin popd  "$@" > /dev/null; }
+# Generic : Redefine pushd and popd to reduce their output messages
+# 
+function pushd() { builtin pushd "$@" > /dev/null; }
+function popd()  { builtin popd  "$@" > /dev/null; }
+
 
 function startTomcatAtLocation() {
     

@@ -1,10 +1,10 @@
 #!/bin/bash
 #
-# Shell  : deployRelease.bash
+# Shell  : aaDeployRelease.bash
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.0 CentOS 7.2
+# version : 0.9.2 CentOS 7.2
 #
 # This is the customzied deployRelease.sh for Han Lee 
 # in order to test the ESS customized Archiver Appliance service
@@ -26,22 +26,17 @@
 #
 # [root@ics-tag348 epicsarchiverap-sites]# pwd
 # /home/aauser/gitsrc/epicsarchiverap-sites
-# [root@ics-tag348 epicsarchiverap-sites]# bash deployRelease.sh 
+# [root@ics-tag348 epicsarchiverap-sites]# bash aaDeployRelease.sh 
 # You need to call deployRelease.sh with the folder containing the mgmt and other war files.
-# 1) [root@ics-tag348 epicsarchiverap-sites]# bash deployRelease.sh $PWD
-# 2) [root@ics-tag348 *anywhere           *]# bash /home/aauser/gitsrc/epicsarchiverap-sites/deployRelease.sh /home/aauser/gitsrc/epicsarchiverap-sites/
-
-#
-# Redefine pushd and popd to reduce their output messages
-#
-pushd() { builtin pushd "$@" > /dev/null; }
-popd()  { builtin popd  "$@" > /dev/null; }
+# 1) [root@ics-tag348 epicsarchiverap-sites]# bash aaDeployRelease.sh $PWD
+# 2) [root@ics-tag348 *anywhere           *]# bash /home/aauser/gitsrc/epicsarchiverap-sites/aaDeployRelease.sh /home/aauser/gitsrc/epicsarchiverap-sites/
 
 
-# pushd ${DEPLOY_DIR}/mgmt/webapps      && rm -rf mgmt*;      cp ${WARSRC_DIR}/mgmt.war .;      mkdir mgmt; cd mgmt;         jar xf ../mgmt.war; popd; 
-# pushd ${DEPLOY_DIR}/engine/webapps    && rm -rf engine*;    cp ${WARSRC_DIR}/engine.war .;    mkdir engine; cd engine;       jar xf ../engine.war; popd; 
-# pushd ${DEPLOY_DIR}/etl/webapps       && rm -rf etl*;       cp ${WARSRC_DIR}/etl.war .;       mkdir etl; cd etl;             jar xf ../etl.war; popd; 
-# pushd ${DEPLOY_DIR}/retrieval/webapps && rm -rf retrieval*; cp ${WARSRC_DIR}/retrieval.war .; mkdir retrieval; cd retrieval; jar xf ../retrieval.war; popd;
+# Generic : Redefine pushd and popd to reduce their output messages
+# 
+function pushd() { builtin pushd "$@" > /dev/null; }
+function popd()  { builtin popd  "$@" > /dev/null; }
+
 
 function deploy_war_release() {
 
