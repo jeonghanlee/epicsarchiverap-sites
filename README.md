@@ -27,7 +27,8 @@ Pilot Project for a site-specific (ESS) EPICS Archiver Appliance Deployment
 # License
 
 * All works done by the original Archiver Appliance follows its original Licenses. Please check them in
-  https://github.com/slacmshankar/epicsarchiverap/blob/master/NOTICE
+https://github.com/slacmshankar/epicsarchiverap/blob/master/NOTICE
+* Makefile, to build any documents, follows its original License also. Please check it in  http://www.bouncingchairs.net/oss
 * In addition, The works in this repository can be distributed under the GPL-2 license.
 
 # Things to know
