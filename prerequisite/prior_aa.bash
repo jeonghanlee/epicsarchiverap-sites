@@ -22,8 +22,8 @@
 # Date   : 
 # version : 0.1.0 
 #
-# http://www.gnu.org/software/bash/manual/bashref.html#Bash-Builtins
-
+#  http://www.gnu.org/software/bash/manual/bashref.html#Bash-Builtins
+#
 
 # 
 # PREFIX : SC_, so declare -p can show them in a place
@@ -182,7 +182,8 @@ declare -gr SUDO_CMD="sudo"
 # Require Global vairable
 # - SUDO_CMD :  input
 # - 
-
+# - allow this script to execute yum, and remove PakageKit
+#
 function preparation() {
     
     local func_name=${FUNCNAME[*]}
@@ -205,14 +206,26 @@ function preparation() {
     end_func ${func_name}
 }
 
+
+#
+# Enable and Start an input Service
+# 
 function system_ctl(){
 
     checkstr ${SUDO_CMD};
-    checkstr ${1}
-    ${SUDO_CMD} systemctl enable ${1} 
-    ${SUDO_CMD} systemctl start ${1}
+    checkstr ${1};
+    ${SUDO_CMD} systemctl enable ${1}.service;
+    ${SUDO_CMD} systemctl start ${1}.service;
     
 }
+
+#
+# Prerequisite Packages
+# * JAVA 1.8.0
+# * MariaDB, Maven
+# * TOMCAT
+#
+
 function yum_packages(){
     
     local func_name=${FUNCNAME[*]};
@@ -224,7 +237,7 @@ function yum_packages(){
     package_list+=" ";
     package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel";
     package_list+=" ";
-    package_list+="mariadb-server mariadb-libs"
+    package_list+="mariadb-server mariadb-libs maven"
     package_list+=" ";
     package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc"
     
@@ -239,6 +252,25 @@ function yum_packages(){
  
     end_func ${func_name}
 }
+
+
+
+function mariadb_setup() {
+
+#    pass=${1};
+    
+    mysql -u root <<EOF
+-- UPDATE mysql.user SET Password=PASSWORD('$password') WHERE User='root';
+DELETE FROM mysql.user WHERE User='';
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+DROP DATABASE IF EXISTS test;
+DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+FLUSH PRIVILEGES;
+EOF
+    
+}
+
+
 
 function yum_extra() {
 
@@ -277,8 +309,10 @@ done 2>/dev/null &
 
 
 preparation
+
 yum_packages;
-#yum_extra;
+
+yum_extra;
 
 
 #
