@@ -219,6 +219,27 @@ function system_ctl(){
     
 }
 
+
+function mariadb_setup() {
+
+#    pass=${1};
+    local func_name=${FUNCNAME[*]};
+    ini_func ${func_name};
+    
+    mysql -u root <<EOF
+-- UPDATE mysql.user SET Password=PASSWORD('$pass') WHERE User='root';
+DELETE FROM mysql.user WHERE User='';
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+DROP DATABASE IF EXISTS test;
+DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+FLUSH PRIVILEGES;
+EOF
+    end_func ${func_name}
+    
+}
+
+
+
 #
 # Prerequisite Packages
 # * JAVA 1.8.0
@@ -249,26 +270,12 @@ function yum_packages(){
     system_ctl "mariadb"
     system_ctl "tomcat"
 
+    mariadb_setup;
  
     end_func ${func_name}
 }
 
 
-
-function mariadb_setup() {
-
-#    pass=${1};
-    
-    mysql -u root <<EOF
--- UPDATE mysql.user SET Password=PASSWORD('$password') WHERE User='root';
-DELETE FROM mysql.user WHERE User='';
-DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
-DROP DATABASE IF EXISTS test;
-DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
-FLUSH PRIVILEGES;
-EOF
-    
-}
 
 
 
