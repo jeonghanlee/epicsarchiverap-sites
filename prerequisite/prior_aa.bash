@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
 #
-# Shell  : proio_aa.bash
+# Shell  : prior_aa.bash
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
@@ -215,16 +215,19 @@ function system_ctl(){
 }
 function yum_packages(){
     
-    local func_name=${FUNCNAME[*]}
-    ini_func ${func_name}
+    local func_name=${FUNCNAME[*]};
+    ini_func ${func_name};
 	
-    checkstr ${SUDO_CMD}
+    checkstr ${SUDO_CMD};
     declare -a package_list=();
-    package_list+="git emacs tree screen "
-    package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel "
-    package_list+="mariadb-server mariadb-libs "
-    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc "
-
+    package_list+="git emacs tree screen";
+    package_list+=" ";
+    package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel";
+    package_list+=" ";
+    package_list+="mariadb-server mariadb-libs"
+    package_list+=" ";
+    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc"
+    
  
     echo  $package_list
 
@@ -239,28 +242,25 @@ function yum_packages(){
 
 function yum_extra() {
 
-    local func_name=${FUNCNAME[*]}
-    ini_func ${func_name}
+    local func_name=${FUNCNAME[*]};
+    ini_func ${func_name};
 	
-    checkstr ${SUDO_CMD}
+    checkstr ${SUDO_CMD};
     declare -a package_list=();
 
-    package_list+="epel-release "
-    package_list+="lightdm "
+    package_list+="epel-release";
+    package_list+=" ";
+    package_list+="lightdm";
 
-    echo  $package_list
+    echo  $package_list;
 
     ${SUDO_CMD} yum -y install $package_list
-#    ${SUDO_CMD} yum -y groupinstall "X Window System"
     ${SUDO_CMD} yum -y groupinstall "MATE Desktop"
 
     ${SUDO_CMD} systemctl disable gdm.service
     ${SUDO_CMD} systemctl enable lightdm.service
-    ${SUOD_CMD} systemctl isolate graphical.target
+#    ${SUOD_CMD} systemctl isolate graphical.target
 
-    #    ${SUDO_CMD} systemctl enable lightdm.service
-    #systemctl isolate graphical.target
-#    ${SUDO_CMD} yum -y update
     ${SUDO_CMD} yum -y update
  
     end_func ${func_name}
@@ -278,31 +278,33 @@ done 2>/dev/null &
 
 preparation
 yum_packages;
+#yum_extra;
 
-yum_extra;
-# #
-# #
-# SC_GIT_SRC_NAME="ics-ans-devenv"
-# SC_GIT_SRC_URL="https://bitbucket.org/europeanspallationsource"
-# SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME}
 
-# #
-# #
-# git_clone
-# #
-# #
-# pushd ${SC_GIT_SRC_DIR}
-# #
-# #
-# git_selection
-# #
-# #
-# ini_func "Ansible Playbook"
-# ${SUDO_CMD} ansible-playbook -i "localhost," -c local devenv.yml --extra-vars="${ANSIBLE_VARS}"
+#
+#
+SC_GIT_SRC_NAME="mariadb-connector-j";
+SC_GIT_SRC_URL="https://github.com/MariaDB/";
+SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME};
+#
+
+#
+git_clone
+#
+#
+pushd ${SC_GIT_SRC_DIR}
+# 
+# 
+git_selection
+# 
+# 
+ini_func "Compiling mariadb-connector-j"
+mvn -Dmaven.test.skip=true package
+end_func "Compiling mariadb-connector-j"
 # end_func "Ansible Playbook"
-# #
-# #
-# popd
+# 
+#
+popd
 # #
 # #
 # yum_extra
