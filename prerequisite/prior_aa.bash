@@ -251,17 +251,17 @@ function yum_extra() {
     echo  $package_list
 
     ${SUDO_CMD} yum -y install $package_list
-    ${SUDO_CMD} yum -y groupinstall "X Window system"
+#    ${SUDO_CMD} yum -y groupinstall "X Window System"
     ${SUDO_CMD} yum -y groupinstall "MATE Desktop"
 
     ${SUDO_CMD} systemctl disable gdm.service
-    system_ctl "lightdm"
-#    ${SUOD_CMD} systemctl ioslate graphical.target
+    ${SUDO_CMD} systemctl enable lightdm.service
+    ${SUOD_CMD} systemctl isolate graphical.target
 
     #    ${SUDO_CMD} systemctl enable lightdm.service
     #systemctl isolate graphical.target
 #    ${SUDO_CMD} yum -y update
-#    ${SUDO_CMD} yum -y update
+    ${SUDO_CMD} yum -y update
  
     end_func ${func_name}
 }
