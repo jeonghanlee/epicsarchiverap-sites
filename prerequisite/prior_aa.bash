@@ -219,7 +219,10 @@ function system_ctl(){
     
 }
 
-
+#
+# the same as mysql_secure_installation, but skip to setup the root password in the script.
+# The referece of the sql command is https://goo.gl/DnyijD
+# 
 function mariadb_setup() {
 
 #    pass=${1};
@@ -267,8 +270,12 @@ function yum_packages(){
 
     ${SUDO_CMD} yum -y install $package_list
 
-    system_ctl "mariadb"
-    system_ctl "tomcat"
+# Even if the service is active (running), it is OK to run "enable and start" again. 
+# systemctl can accept many services with one command
+
+    system_ctl "mariadb tomcat"
+#    system_ctl "tomcat"
+
 
     mariadb_setup;
  
@@ -330,7 +337,7 @@ SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME};
 #
 
 #
-git_clone
+#git_clone
 #
 #
 pushd ${SC_GIT_SRC_DIR}
@@ -342,13 +349,12 @@ git_selection
 ini_func "Compiling mariadb-connector-j"
 mvn -Dmaven.test.skip=true package
 end_func "Compiling mariadb-connector-j"
-# end_func "Ansible Playbook"
 # 
 #
 popd
 # #
 # #
-# yum_extra
-# #
+
 exit
+
 
