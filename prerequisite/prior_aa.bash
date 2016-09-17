@@ -337,7 +337,7 @@ SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME};
 #
 
 #
-#git_clone
+git_clone
 #
 #
 pushd ${SC_GIT_SRC_DIR}
