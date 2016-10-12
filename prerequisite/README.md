@@ -3,7 +3,7 @@
 * Short, but it has no meaning
 
 ```
-curl -L https://goo.gl/6ONMLI -o prior_aa.bash
+curl -L https://git.io/vii7j -o prior_aa.bash
 ```
 
 * Long, but it is self-evidence
