@@ -31,6 +31,11 @@ https://github.com/slacmshankar/epicsarchiverap/blob/master/NOTICE
 * Makefile, to build any documents, follows its original License also. Please check it in  http://www.bouncingchairs.net/oss
 * In addition, The works in this repository can be distributed under the GPL-2 license.
 
+# Clone
+```
+git clone https://git.io/vPgcs
+```
+
 # Things to know
 
 ## aaBuild.bash 
