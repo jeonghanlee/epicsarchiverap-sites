@@ -197,8 +197,11 @@ function preparation() {
     #
     if [[ -e ${yum_pid} ]]; then
 	${SUDO_CMD} kill -9 $(cat ${yum_pid})
-    fi	
-    
+	if [[ -e ${yum_pid} ]]; then
+	    ${SUDO_CMD} rm -rf ${yum_pid}
+	fi
+    fi
+        
     # Remove PackageKit
     #
     ${SUDO_CMD} yum -y remove PackageKit 
@@ -225,12 +228,18 @@ function system_ctl(){
 # 
 function mariadb_setup() {
 
-#    pass=${1};
     local func_name=${FUNCNAME[*]};
     ini_func ${func_name};
+
+    mariadb-root-pwd=$(whiptail --passwordbox "MariaDB root password" 10 60 --title "Enter the MariaDB root password to be set." 3>&1 1>&2 2>&3)
+    exitstatus=$?
+    if [ $exitstatus -ne 0 ]; then
+	printf "No input, so we skip to setup the root password of MariaDB now\n";
+	mariadb-root-pwd="";
+    fi
     
     mysql -u root <<EOF
--- UPDATE mysql.user SET Password=PASSWORD('$pass') WHERE User='root';
+-- UPDATE mysql.user SET Password=PASSWORD('$mariadb-root-pwd') WHERE User='root';
 DELETE FROM mysql.user WHERE User='';
 DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
 DROP DATABASE IF EXISTS test;
@@ -257,15 +266,23 @@ function yum_packages(){
 	
     checkstr ${SUDO_CMD};
     declare -a package_list=();
-    package_list+="git emacs tree screen";
+    # Basic package list 
+    package_list+="git emacs tree screen xterm  xorg-x11-fonts-misc";
     package_list+=" ";
+    # JAVA
     package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel";
     package_list+=" ";
+    # MariaDB
     package_list+="mariadb-server mariadb-libs maven"
     package_list+=" ";
+    # Tomcat
     package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc"
+    package_list+="";
+    # EPICS Base
+    package_list+="readline-devel libXt-devel libXp-devel libXmu-devel libXpm-devel lesstif-devel gcc-c++ ncurses-devel perl-devel";
+    package_list+="";
+    package_list+="net-snmp net-snmp-utils net-snmp-sysinit net-snmp-devel darcs libxml2-devel libpng12-devel netcdf-devel hdf5-devel lbzip2-utils libusb-devel python-devel";
     
- 
     echo  $package_list
 
     ${SUDO_CMD} yum -y install $package_list
@@ -322,38 +339,38 @@ do
 done 2>/dev/null &
 
 
-preparation
+#preparation
 
 yum_packages;
 
-yum_extra;
+# yum_extra;
 
 
-#
-#
-SC_GIT_SRC_NAME="mariadb-connector-j";
-SC_GIT_SRC_URL="https://github.com/MariaDB/";
-SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME};
-#
-
-#
-git_clone
-#
-#
-pushd ${SC_GIT_SRC_DIR}
-# 
-# 
-git_selection
-# 
-# 
-ini_func "Compiling mariadb-connector-j"
-mvn -Dmaven.test.skip=true package
-end_func "Compiling mariadb-connector-j"
-# 
-#
-popd
 # #
 # #
+# SC_GIT_SRC_NAME="mariadb-connector-j";
+# SC_GIT_SRC_URL="https://github.com/MariaDB/";
+# SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME};
+# #
+
+# #
+# git_clone
+# #
+# #
+# pushd ${SC_GIT_SRC_DIR}
+# # 
+# # 
+# git_selection
+# # 
+# # 
+# ini_func "Compiling mariadb-connector-j"
+# mvn -Dmaven.test.skip=true package
+# end_func "Compiling mariadb-connector-j"
+# # 
+# #
+# popd
+# # #
+# # #
 
 exit
 
