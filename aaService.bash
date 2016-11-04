@@ -1,12 +1,26 @@
 #!/bin/bash
 #
-# 
+#  Copyright (c) 2016 Jeong Han Lee
+#  Copyright (c) 2016 European Spallation Source ERIC
+#
+#  The program is free software: you can redistribute
+#  it and/or modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation, either version 2 of the
+#  License, or any newer version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT
+#  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+#  more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
+#
 # Shell  : aaService.bash
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
 # version : 0.9.0 CentOS 7.2
-#
 #
 # We assume that we inherit the EPICS environment variables from something that calls this script
 # However, if this is a init.d startup script, this is not going to be the case and we'll need to add them here.
@@ -14,48 +28,23 @@
 #
 # EPICS BASE is installed in the local directory
 # 
+
 source /home/aauser/epics/3.15.4/setEpicsEnv.sh
 
-# JAVA Environment is defined by the System.
-# If not, please set them properly.
-
-# export JAVA_HOME=/usr/java/latest
-# export PATH=${JAVA_HOME}/bin:${PATH}
-
-#
-# The original options are
 # 
-# export JAVA_OPTS="-XX:MaxPermSize=128M -XX:+UseG1GC -Xmx4G -Xms4G -ea"
-#
-#  -XX:MaxPermSize=size  This option was deprecated in JDK 8, 
-#   and superseded by the -XX:MaxMetaspaceSize option.
-#
-
-# The physical memory  :  64G, so I use 8G instead of 4G, since we don't have any other application on the server.
-# Set MaxMetaspaceSize : 256M, so it reduces the GC execution to compare with the original option.
+# PREFIX : SC_, so declare -p can show them in a place
 # 
-JAVA_HEAPSIZE="8G"
-JAVA_MAXMETASPACE="256M"
-
-# Use the Garbage First (G1) collector
-# so, we have larger heapsize larger than 6G, we expect the stable and predictable pause time below 0.5 seconds.
-# according to http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/G1GettingStarted/index.html
-# 
-
-export JAVA_OPTS="-XX:MaxMetaspaceSize=${JAVA_MAXMETASPACE} -XX:+UseG1GC -Xms${JAVA_HEAPSIZE} -Xmx${JAVA_HEAPSIZE} -ea"
-
-# Set Tomcat home
-export TOMCAT_HOME=/usr/share/tomcat
-
-# Set Path for apache-commons-daemon.jar, because I use the CentOS packages 
-# apache-commons-daemon.x86_64 and apache-commons-daemon-jsvc.x86_64
-# Somehow jsvc doesn't know where apache-commons-daemon.jar. So the clear PATH
-# should be defined.
+# Generic : Global vaiables - readonly
 #
-export CLASS_PATH=/usr/share/java
+declare -gr SC_SCRIPT="$(realpath "$0")"
+declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
+declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
+declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
+
+. ${SC_TOP}/setEnvAA.bash
 
 # Set up the root folder of the individual Tomcat instances.
-export ARCHAPPL_DEPLOY_DIR=/opt/archappl
+export ARCHAPPL_DEPLOY_DIR=${ARCHAPPL_TOP}
 
 # Set appliance.xml and the identity of this appliance
 export ARCHAPPL_APPLIANCES=${ARCHAPPL_DEPLOY_DIR}/appliances.xml

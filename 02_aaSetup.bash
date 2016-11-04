@@ -1,17 +1,30 @@
 #!/bin/bash
 #
+#  Copyright (c) 2016 Jeong Han Lee
+#  Copyright (c) 2016 European Spallation Source ERIC
+#
+#  The program is free software: you can redistribute
+#  it and/or modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation, either version 2 of the
+#  License, or any newer version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT
+#  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+#  more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
 # 
 # Shell  : aaSetup.bash
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.2 for CentOS 7.2
+# version : 0.9.3 for CentOS 7.2
 #
 #
-# Please run this sript as superuser or its permission as sudo bash asSetup.bash
+# sudo asSetup.bash
 #
-
-
 # 
 # PREFIX : SC_, so declare -p can show them in a place
 # 
@@ -22,19 +35,18 @@ declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
-
-
-
 # Somehow, hostname is conflicted between what I set, and what IT assigned.
 declare -r  hostname_cmd="$(hostname --all-fqdn)"
 declare -gr AA_HOSTNAME="$(tr -d ' ' <<< $hostname_cmd )"
 declare -gr AA_USERNAME="$(whoami)"
 
-declare -gr TARGET_TOP=/opt
-declare -gr ARCHAPPL_TOP=${TARGET_TOP}/archappl
+
+. ${SC_TOP}/setEnvAA.bash
+
+
 declare -gr TEMPLATE_DIR=${SC_TOP}/template
-declare -gr DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE}
-declare -gr TARGET_DIR=${ARCHAPPL_TOP}
+declare -g  DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE}
+declare -g  TARGET_DIR=${ARCHAPPL_TOP}
 
 
 #
@@ -47,16 +59,6 @@ declare -gr AA_MYIDENTITY="appliance0"
 export ARCHAPPL_APPLIANCES=${DEPLOY_DIR}/appliances.xml
 export ARCHAPPL_MYIDENTITY=${AA_MYIDENTITY}
 
-# JAVA Environment is defined by the System.
-# If not, please set them properly.
-
-# export JAVA_HOME=/usr/java/latest
-# export PATH=${JAVA_HOME}/bin:${PATH}
-
-# Set Tomcat home
-export TOMCAT_HOME=/usr/share/tomcat
-
-
 
 # 0) It is safe to create archappl directory according to date, time, 
 #    then, create symlink to point to the real directory
@@ -65,7 +67,7 @@ export TOMCAT_HOME=/usr/share/tomcat
 
 printf "\n%s\n" "->"
 
-pushd ${TARGET_TOP}
+pushd ${AA_TARGET_TOP}
 
 if [[ -L ${TARGET_DIR} && -d ${TARGET_DIR} ]]
 then
@@ -190,22 +192,6 @@ printf  "Put context.xml in to ${DEPLOY_DIR}/mgmt/conf/\n"
 
 TOMCAT_CONTEXTCONTAINER=${DEPLOY_DIR}/mgmt/conf/context.xml
 
-declare -gr AA_MYSQL_DB="archappl"
-declare -gr AA_MYSQL_USERNAME="archappl"
-declare -gr AA_MYSQL_PASSWORD="archappl"
-
-# with MySQL, use mysql-connector/j
-#
-#AA_DRIVER_CLASSNAME="com.mysql.jdbc.Driver"
-#AA_URL="mysql"
-
-# with MariaDB, use mariadb-connector/j
-# mariadb-java-client-1.4.6.jar
-# This file should be in ${TOMCAT_HOME}/lib
-#
-declare -gr AA_DRIVER_CLASSNAME="org.mariadb.jdbc.Driver"
-declare -gr AA_URL="mariadb"
-
 
 cat > ${TOMCAT_CONTEXTCONTAINER} <<EOF
 <?xml version='1.0' encoding='utf-8'?>
@@ -272,12 +258,29 @@ cat > ${TOMCAT_CONTEXTCONTAINER} <<EOF
          logAbandoned="true"
          minEvictableIdleTimeMillis="30000"
          jmxEnabled="true"
-         driverClassName="${AA_DRIVER_CLASSNAME}"
-         url="jdbc:${AA_URL}://localhost:3306/${AA_MYSQL_DB}"
-         username="${AA_MYSQL_USERNAME}"
-         password="${AA_MYSQL_PASSWORD}"
+         driverClassName="${DB_CLASSNAME}"
+         url="jdbc:${DB_AA_URL}://localhost:3306/${DB_NAME}"
+         username="${DB_USER_NAME}"
+         password="${DB_USER_PWD}"
      />
 </Context>
 EOF
 
 printf "%s\n" "------|"
+
+
+# 5) Set the DB tables into DB ${DB_NAME}
+# if the tables are in the DB, it returns ERROR. 
+#+---------------------+
+#| Tables_in_archappl  |
+#+---------------------+
+#| ArchivePVRequests   |
+#| ExternalDataServers |
+#| PVAliases           |
+#| PVTypeInfo          |
+#+---------------------+
+
+
+declare -gr AA_DEPLOY_DB_TABLES=${SC_GIT_SRC_DIR}/src/main/org/epics/archiverappliance/config/persistence/archappl_mysql.sql
+
+mysql --user=${DB_USER_NAME} --password=${DB_USER_PWD} --database=${DB_NAME} < ${AA_DEPLOY_DB_TABLES}

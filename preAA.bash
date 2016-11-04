@@ -20,7 +20,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.1.0 
+# version : 0.2.0 
 #
 #  http://www.gnu.org/software/bash/manual/bashref.html#Bash-Builtins
 #
@@ -36,14 +36,15 @@ declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
 
+
 # Generic : Redefine pushd and popd to reduce their output messages
 # 
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
 
-function ini_func() { printf "\n>>>> You are entering in : %s\n" "${1}"; }
-function end_func() { printf "<<<< You are leaving from %s\n" "${1}"; }
+function ini_func() { sleep 1; printf "\n>>>> You are entering in : %s\n" "${1}"; }
+function end_func() { sleep 1; printf "\n<<<< You are leaving from %s\n" "${1}"; }
 
 function checkstr() {
     if [ -z "$1" ]; then
@@ -93,88 +94,119 @@ function git_clone() {
     end_func ${func_name}
 }
 
+
 # Generic : git_selection
+#
+# 1.2.0 : Friday, November  4 12:13:31 CET 2016
 #
 # Require Global vairable
 # - SC_SELECTED_GIT_SRC  : Output
 #
 function git_selection() {
 
-    local func_name=${FUNCNAME[*]}
-    ini_func ${func_name}
-    
-    local git_ckoutcmd=""
-    local checked_git_src=""
-    declare -i index=0
-    declare -i master_index=0
-    declare -i list_size=0
-    declare -i selected_one=0
-    declare -a git_src_list=()
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 
+    local git_ckoutcmd="";
+    local checked_git_src="";
 
-    git_src_list+=("master")
-    git_src_list+=($(git tag -l | sort -n))
-    
-    for tag in "${git_src_list[@]}"
-    do
-	printf "%2s: git src %34s\n" "$index" "$tag"
-	let "index = $index + 1"
-    done
-    
-    echo -n "Select master or one of tags which can be built, followed by [ENTER]:"
-
-    # don't wait for 3 characters 
-    # read -e -n 2 line
-    read -e line
-   
-    # convert a string to an integer?
-    # do I need this? 
-    # selected_one=${line/.*}
-
-    selected_one=${line}
-
-    let "list_size = ${#git_src_list[@]} - 1"
-    
-    if [[ "$selected_one" -gt "$list_size" ]]; then
-	printf "\n>>> Please select one number smaller than %s\n" "${list_size}"
-	exit 1;
-    fi
-    if [[ "$selected_one" -lt 0 ]]; then
-	printf "\n>>> Please select one number larger than 0\n" 
-	exit 1;
-    fi
-
-    SC_SELECTED_GIT_SRC="$(tr -d ' ' <<< ${git_src_list[line]})"
-    
-    printf "\n>>> Selected %34s --- \n" "${SC_SELECTED_GIT_SRC}"
+    declare -i index=0;
+    declare -i master_index=0;
+    declare -i list_size=0;
+    declare -i selected_one=0;
+    declare -a git_src_list=();
  
-    echo ""
-    if [ "$selected_one" -ne "$master_index" ]; then
-	git_ckoutcmd="git checkout tags/${SC_SELECTED_GIT_SRC}"
-	$git_ckoutcmd
-	checked_git_src="$(git describe --exact-match --tags)"
-	checked_git_src="$(tr -d ' ' <<< ${checked_git_src})"
+    if [[ $1 =~ ^-?[0-9]+$ ]]; then
+	n_tags=${1};
+	git_src_list+=("master");
+
+	# git_tags=$(git describe --tags `git rev-list --tags --max-count=${n_tags}`);
+	# git_exitstatus=$?
+	# if [ $git_exitstatus = 0 ]; then
+	# 	#
+	# 	# (${}) and ($(command))  are important to separate output as an indiviaul arrar
+	# 	#
+	# 	git_src_list+=(${git_tags});
+	# else
+	# 	# In case, No tags can describe, use git tag instead of git describe
+	# 	#
+	# 	# fatal: No tags can describe '7fce903a82d47dec92012664648cacebdacd88e1'.
+	# 	# Try --always, or create some tags.
+	# doesn't work for CentOS7
+	#    git_src_list+=($(git tag -l --sort=-refname  | head -n${n_tags}))
+	# fi
 	
-	printf "\n>>> Selected : %s --- \n>>> Checkout : %s --- \n" "${SC_SELECTED_GIT_SRC}" "${checked_git_src}"
+	git_src_list+=($(git tag -l | sort -r | head -n${n_tags}));
 	
-	if [ "${SC_SELECTED_GIT_SRC}" != "${checked_git_src}" ]; then
-	    echo "Something is not right, please check your git reposiotry"
+	for tag in "${git_src_list[@]}"
+	do
+	    printf "%2s: git src %34s\n" "$index" "$tag";
+	    let "index = $index + 1";
+	done
+	
+	echo -n "Select master or one of tags which can be built, followed by [ENTER]: "
+    
+	# don't wait for 3 characters 
+	# read -e -n 2 line
+	read -e line
+	
+	# convert a string to an integer?
+	# do I need this? 
+	# selected_one=${line/.*}
+	
+	# Without selection number, type [ENTER], 0 is selected as default.
+	#
+	selected_one=${line};
+	let "list_size = ${#git_src_list[@]} - 1";
+	
+	if [[ "$selected_one" -gt "$list_size" ]]; then
+	    printf "\n>>> Please select one number smaller than %s\n" "${list_size}";
 	    exit 1
 	fi
+	if [[ "$selected_one" -lt 0 ]]; then
+	    printf "\n>>> Please select one number larger than 0\n"; 
+	    exit 1
+	fi
+	
+	SC_SELECTED_GIT_SRC="$(tr -d ' ' <<< ${git_src_list[line]})";
+	
+	printf "\n>>> Selected %34s --- \n" "${SC_SELECTED_GIT_SRC}\n";
+	
+	if [ "$selected_one" -ne "$master_index" ]; then
+	    
+	    git_ckoutcmd="git checkout tags/${SC_SELECTED_GIT_SRC}";
+	    $git_ckoutcmd;
+
+	    checked_git_src="$(git describe --exact-match --tags)";
+	    checked_git_src="$(tr -d ' ' <<< ${checked_git_src})";
+	    
+	    printf "\n>>> Selected : %s --- \n>>> Checkout : %s --- \n" "${SC_SELECTED_GIT_SRC}" "${checked_git_src}";
+	    
+	    if [ "${SC_SELECTED_GIT_SRC}" != "${checked_git_src}" ]; then
+		printf "Something is not right, please check your git reposiotry\n";
+		exit 1
+	    fi
+	else
+	    git_ckoutcmd="git checkout ${SC_SELECTED_GIT_SRC}";
+	    $git_ckoutcmd;
+	fi
+	
     else
-	git_ckoutcmd="git checkout ${SC_SELECTED_GIT_SRC}"
-	$git_ckoutcmd
+	#
+	SC_SELECTED_GIT_SRC="$1";
+	git_ckoutcmd="git checkout ${SC_SELECTED_GIT_SRC}";
+	$git_ckoutcmd;
     fi
-    end_func ${func_name}
- 
+
+    end_func ${func_name};
+    
 }
+
 
 
 #
 # Specific only for this script : Global vairables - readonly
 #
-declare -gr SUDO_CMD="sudo"
-
+declare -gr SUDO_CMD="sudo";
 
 
 # Specific : preparation
@@ -197,8 +229,11 @@ function preparation() {
     #
     if [[ -e ${yum_pid} ]]; then
 	${SUDO_CMD} kill -9 $(cat ${yum_pid})
-    fi	
-    
+	if [[ -e ${yum_pid} ]]; then
+	    ${SUDO_CMD} rm -rf ${yum_pid}
+	fi
+    fi
+        
     # Remove PackageKit
     #
     ${SUDO_CMD} yum -y remove PackageKit 
@@ -223,15 +258,13 @@ function system_ctl(){
 # the same as mysql_secure_installation, but skip to setup the root password in the script.
 # The referece of the sql command is https://goo.gl/DnyijD
 # 
-function mariadb_setup() {
+function mariadb_secure_setup() {
 
-#    pass=${1};
-    local func_name=${FUNCNAME[*]};
-    ini_func ${func_name};
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    # UPDATE mysql.user SET Password=PASSWORD('$passwd') WHERE User='root';
     
     mysql -u root <<EOF
--- UPDATE mysql.user SET Password=PASSWORD('$pass') WHERE User='root';
-DELETE FROM mysql.user WHERE User='';
+-- DELETE FROM mysql.user WHERE User='';
 DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
 DROP DATABASE IF EXISTS test;
 DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
@@ -250,35 +283,62 @@ EOF
 # * TOMCAT
 #
 
-function yum_packages(){
+function packages_preparation_for_archappl(){
     
     local func_name=${FUNCNAME[*]};
     ini_func ${func_name};
 	
     checkstr ${SUDO_CMD};
     declare -a package_list=();
-    package_list+="git emacs tree screen";
+
+    # Basic package list 
+    package_list+="git emacs tree screen xterm  xorg-x11-fonts-misc";
     package_list+=" ";
+    # JAVA
     package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel";
     package_list+=" ";
+    # MariaDB
     package_list+="mariadb-server mariadb-libs maven"
     package_list+=" ";
+    # Tomcat
     package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc"
+    package_list+="";
+    # EPICS Base
+    package_list+="readline-devel libXt-devel libXp-devel libXmu-devel libXpm-devel lesstif-devel gcc-c++ ncurses-devel perl-devel";
+    package_list+="";
+    package_list+="net-snmp net-snmp-utils net-snmp-sysinit net-snmp-devel darcs libxml2-devel libpng12-devel netcdf-devel hdf5-devel lbzip2-utils libusb-devel python-devel";
     
- 
-    echo  $package_list
-
     ${SUDO_CMD} yum -y install $package_list
 
-# Even if the service is active (running), it is OK to run "enable and start" again. 
-# systemctl can accept many services with one command
+    # Even if the service is active (running), it is OK to run "enable and start" again. 
+    # systemctl can accept many services with one command
 
     system_ctl "mariadb tomcat"
-#    system_ctl "tomcat"
+    
+    # MariaDB Secure Installation without MariaDB root password
+    mariadb_secure_setup;
 
+    mysql -u root <<EOF
+CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER_NAME}'@'localhost' IDENTIFIED BY '${DB_USER_PWD}';
+EOF
 
-    mariadb_setup;
+    # connector-j for tomcat
+
+    SC_GIT_SRC_NAME="mariadb-connector-j";
+    SC_GIT_SRC_URL="https://github.com/MariaDB/";
+    SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME};
  
+    git_clone; 
+    pushd ${SC_GIT_SRC_DIR}; 
+    git_selection "${DB_JAVACLIENT_VER}";
+
+    printf "Compiling mariadb-connector-j\n";
+    mvn -Dmaven.test.skip=true package;
+
+    # move the java client to TOMCAT_HOME/lib
+    ${SUDO_CMD} cp -v  target/mariadb-java-client-${DB_JAVACLIENT_VER}.jar ${TOMCAT_HOME}/lib
+
+    popd;
     end_func ${func_name}
 }
 
@@ -286,7 +346,7 @@ function yum_packages(){
 
 
 
-function yum_extra() {
+function replace_gnome_and_yum_update() {
 
     local func_name=${FUNCNAME[*]};
     ini_func ${func_name};
@@ -305,7 +365,6 @@ function yum_extra() {
 
     ${SUDO_CMD} systemctl disable gdm.service
     ${SUDO_CMD} systemctl enable lightdm.service
-#    ${SUOD_CMD} systemctl isolate graphical.target
 
     ${SUDO_CMD} yum -y update
  
@@ -321,39 +380,12 @@ do
     kill -0 "$$" || exit;
 done 2>/dev/null &
 
-
+. ${SC_TOP}/setEnvAA.bash
 preparation
-
-yum_packages;
-
-yum_extra;
+packages_preparation_for_archappl;
+replace_gnome_and_yum_update;
 
 
-#
-#
-SC_GIT_SRC_NAME="mariadb-connector-j";
-SC_GIT_SRC_URL="https://github.com/MariaDB/";
-SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME};
-#
-
-#
-git_clone
-#
-#
-pushd ${SC_GIT_SRC_DIR}
-# 
-# 
-git_selection
-# 
-# 
-ini_func "Compiling mariadb-connector-j"
-mvn -Dmaven.test.skip=true package
-end_func "Compiling mariadb-connector-j"
-# 
-#
-popd
-# #
-# #
 
 exit
 

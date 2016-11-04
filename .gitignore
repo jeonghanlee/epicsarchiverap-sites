@@ -10,6 +10,7 @@ retrieval.war
 epicsarchiverap
 epicsarchiverap-*
 epicsarchiverap_*
+mariadb-connector*
 *.out
 *.log
 *-eps-converted-to.pdf

@@ -1,5 +1,21 @@
 #!/bin/bash
 #
+#  Copyright (c) 2016 Jeong Han Lee
+#  Copyright (c) 2016 European Spallation Source ERIC
+#
+#  The program is free software: you can redistribute
+#  it and/or modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation, either version 2 of the
+#  License, or any newer version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT
+#  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+#  more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
+#
 # 
 # Shell  : aaBuild.bash
 # Author : Jeong Han Lee
@@ -9,6 +25,7 @@
 #
 
 # http://www.gnu.org/software/bash/manual/bashref.html#Bash-Builtins
+
 
 
 # 
@@ -160,6 +177,9 @@ function set_archappl_verion() {
     ARCHAPPL_VERSION="${archappl_build_ver}_H${archappl_git_hashver}_B${archappl_build_date}"
 }
 
+
+
+. ${SC_TOP}/setEnvAA.bash
 #
 #
 SC_GIT_SRC_NAME="epicsarchiverap"
@@ -183,9 +203,6 @@ set_archappl_verion
 #
 export BUILDS_ALL_TIME=${ARCHAPPL_VERSION}
 
-# Should be changed according to a system
-#
-export TOMCAT_HOME=/usr/share/tomcat
 
 printf "\n>>>"
 printf "\n>>> Now, we are going to build the archappl with the following version name:\n"
@@ -194,6 +211,9 @@ printf "\n>>>"
 
 # build
 
+
 ant
 
 popd
+
+
