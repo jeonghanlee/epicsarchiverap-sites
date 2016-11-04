@@ -260,27 +260,11 @@ function system_ctl(){
 # 
 function mariadb_secure_setup() {
 
-<<<<<<< HEAD:preAA.bash
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
     # UPDATE mysql.user SET Password=PASSWORD('$passwd') WHERE User='root';
     
     mysql -u root <<EOF
 -- DELETE FROM mysql.user WHERE User='';
-=======
-    local func_name=${FUNCNAME[*]};
-    ini_func ${func_name};
-
-    mariadb-root-pwd=$(whiptail --passwordbox "MariaDB root password" 10 60 --title "Enter the MariaDB root password to be set." 3>&1 1>&2 2>&3)
-    exitstatus=$?
-    if [ $exitstatus -ne 0 ]; then
-	printf "No input, so we skip to setup the root password of MariaDB now\n";
-	mariadb-root-pwd="";
-    fi
-    
-    mysql -u root <<EOF
--- UPDATE mysql.user SET Password=PASSWORD('$mariadb-root-pwd') WHERE User='root';
-DELETE FROM mysql.user WHERE User='';
->>>>>>> 7354b83a7c32c95971a180b844081a222ba5ca45:prerequisite/prior_aa.bash
 DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
 DROP DATABASE IF EXISTS test;
 DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
@@ -306,10 +290,7 @@ function packages_preparation_for_archappl(){
 	
     checkstr ${SUDO_CMD};
     declare -a package_list=();
-<<<<<<< HEAD:preAA.bash
 
-=======
->>>>>>> 7354b83a7c32c95971a180b844081a222ba5ca45:prerequisite/prior_aa.bash
     # Basic package list 
     package_list+="git emacs tree screen xterm  xorg-x11-fonts-misc";
     package_list+=" ";
@@ -327,11 +308,6 @@ function packages_preparation_for_archappl(){
     package_list+="";
     package_list+="net-snmp net-snmp-utils net-snmp-sysinit net-snmp-devel darcs libxml2-devel libpng12-devel netcdf-devel hdf5-devel lbzip2-utils libusb-devel python-devel";
     
-<<<<<<< HEAD:preAA.bash
-=======
-    echo  $package_list
-
->>>>>>> 7354b83a7c32c95971a180b844081a222ba5ca45:prerequisite/prior_aa.bash
     ${SUDO_CMD} yum -y install $package_list
 
     # Even if the service is active (running), it is OK to run "enable and start" again. 
@@ -404,48 +380,12 @@ do
     kill -0 "$$" || exit;
 done 2>/dev/null &
 
-<<<<<<< HEAD:preAA.bash
 . ${SC_TOP}/setEnvAA.bash
 preparation
 packages_preparation_for_archappl;
 replace_gnome_and_yum_update;
 
 
-=======
-
-#preparation
-
-yum_packages;
-
-# yum_extra;
-
-
-# #
-# #
-# SC_GIT_SRC_NAME="mariadb-connector-j";
-# SC_GIT_SRC_URL="https://github.com/MariaDB/";
-# SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME};
-# #
-
-# #
-# git_clone
-# #
-# #
-# pushd ${SC_GIT_SRC_DIR}
-# # 
-# # 
-# git_selection
-# # 
-# # 
-# ini_func "Compiling mariadb-connector-j"
-# mvn -Dmaven.test.skip=true package
-# end_func "Compiling mariadb-connector-j"
-# # 
-# #
-# popd
-# # #
-# # #
->>>>>>> 7354b83a7c32c95971a180b844081a222ba5ca45:prerequisite/prior_aa.bash
 
 exit
 
