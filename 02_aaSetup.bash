@@ -16,7 +16,6 @@
 #  You should have received a copy of the GNU General Public License along with
 #  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
 # 
-# Shell  : aaSetup.bash
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
@@ -39,36 +38,32 @@ declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 . ${SC_TOP}/setEnvAA.bash
 
 
-declare -gr TEMPLATE_DIR=${SC_TOP}/template
-declare -g  DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE}
-declare -g  TARGET_DIR=${ARCHAPPL_TOP}
-
-
+declare -r SC_DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE}
 
 # 0) It is safe to create archappl directory according to date, time, 
 #    then, create symlink to point to the real directory
-#    So, TARGET_DIR is the symlink.
+#    So, ARCHAPPL_DIR is the symlink.
 
 
 printf "\n%s\n" "->"
 
 pushd ${AA_TARGET_TOP}
 
-if [[ -L ${TARGET_DIR} && -d ${TARGET_DIR} ]]
+if [[ -L ${ARCHAPPL_TOP} && -d ${ARCHAPPL_TOP} ]]
 then
-    echo "${TARGET_DIR} is a symlink to a directory, so removing it."
-    rm ${TARGET_DIR}
+    printf "%s is a symlink to a directory, so removing it.\n" "${ARCHAPPL_TOP}";
+    rm ${ARCHAPPL_TOP}
 fi
 
-if [[ -d ${TARGET_DIR} ]]
+if [[ -d ${ARCHAPPL_TOP} ]]
 then
-    echo "${TARGET_DIR} is the physical directory, it should NOT be."
-    echo "Please check it, the old ${TARGET_DIR} is renamed to ${TARGET_DIR}-PLEASECHECK-${SC_LOGDATE}"
-    mv ${TARGET_DIR} ${TARGET_DIR}-PLEASECHECK-${SC_LOGDATE}
+    printf "$s is the physical directory, it should NOT be." "${ARCHAPPL_TOP}";
+    printf "Please check it, and the old %s is renamed to %s\n" "${ARCHAPPL_TOP}" "${ARCHAPPL_TOP}-PLEASECHECK-${SC_LOGDATE}"
+    mv ${ARCHAPPL_TOP} ${ARCHAPPL_TOP}-PLEASECHECK-${SC_LOGDATE}
 fi
 
-mkdir -p ${DEPLOY_DIR}
-ln -s ${DEPLOY_DIR} ${TARGET_DIR}
+mkdir -p ${SC_DEPLOY_DIR}
+ln -s ${SC_DEPLOY_DIR} ${ARCHAPPL_TOP}
 
 popd
 
@@ -114,8 +109,9 @@ popd
 printf "\n%s\n" "----->"
 
 pushd ${SC_TOP}
-printf  "Put appliances.xml in ${DEPLOY_DIR}\n"
-# 2) Put appliances.xml in ${DEPLOY_DIR}
+printf  "Put appliances.xml in $s\n" "${ARCHAPPL_TOP}";
+
+# 2) Put appliances.xml in  "${ARCHAPPL_TOP}"
 
 
 cat > ${ARCHAPPL_APPLIANCES} <<EOF
@@ -151,37 +147,32 @@ popd
 printf "\n%s\n" "------->"
 
 ## TODO
-#  Think how we use the archappl generic scripts and its MySQL db file
-#  , which I put them in aa_scripts/ directory 
-#  The following approach is only vaild for "git"
 #  I should develop a way if one wants to use "the binary file from the site"
 #  Wednesday, September  7 13:28:03 CEST 2016, jhlee
 
 
-declare -gr SC_GIT_SRC_NAME="epicsarchiverap"
-declare -gr SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME}
-declare -gr AA_DEPLOY_PYTHON=${SC_GIT_SRC_DIR}/docs/samples/deployMultipleTomcats.py
+declare -r aa_deployMultipleTomcats_py=${AA_GIT_DIR}/docs/samples/deployMultipleTomcats.py
 
-printf " Deploy multiple tomcats into ${DEPLOY_DIR}\n"
+printf " Deploy multiple tomcats into %s\n" "${ARCHAPPL_TOP}";
 # 3) Deploy multiple tomcats into ${DEPLOY_DIR} via the original source
 #
-echo "Calling ${AA_DEPLOY_PYTHON} ${DEPLOY_DIR}"
-python ${AA_DEPLOY_PYTHON} ${DEPLOY_DIR}
+printf "Calling %s %s\n" "${aa_deployMultipleTomcats_py}" "${ARCHAPPL_TOP}";
+python  "${aa_deployMultipleTomcats_py}" "${ARCHAPPL_TOP}"
 
 
 printf "\n%s\n" "--------->"
-printf  "Put context.xml in to ${DEPLOY_DIR}/mgmt/conf/\n"
+printf  "Put context.xml in to %s/mgmt/conf/\n" "${ARCHAPPL_TOP}";
 
-# 4) Put context.xml in to ${DEPLOY_DIR}/mgmt/conf/
+# 4) Put context.xml in to ${ARCHAPPL_TOP}/mgmt/conf/
 #    in order that mgmt tomcat service can connect to
 #    mariadb (CentOS) or mysql (others). 
 #    Only the mgmt web app needs to talk to the MySQL database. 
 #    It is an error/bug if the other components need to talk to MySQL;
 
-TOMCAT_CONTEXTCONTAINER=${DEPLOY_DIR}/mgmt/conf/context.xml
+tomcat_context_container=${ARCHAPPL_TOP}/mgmt/conf/context.xml
 
 
-cat > ${TOMCAT_CONTEXTCONTAINER} <<EOF
+cat > ${tomcat_context_container} <<EOF
 <?xml version='1.0' encoding='utf-8'?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
@@ -269,13 +260,13 @@ printf "%s\n" "------|"
 #+---------------------+
 
 
-declare -gr AA_DEPLOY_DB_TABLES=${SC_GIT_SRC_DIR}/src/main/org/epics/archiverappliance/config/persistence/archappl_mysql.sql
-declare -gr AA_DEPLOY_DB_TABLES_NEW=${AA_DEPLOY_DB_TABLES}_new.sql
+declare -r aa_deploy_db_tables=${AA_GIT_DIR}/src/main/org/epics/archiverappliance/config/persistence/archappl_mysql.sql
+declare -r aa_deploy_db_tables_new=${aa_deploy_db_tables}_new.sql
 
 #
 # In the case, to run this script again, keep the original file, and create new file with "IF NOT EXITS", 
 # and use the new file to query to DB.
 # Thus, if the tables exist in DB, it will skip to create these tables
 #
-sed "s/CREATE TABLE /CREATE TABLE IF NOT EXISTS /g" ${AA_DEPLOY_DB_TABLES} > ${AA_DEPLOY_DB_TABLES_NEW};
-mysql --user=${DB_USER_NAME} --password=${DB_USER_PWD} --database=${DB_NAME} < ${AA_DEPLOY_DB_TABLES_NEW};
+sed "s/CREATE TABLE /CREATE TABLE IF NOT EXISTS /g" ${aa_deploy_db_tables} > ${aa_deploy_db_tables_new};
+mysql --user=${DB_USER_NAME} --password=${DB_USER_PWD} --database=${DB_NAME} < ${aa_deploy_db_tables_new};

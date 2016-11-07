@@ -190,8 +190,8 @@ function archappl_setup() {
     
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 
-    local git_src_url="https://github.com/slacmshankar";
-    local git_src_name="epicsarchiverap";
+    local git_src_url=${AA_GIT_URL};
+    local git_src_name=${AA_GIT_NAME};
     local git_src_dir=${SC_TOP}/${git_src_name};
     
     git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}";

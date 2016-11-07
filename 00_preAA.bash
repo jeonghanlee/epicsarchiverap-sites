@@ -138,7 +138,7 @@ function system_ctl(){
 
     checkstr ${SUDO_CMD}; checkstr ${1};
 
-    printf "%s Service is enabling and starting...\n" "${1}";
+    printf "Enable and Start the following service(s) : %s\n" "${1}";
     
     ${SUDO_CMD} systemctl enable ${1}.service;
     ${SUDO_CMD} systemctl start ${1}.service;

@@ -20,6 +20,8 @@
 # Date   : 
 # version : 0.1.0 
 
+declare -gr THIS_SCRIPT="$(realpath "$0")"
+declare -gr THIS_TOP="$(dirname "$THIS_SCRIPT")"
 
 # preAA.bash, aaBuild.bash, aaService.bash
 #
@@ -36,6 +38,10 @@ export EPICS_HOST_ARCH=linux-x86_64
 # LD_LIBRARY_PATH should have the EPICS and Tomcat libs 
 export LD_LIBRARY_PATH=${TOMCAT_HOME}/lib:${EPICS_BASE}/lib/${EPICS_HOST_ARCH}:${LD_LIBRARY_PATH}
 
+
+export AA_GIT_URL="https://github.com/slacmshankar";
+export AA_GIT_NAME="epicsarchiverap";
+export AA_GIT_DIR=${THIS_TOP}/${AA_GIT_NAME};
 
 # aaSetup, aaService
 export AA_TARGET_TOP=/opt
