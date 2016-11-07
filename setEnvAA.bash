@@ -29,7 +29,8 @@ export TOMCAT_HOME=/usr/share/tomcat
 # This includes setting up the LD_LIBRARY_PATH to include the JCA .so file.
 # EPICS BASE is installed in the local directory
 
-export EPICS_BASE=${HOME}/epics/3.15.4/base
+export EPICS_BASE_VER="3.15.4";
+export EPICS_BASE=${HOME}/epics/${EPICS_BASE_VER}
 export EPICS_HOST_ARCH=linux-x86_64
 
 # LD_LIBRARY_PATH should have the EPICS and Tomcat libs 

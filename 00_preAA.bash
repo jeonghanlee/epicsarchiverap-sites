@@ -16,11 +16,10 @@
 #  You should have received a copy of the GNU General Public License along with
 #  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
 #
-# Shell  : prior_aa.bash
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.2.0 
+# version : 0.2.1 
 #
 #  http://www.gnu.org/software/bash/manual/bashref.html#Bash-Builtins
 #
@@ -43,8 +42,8 @@ function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
 
-function ini_func() { sleep 1; printf "\n>>>> You are entering in : %s\n" "${1}"; }
-function end_func() { sleep 1; printf "\n<<<< You are leaving from %s\n" "${1}"; }
+function ini_func() { sleep 1; printf "\n>>>> You are entering in  : %s\n" "${1}"; }
+function end_func() { sleep 1; printf "\n<<<< You are leaving from : %s\n" "${1}"; }
 
 function checkstr() {
     if [ -z "$1" ]; then
@@ -53,152 +52,44 @@ function checkstr() {
     fi
 }
 
-# Generic : Global variables for git_clone, git_selection, and others
-# 
-declare -g SC_SELECTED_GIT_SRC=""
-declare -g SC_GIT_SRC_DIR=""
-declare -g SC_GIT_SRC_NAME=""
-declare -g SC_GIT_SRC_URL=""
-
 
 # Generic : git_clone
+# 1.0.1 Monday, November  7 14:34:08 CET 2016
 #
 # Required Global Variable
-# - SC_GIT_SRC_DIR  : Input
 # - SC_LOGDATE      : Input
-# - SC_GIT_SRC_URL  : Input
-# - SC_GIT_SRC_NAME : Input
-# 
+
 function git_clone() {
 
-    local func_name=${FUNCNAME[*]}
-    ini_func ${func_name}
-
-    checkstr ${SC_LOGDATE}
-    checkstr ${SC_GIT_SRC_URL}
-    checkstr ${SC_GIT_SRC_NAME}
+    checkstr ${SC_LOGDATE};
     
-    if [[ ! -d ${SC_GIT_SRC_DIR} ]]; then
-	echo "No git source repository in the expected location ${SC_GIT_SRC_DIR}"
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name}
+    local git_src_dir=$1;
+    local git_src_url=$2;
+    local git_src_name=$3;
+    local tag_name=$4;
+    
+    if [[ ! -d ${git_src_dir} ]]; then
+	echo "No git source repository in the expected location ${git_src_dir}"
     else
-	echo "Old git source repository in the expected location ${SC_GIT_SRC_DIR}"
-	echo "The old one is renamed to ${SC_GIT_SRC_DIR}_${SC_LOGDATE}"
-	mv  ${SC_GIT_SRC_DIR} ${SC_GIT_SRC_DIR}_${SC_LOGDATE}
+	echo "Old git source repository in the expected location ${git_src_dir}"
+	echo "The old one is renamed to ${git_src_dir}_${SC_LOGDATE}"
+	mv  ${git_src_dir} olddir_${git_src_dir}_${SC_LOGDATE}
     fi
+
+    pushd ${git_src_dir};
     
     # Alwasy fresh cloning ..... in order to workaround any local 
     # modification in the repository, which was cloned before. 
     #
-    git clone ${SC_GIT_SRC_URL}/${SC_GIT_SRC_NAME}
-
-    end_func ${func_name}
-}
-
-
-# Generic : git_selection
-#
-# 1.2.0 : Friday, November  4 12:13:31 CET 2016
-#
-# Require Global vairable
-# - SC_SELECTED_GIT_SRC  : Output
-#
-function git_selection() {
-
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
-
-    local git_ckoutcmd="";
-    local checked_git_src="";
-
-    declare -i index=0;
-    declare -i master_index=0;
-    declare -i list_size=0;
-    declare -i selected_one=0;
-    declare -a git_src_list=();
- 
-    if [[ $1 =~ ^-?[0-9]+$ ]]; then
-	n_tags=${1};
-	git_src_list+=("master");
-
-	# git_tags=$(git describe --tags `git rev-list --tags --max-count=${n_tags}`);
-	# git_exitstatus=$?
-	# if [ $git_exitstatus = 0 ]; then
-	# 	#
-	# 	# (${}) and ($(command))  are important to separate output as an indiviaul arrar
-	# 	#
-	# 	git_src_list+=(${git_tags});
-	# else
-	# 	# In case, No tags can describe, use git tag instead of git describe
-	# 	#
-	# 	# fatal: No tags can describe '7fce903a82d47dec92012664648cacebdacd88e1'.
-	# 	# Try --always, or create some tags.
-	# doesn't work for CentOS7
-	#    git_src_list+=($(git tag -l --sort=-refname  | head -n${n_tags}))
-	# fi
-	
-	git_src_list+=($(git tag -l | sort -r | head -n${n_tags}));
-	
-	for tag in "${git_src_list[@]}"
-	do
-	    printf "%2s: git src %34s\n" "$index" "$tag";
-	    let "index = $index + 1";
-	done
-	
-	echo -n "Select master or one of tags which can be built, followed by [ENTER]: "
-    
-	# don't wait for 3 characters 
-	# read -e -n 2 line
-	read -e line
-	
-	# convert a string to an integer?
-	# do I need this? 
-	# selected_one=${line/.*}
-	
-	# Without selection number, type [ENTER], 0 is selected as default.
-	#
-	selected_one=${line};
-	let "list_size = ${#git_src_list[@]} - 1";
-	
-	if [[ "$selected_one" -gt "$list_size" ]]; then
-	    printf "\n>>> Please select one number smaller than %s\n" "${list_size}";
-	    exit 1
-	fi
-	if [[ "$selected_one" -lt 0 ]]; then
-	    printf "\n>>> Please select one number larger than 0\n"; 
-	    exit 1
-	fi
-	
-	SC_SELECTED_GIT_SRC="$(tr -d ' ' <<< ${git_src_list[line]})";
-	
-	printf "\n>>> Selected %34s --- \n" "${SC_SELECTED_GIT_SRC}\n";
-	
-	if [ "$selected_one" -ne "$master_index" ]; then
-	    
-	    git_ckoutcmd="git checkout tags/${SC_SELECTED_GIT_SRC}";
-	    $git_ckoutcmd;
-
-	    checked_git_src="$(git describe --exact-match --tags)";
-	    checked_git_src="$(tr -d ' ' <<< ${checked_git_src})";
-	    
-	    printf "\n>>> Selected : %s --- \n>>> Checkout : %s --- \n" "${SC_SELECTED_GIT_SRC}" "${checked_git_src}";
-	    
-	    if [ "${SC_SELECTED_GIT_SRC}" != "${checked_git_src}" ]; then
-		printf "Something is not right, please check your git reposiotry\n";
-		exit 1
-	    fi
-	else
-	    git_ckoutcmd="git checkout ${SC_SELECTED_GIT_SRC}";
-	    $git_ckoutcmd;
-	fi
-	
+    if [ -z "$tag_name" ]; then
+	git clone ${git_src_url}/${git_src_name}
     else
-	#
-	SC_SELECTED_GIT_SRC="$1";
-	git_ckoutcmd="git checkout ${SC_SELECTED_GIT_SRC}";
-	$git_ckoutcmd;
+	git clone -b ${tag_name} --single-branch --depth 1 ${git_src_url}/${git_src_name};
     fi
 
-    end_func ${func_name};
-    
+    popd;
+    end_func ${func_name}
 }
 
 
@@ -273,7 +164,39 @@ EOF
     
 }
 
+function mariadb_javaclient_setup() {
+       
+    local git_src_url="https://github.com/MariaDB/";
+    local git_src_name="mariadb-connector-j";
+    local git_src_dir=${SC_TOP}/${git_src_name};
+    # connector-j for tomcat
 
+    git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}" "${DB_JAVACLIENT_VER}" ; 
+
+    pushd $git_src_dir;
+    printf "Compiling mariadb-connector-j\n";
+    mvn -Dmaven.test.skip=true package;
+
+    # move the java client to TOMCAT_HOME/lib
+    ${SUDO_CMD} cp -v  target/mariadb-java-client-${DB_JAVACLIENT_VER}.jar ${TOMCAT_HOME}/lib
+
+    popd;
+    
+}
+
+function epics_setup(){
+    
+ 
+    local git_src_url="https://github.com/epics-base/";
+    local git_src_name="epics-base";
+    local git_src_dir=${EPICS_BASE};
+    
+    git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}" "${EPICS_BASE_VER}";
+    pushd $git_src_dir;
+    printf "Compiling EPICS %s\n" "${EPICS_BASE_VER}";
+    make
+    popd;
+}
 
 #
 # Prerequisite Packages
@@ -323,23 +246,6 @@ function packages_preparation_for_archappl(){
 CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER_NAME}'@'localhost' IDENTIFIED BY '${DB_USER_PWD}';
 EOF
 
-    # connector-j for tomcat
-
-    SC_GIT_SRC_NAME="mariadb-connector-j";
-    SC_GIT_SRC_URL="https://github.com/MariaDB/";
-    SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME};
- 
-    git_clone; 
-    pushd ${SC_GIT_SRC_DIR}; 
-    git_selection "${DB_JAVACLIENT_VER}";
-
-    printf "Compiling mariadb-connector-j\n";
-    mvn -Dmaven.test.skip=true package;
-
-    # move the java client to TOMCAT_HOME/lib
-    ${SUDO_CMD} cp -v  target/mariadb-java-client-${DB_JAVACLIENT_VER}.jar ${TOMCAT_HOME}/lib
-
-    popd;
     end_func ${func_name};
 }
 
@@ -381,8 +287,6 @@ function prepare_stroage() {
     end_func ${func_name};
 }
 
-. ${SC_TOP}/setEnvAA.bash
-
 ${SUDO_CMD} -v
 
 while [ true ];
@@ -397,6 +301,10 @@ done 2>/dev/null &
 preparation
 
 packages_preparation_for_archappl;
+
+mariadb_javaclient_setup;
+
+epics_setup;
 
 replace_gnome_and_yum_update;
 
