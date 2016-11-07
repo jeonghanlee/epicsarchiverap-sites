@@ -35,11 +35,6 @@ declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
-# Somehow, hostname is conflicted between what I set, and what IT assigned.
-declare -r  hostname_cmd="$(hostname --all-fqdn)"
-declare -gr AA_HOSTNAME="$(tr -d ' ' <<< $hostname_cmd )"
-declare -gr AA_USERNAME="$(whoami)"
-
 
 . ${SC_TOP}/setEnvAA.bash
 
@@ -48,16 +43,6 @@ declare -gr TEMPLATE_DIR=${SC_TOP}/template
 declare -g  DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE}
 declare -g  TARGET_DIR=${ARCHAPPL_TOP}
 
-
-#
-# This approach is only valid for the single appliance installation.
-# If one wants to install multiple appliances, appliances.xml should
-# has the different structures. 
-#
-declare -gr AA_MYIDENTITY="appliance0"
-
-export ARCHAPPL_APPLIANCES=${DEPLOY_DIR}/appliances.xml
-export ARCHAPPL_MYIDENTITY=${AA_MYIDENTITY}
 
 
 # 0) It is safe to create archappl directory according to date, time, 
@@ -88,7 +73,7 @@ ln -s ${DEPLOY_DIR} ${TARGET_DIR}
 popd
 
 
-printf "\n%s\n" "-->"
+printf "\n%s\n" "--->"
 pushd ${SC_TOP}
 
 printf "Put log4j.properties in ${TOMCAT_HOME}/lib\n"
@@ -97,9 +82,11 @@ printf "Put log4j.properties in ${TOMCAT_HOME}/lib\n"
 cat > ${TOMCAT_HOME}/lib/log4j.properties <<EOF
 # 
 #  Generated at  ${SC_LOGDATE}     
-#            on  ${AA_HOSTNAME}  
-#            by  ${AA_USERNAME}
+#            on  ${_HOST_NAME}  
+#                ${_HOST_IP}
+#            by  ${_USER_NAME}
 #                ${SC_TOP}/${SC_SCRIPTNAME}
+#
 #  Jeong Han Lee, han.lee@esss.se
 # 
 #  This file should be in ${TOMCAT_HOME}/lib/ 
@@ -124,7 +111,7 @@ EOF
 
 popd
 
-printf "\n%s\n" "--->"
+printf "\n%s\n" "----->"
 
 pushd ${SC_TOP}
 printf  "Put appliances.xml in ${DEPLOY_DIR}\n"
@@ -138,21 +125,22 @@ cat > ${ARCHAPPL_APPLIANCES} <<EOF
   them according to our configuration. 
  
   Generated at  ${SC_LOGDATE}     
-            on  ${AA_HOSTNAME}  
-            by  ${AA_USERNAME}
+            on  ${_HOST_NAME}  
+                ${_HOST_IP}
+            by  ${_USER_NAME}
                 ${SC_TOP}/${SC_SCRIPTNAME}
 
   Jeong Han Lee, han.lee@esss.se
 -->
 <appliances>
    <appliance>
-     <identity>${AA_MYIDENTITY}</identity>
-     <cluster_inetport>${AA_HOSTNAME}:16670</cluster_inetport>
-     <mgmt_url>http://${AA_HOSTNAME}:17665/mgmt/bpl</mgmt_url>
-     <engine_url>http://${AA_HOSTNAME}:17666/engine/bpl</engine_url>
-     <etl_url>http://${AA_HOSTNAME}:17667/etl/bpl</etl_url>
-     <retrieval_url>http://${AA_HOSTNAME}:17668/retrieval/bpl</retrieval_url>
-     <data_retrieval_url>http://${AA_HOSTNAME}:17668/retrieval</data_retrieval_url>
+     <identity>${AACHAPPL_SINGLE_IDENTITY}</identity>
+     <cluster_inetport>${_HOST_IP}:16670</cluster_inetport>
+     <mgmt_url>http://${_HOST_IP}:17665/mgmt/bpl</mgmt_url>
+     <engine_url>http://${_HOST_IP}:17666/engine/bpl</engine_url>
+     <etl_url>http://${_HOST_IP}:17667/etl/bpl</etl_url>
+     <retrieval_url>http://${_HOST_IP}:17668/retrieval/bpl</retrieval_url>
+     <data_retrieval_url>http://${_HOST_IP}:17668/retrieval</data_retrieval_url>
    </appliance>
 </appliances>
 EOF
@@ -160,7 +148,7 @@ EOF
 popd
 
 
-printf "\n%s\n" "---->"
+printf "\n%s\n" "------->"
 
 ## TODO
 #  Think how we use the archappl generic scripts and its MySQL db file
@@ -181,7 +169,7 @@ echo "Calling ${AA_DEPLOY_PYTHON} ${DEPLOY_DIR}"
 python ${AA_DEPLOY_PYTHON} ${DEPLOY_DIR}
 
 
-printf "\n%s\n" "----->"
+printf "\n%s\n" "--------->"
 printf  "Put context.xml in to ${DEPLOY_DIR}/mgmt/conf/\n"
 
 # 4) Put context.xml in to ${DEPLOY_DIR}/mgmt/conf/
@@ -218,8 +206,9 @@ cat > ${TOMCAT_CONTEXTCONTAINER} <<EOF
  
  
   Generated at  ${SC_LOGDATE}     
-            on  ${AA_HOSTNAME}  
-            by  ${AA_USERNAME}
+            on  ${_HOST_NAME}
+                ${_HOST_IP}  
+            by  ${_USER_NAME}
                 ${SC_TOP}/${SC_SCRIPTNAME}
 
   Jeong Han Lee, han.lee@esss.se
@@ -270,7 +259,6 @@ printf "%s\n" "------|"
 
 
 # 5) Set the DB tables into DB ${DB_NAME}
-# if the tables are in the DB, it returns ERROR. 
 #+---------------------+
 #| Tables_in_archappl  |
 #+---------------------+
@@ -282,5 +270,12 @@ printf "%s\n" "------|"
 
 
 declare -gr AA_DEPLOY_DB_TABLES=${SC_GIT_SRC_DIR}/src/main/org/epics/archiverappliance/config/persistence/archappl_mysql.sql
+declare -gr AA_DEPLOY_DB_TABLES_NEW=${AA_DEPLOY_DB_TABLES}_new.sql
 
-mysql --user=${DB_USER_NAME} --password=${DB_USER_PWD} --database=${DB_NAME} < ${AA_DEPLOY_DB_TABLES}
+#
+# In the case, to run this script again, keep the original file, and create new file with "IF NOT EXITS", 
+# and use the new file to query to DB.
+# Thus, if the tables exist in DB, it will skip to create these tables
+#
+sed "s/CREATE TABLE /CREATE TABLE IF NOT EXISTS /g" ${AA_DEPLOY_DB_TABLES} > ${AA_DEPLOY_DB_TABLES_NEW};
+mysql --user=${DB_USER_NAME} --password=${DB_USER_PWD} --database=${DB_NAME} < ${AA_DEPLOY_DB_TABLES_NEW};

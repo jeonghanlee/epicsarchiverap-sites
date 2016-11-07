@@ -236,9 +236,9 @@ function preparation() {
         
     # Remove PackageKit
     #
-    ${SUDO_CMD} yum -y remove PackageKit 
+    ${SUDO_CMD} yum -y remove PackageKit ;
 
-    end_func ${func_name}
+    end_func ${func_name};
 }
 
 
@@ -247,8 +247,7 @@ function preparation() {
 # 
 function system_ctl(){
 
-    checkstr ${SUDO_CMD};
-    checkstr ${1};
+    checkstr ${SUDO_CMD}; checkstr ${1};
     ${SUDO_CMD} systemctl enable ${1}.service;
     ${SUDO_CMD} systemctl start ${1}.service;
     
@@ -285,12 +284,14 @@ EOF
 
 function packages_preparation_for_archappl(){
     
-    local func_name=${FUNCNAME[*]};
-    ini_func ${func_name};
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 	
     checkstr ${SUDO_CMD};
     declare -a package_list=();
 
+    # ntp
+    package_list+="ntp"
+    package_list+=" ";
     # Basic package list 
     package_list+="git emacs tree screen xterm  xorg-x11-fonts-misc";
     package_list+=" ";
@@ -313,7 +314,7 @@ function packages_preparation_for_archappl(){
     # Even if the service is active (running), it is OK to run "enable and start" again. 
     # systemctl can accept many services with one command
 
-    system_ctl "mariadb tomcat"
+    system_ctl "ntp mariadb tomcat"
     
     # MariaDB Secure Installation without MariaDB root password
     mariadb_secure_setup;
@@ -339,7 +340,7 @@ EOF
     ${SUDO_CMD} cp -v  target/mariadb-java-client-${DB_JAVACLIENT_VER}.jar ${TOMCAT_HOME}/lib
 
     popd;
-    end_func ${func_name}
+    end_func ${func_name};
 }
 
 
@@ -348,8 +349,7 @@ EOF
 
 function replace_gnome_and_yum_update() {
 
-    local func_name=${FUNCNAME[*]};
-    ini_func ${func_name};
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 	
     checkstr ${SUDO_CMD};
     declare -a package_list=();
@@ -371,6 +371,18 @@ function replace_gnome_and_yum_update() {
     end_func ${func_name}
 }
 
+function prepare_stroage() {
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+
+    printf "Make STS/MTS/LTS dirs at ARCHAPPL_STORAGE_TOP as %s\n\n---\n" "${ARCHAPPL_STORAGE_TOP}";
+    ${SUDO_CMD} mkdir -p {${ARCHAPPL_SHORT_TERM_FOLDER},${ARCHAPPL_MEDIUM_TERM_FOLDER},${ARCHAPPL_LONG_TERM_FOLDER}};
+    tree  -L 2 ${ARCHAPPL_STORAGE_TOP};
+
+    end_func ${func_name};
+}
+
+. ${SC_TOP}/setEnvAA.bash
+
 ${SUDO_CMD} -v
 
 while [ true ];
@@ -381,10 +393,14 @@ do
 done 2>/dev/null &
 
 . ${SC_TOP}/setEnvAA.bash
+
 preparation
+
 packages_preparation_for_archappl;
+
 replace_gnome_and_yum_update;
 
+prepare_stroage
 
 
 exit

@@ -20,19 +20,47 @@
 # Date   : 
 # version : 0.1.0 
 
-export TOMCAT_HOME=/usr/share/tomcat
-export CATALINA_HOME=${TOMCAT_HOME}
 
-
-# preAA.bash, aaBuild.bash
+# preAA.bash, aaBuild.bash, aaService.bash
 #
+export TOMCAT_HOME=/usr/share/tomcat
+
+# We assume that we inherit the EPICS environment variables 
+# This includes setting up the LD_LIBRARY_PATH to include the JCA .so file.
+# EPICS BASE is installed in the local directory
+
 export EPICS_BASE=${HOME}/epics/3.15.4/base
 export EPICS_HOST_ARCH=linux-x86_64
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${EPICS_BASE}/lib/${EPICS_HOST_ARCH}
+
+# LD_LIBRARY_PATH should have the EPICS and Tomcat libs 
+export LD_LIBRARY_PATH=${TOMCAT_HOME}/lib:${EPICS_BASE}/lib/${EPICS_HOST_ARCH}:${LD_LIBRARY_PATH}
 
 
+# aaSetup, aaService
 export AA_TARGET_TOP=/opt
 export ARCHAPPL_TOP=${AA_TARGET_TOP}/archappl
+
+#
+# This approach is only valid for the single appliance installation.
+# If one wants to install multiple appliances, appliances.xml should
+# has the different structures. 
+#
+export AACHAPPL_SINGLE_IDENTITY="appliance0"
+
+# The following variables are defined in archappl.
+# Do not change other names
+export ARCHAPPL_APPLIANCES=${DEPLOY_DIR}/appliances.xml
+export ARCHAPPL_MYIDENTITY=${AACHAPPL_SINGLE_IDENTITY}
+
+
+
+# Somehow, hostname is conflicted between what I set, and what IT assigned.
+declare hostname_cmd="$(hostname)"
+export  _HOST_NAME="$(tr -d ' ' <<< $hostname_cmd )"
+export  _HOST_IP="$(hostname -i)" 
+export  _USER_NAME="$(whoami)"
+
+
 
 # Archiever Appliance User and Password for DB
 # One should change the the default AA user password properly. 
@@ -76,3 +104,21 @@ export CLASS_PATH=/usr/share/java
 export JAVA_HEAPSIZE="4G"
 export JAVA_MAXMETASPACE="256M"
 export JAVA_OPTS="-XX:MaxMetaspaceSize=${JAVA_MAXMETASPACE} -XX:+UseG1GC -Xms${JAVA_HEAPSIZE} -Xmx${JAVA_HEAPSIZE} -ea"
+
+
+
+# It might be better to assign the proper directory, while the installating CentOS.
+# Anyway, /home has the most of space, so I created
+# Make tmpfs for the short term storage by editing /etc/fstab file.
+#  For 10G file size add this line: 
+# tmpfs    /srv/sts 		tmpfs 	defaults,size=10g 0 0 
+# preAA.bash 
+# aaService.bash
+
+declare ARCHAPPL_STORAGE_TOP=/home/arch
+#
+# Set the location of short term and long term stores; this is necessary only if your policy demands it
+export ARCHAPPL_SHORT_TERM_FOLDER=${ARCHAPPL_STORAGE_TOP}/sts/ArchiverStore
+export ARCHAPPL_MEDIUM_TERM_FOLDER=${ARCHAPPL_STORAGE_TOP}/mts/ArchiverStore
+export ARCHAPPL_LONG_TERM_FOLDER=${ARCHAPPL_STORAGE_TOP}/lts/ArchiverStore
+

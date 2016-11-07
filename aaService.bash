@@ -20,17 +20,8 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.0 CentOS 7.2
+# version : 0.9.1 CentOS 7.2
 #
-# We assume that we inherit the EPICS environment variables from something that calls this script
-# However, if this is a init.d startup script, this is not going to be the case and we'll need to add them here.
-# This includes setting up the LD_LIBRARY_PATH to include the JCA .so file.
-#
-# EPICS BASE is installed in the local directory
-# 
-
-source /home/aauser/epics/3.15.4/setEpicsEnv.sh
-
 # 
 # PREFIX : SC_, so declare -p can show them in a place
 # 
@@ -41,31 +32,21 @@ declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
+# Enable core dumps in case the JVM fails
+ulimit -c unlimited
+
+# Generic : Redefine pushd and popd to reduce their output messages
+# 
+function pushd() { builtin pushd "$@" > /dev/null; }
+function popd()  { builtin popd  "$@" > /dev/null; }
+
+
+
 . ${SC_TOP}/setEnvAA.bash
 
-# Set up the root folder of the individual Tomcat instances.
-export ARCHAPPL_DEPLOY_DIR=${ARCHAPPL_TOP}
-
-# Set appliance.xml and the identity of this appliance
-export ARCHAPPL_APPLIANCES=${ARCHAPPL_DEPLOY_DIR}/appliances.xml
-export ARCHAPPL_MYIDENTITY="appliance0"
 
 # If you have your own policies file, please change this line.
 # export ARCHAPPL_POLICIES=/nfs/epics/archiver/production_policies.py
-
-
-# It might be better to assign the proper directory, while the installating CentOS.
-# Anyway, /home has the most of space, so I created
-# Make tmpfs for the short term storage by editing /etc/fstab file.
-#  For 10G file size add this line: 
-# tmpfs    /srv/sts 		tmpfs 	defaults,size=10g 0 0 
-export ARCHAPPL_STORAGE_TOP=/home
-#
-# Set the location of short term and long term stores; this is necessary only if your policy demands it
-export ARCHAPPL_SHORT_TERM_FOLDER=/srv/sts/ArchiverStore
-export ARCHAPPL_MEDIUM_TERM_FOLDER=${ARCHAPPL_STORAGE_TOP}/arch/mts/ArchiverStore
-export ARCHAPPL_LONG_TERM_FOLDER=${ARCHAPPL_STORAGE_TOP}/arch/lts/ArchiverStore
-
 
 
 if [[ ! -d ${TOMCAT_HOME} ]]
@@ -80,37 +61,37 @@ then
     exit 1
 fi
 
-# Enable core dumps in case the JVM fails
-ulimit -c unlimited
-
-
-# Generic : Redefine pushd and popd to reduce their output messages
-# 
-function pushd() { builtin pushd "$@" > /dev/null; }
-function popd()  { builtin popd  "$@" > /dev/null; }
-
 
 function startTomcatAtLocation() {
-    
-    if [ -z "$1" ]; then echo "startTomcatAtLocation called without any arguments"; exit 1; fi
-    echo ""
+
+    if [ $# -eq 0 ]; then
+	printf "startTomcatAtLocation called without any arguments\n";
+	exit 1;
+    fi
+
+    local  SERVICE_TOP=$1;
+    local  SERVICE_NAME=$2;
 
     export CATALINA_HOME=$TOMCAT_HOME
-    export CATALINA_BASE=$1
-    
-    echo "> Starting TOMCAT at ${CATALINA_BASE}"
-    
+    export CATALINA_BASE=${SERVICE_TOP}/${SERVICE_NAME};
+    # Something is not right in LD_LIBRARY_PATH, should check them later. 
+    #
+    echo ">> Starting TOMCAT at ${CATALINA_BASE}"
+    # 
     ARCH=`uname -m`
     if [[ $ARCH == 'x86_64' || $ARCH == 'amd64' ]]
     then
 	echo "Using 64 bit versions of libraries"
-	export LD_LIBRARY_PATH=${CATALINA_BASE}/webapps/engine/WEB-INF/lib/native/linux-x86_64:${CATALINA_HOME}/lib:${LD_LIBRARY_PATH}
+	export LD_LIBRARY_PATH=${CATALINA_BASE}/webapps/engine/WEB-INF/lib/native/linux-x86_64:${LD_LIBRARY_PATH}
+
     else
 	echo "Using 32 bit versions of libraries"
-	export LD_LIBRARY_PATH=${CATALINA_BASE}/webapps/engine/WEB-INF/lib/native/linux-x86:${CATALINA_HOME}/lib:${LD_LIBRARY_PATH}
+	export LD_LIBRARY_PATH=${CATALINA_BASE}/webapps/engine/WEB-INF/lib/native/linux-x86:${LD_LIBRARY_PATH}
     fi
-  
+    echo $LD_LIBRARY_PATH
+
     pushd ${CATALINA_BASE}/logs
+
     #    ${CATALINA_HOME}/bin/jsvc \
     # JSVC re-exec requires execution with an absolute or relative path
     /bin/jsvc \
@@ -120,8 +101,8 @@ function startTomcatAtLocation() {
         -Dcatalina.base=${CATALINA_BASE} \
         -Dcatalina.home=${CATALINA_HOME} \
         -cwd ${CATALINA_BASE}/logs \
-        -outfile ${CATALINA_BASE}/logs/catalina.out \
-        -errfile ${CATALINA_BASE}/logs/catalina.err \
+        -outfile ${CATALINA_BASE}/logs/${SERVICE_NAME}_catalina.out \
+        -errfile ${CATALINA_BASE}/logs/${SERVICE_NAME}_catalina.err \
         -pidfile ${CATALINA_BASE}/pid \
         org.apache.catalina.startup.Bootstrap start
      popd
@@ -129,13 +110,19 @@ function startTomcatAtLocation() {
 }
 
 function stopTomcatAtLocation() {
-    
-    if [ -z "$1" ]; then echo "stopTomcatAtLocation called without any arguments"; exit 1; fi
-    
-    export CATALINA_HOME=$TOMCAT_HOME
-    export CATALINA_BASE=$1
 
-    echo "< Stopping Tomcat at ${CATALINA_BASE}"
+    if [ $# -eq 0 ]; then
+	printf "stopTomcatAtLocation called without any arguments\n";
+	exit 1;
+    fi
+    
+    local  SERVICE_TOP=$1;
+    local  SERVICE_NAME=$2;
+
+    export CATALINA_HOME=$TOMCAT_HOME
+    export CATALINA_BASE=${SERVICE_TOP}/${SERVICE_NAME};
+
+    echo "<< Stopping Tomcat at ${CATALINA_BASE}"
 
     pushd ${CATALINA_BASE}/logs
     #   ${CATALINA_HOME}/bin/jsvc \
@@ -146,8 +133,8 @@ function stopTomcatAtLocation() {
 	-Dcatalina.base=${CATALINA_BASE} \
 	-Dcatalina.home=${CATALINA_HOME} \
 	-cwd ${CATALINA_BASE}/logs \
-	-outfile ${CATALINA_BASE}/logs/catalina.out \
-	-errfile ${CATALINA_BASE}/logs/catalina.err \
+	-outfile ${CATALINA_BASE}/logs/${SERVICE_NAME}_catalina.out \
+	-errfile ${CATALINA_BASE}/logs/${SERVICE_NAME}_catalina.err \
 	-pidfile ${CATALINA_BASE}/pid \
 	-stop \
 	org.apache.catalina.startup.Bootstrap 
@@ -158,13 +145,13 @@ function stopTomcatAtLocation() {
 # Service order is matter, don't change them
 tomcat_services=("mgmt" "engine" "etl" "retrieval")
 
-HOSTNAME=`hostname --all-fqdn`
-AA_HOSTNAME=$(tr -d ' ' <<< ${HOSTNAME})
-
 function status() {
+
     echo "-- Status outputs " 
-    echo "-- http://${AA_HOSTNAME}:17665/mgmt/ui/index.html is the web address.";
-    echo "-- ${ARCHAPPL_DEPLOY_DIR}/mgmt/logs/catalina.err may help you.";
+    echo "-- http://${_HOST_NAME}:17665/mgmt/ui/index.html is the web address.";
+    echo "-- OR";
+    echo "-- http://${_HOST_IP}:17665/mgmt/ui/index.html is the web address.";
+    echo "-- ${ARCHAPPL_TOP}/mgmt/logs/mgmt_catalina.err may help you.";
     echo "-- If eight numbers are printed below, the jsvc processes are running";
     pidof jsvc.exec;
     echo "--";
@@ -174,10 +161,10 @@ function stop() {
 
     # Stopping order is matter! 
 
-    stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/engine";
-    stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/retrieval";
-    stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/etl";
-    stopTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/mgmt";
+    stopTomcatAtLocation "${ARCHAPPL_TOP}" "engine";
+    stopTomcatAtLocation "${ARCHAPPL_TOP}" "retrieval";
+    stopTomcatAtLocation "${ARCHAPPL_TOP}" "etl";
+    stopTomcatAtLocation "${ARCHAPPL_TOP}" "mgmt";
   
     status;
 }
@@ -185,13 +172,13 @@ function stop() {
 function start() { 
 
     for service in ${tomcat_services[@]}; do
-	startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/${service}";
+	startTomcatAtLocation "${ARCHAPPL_TOP}" "${service}";
     done
 
-#   startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/mgmt";
-#   startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/engine";
-#   startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/etl";
-#   startTomcatAtLocation "${ARCHAPPL_DEPLOY_DIR}/retrieval";
+#   startTomcatAtLocation "${ARCHAPPL_TOP}/mgmt";
+#   startTomcatAtLocation "${ARCHAPPL_TOP}/engine";
+#   startTomcatAtLocation "${ARCHAPPL_TOP}/etl";
+#   startTomcatAtLocation "${ARCHAPPL_TOP}/retrieval";
     
     status;
 }

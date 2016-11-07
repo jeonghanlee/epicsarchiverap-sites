@@ -64,13 +64,12 @@ function deploy_war_release() {
 }
 
 
+
 if [[ ! -f ${WARSRC_DIR}/mgmt.war ]]
 then
     printf "You need to call 01_aaBuild.bash and 02_aaSetup.bash first.\n The folder ${WARSRC_DIR} does not seem to have a mgmt.war.\n"
     exit 1
 fi
-
-. ${SC_TOP}/setEnvAA.bash
 
 
 tomcat_services=("mgmt" "engine" "etl" "retrieval")
@@ -80,7 +79,7 @@ echo "Deploying a new release from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}"
 echo ""
 echo "Replacing old war files with new war files"
 for service in ${tomcat_services[@]}; do
-    deploy_war_release ${service} "${ARCHAPPL_TOP}" "${WARSRC_DIR}"
+    deploy_war_release ${service} "${ARCHAPPL_TOP}" "${WARSRC_DIR}";
 done
 
 
