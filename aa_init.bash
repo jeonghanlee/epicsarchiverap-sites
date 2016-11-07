@@ -135,21 +135,17 @@ function preparation() {
 
 ${SUDO_CMD} -v
 
-while [ true ];
-do
-    ${SUDO_CMD} -n /bin/true;
-    sleep 60;
-    kill -0 "$$" || exit;
-done 2>/dev/null &
-
 preparation
 
-${SUDO_CMD} yum -y git ;
+${SUDO_CMD} yum -y install git ;
 
 SC_GIT_SRC_NAME="epicsarchiverap-sites";
 SC_GIT_SRC_URL="https://github.com/jeonghanlee";
 SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME};
 
 git_clone; 
+pushd ${SC_GIT_SRC_DIR};
+git checkout develop;
+popd
 
-popd;
+exit;
