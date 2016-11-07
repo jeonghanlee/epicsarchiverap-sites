@@ -45,6 +45,16 @@ function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
 
+function ini_func() { sleep 1; printf "\n>>>> You are entering in : %s\n" "${1}"; }
+function end_func() { sleep 1; printf "\n<<<< You are leaving from %s\n" "${1}"; }
+
+function checkstr() {
+    if [ -z "$1" ]; then
+	printf "%s : input variable is not defined \n" "${FUNCNAME[*]}"
+	exit 1;
+    fi
+}
+
 # Generic : git_clone
 # 1.0.2 Monday, Monday, November  7 15:53:13 CET 2016
 #

@@ -313,18 +313,18 @@ done 2>/dev/null &
 
 . ${SC_TOP}/setEnvAA.bash
 
+# root
 preparation
-
-packages_preparation_for_archappl;
-
-mariadb_setup;
-
-epics_setup;
-
-replace_gnome_and_yum_update;
-
+# root
 prepare_stroage
-
+# root
+packages_preparation_for_archappl;
+# root
+replace_gnome_and_yum_update;
+# root
+mariadb_setup;
+# an user
+epics_setup;
 
 exit
 
