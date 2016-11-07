@@ -76,8 +76,6 @@ function git_clone() {
 	echo "The old one is renamed to ${git_src_dir}_${SC_LOGDATE}"
 	mv  ${git_src_dir} olddir_${git_src_dir}_${SC_LOGDATE}
     fi
-
-    pushd ${git_src_dir};
     
     # Alwasy fresh cloning ..... in order to workaround any local 
     # modification in the repository, which was cloned before. 
@@ -88,7 +86,6 @@ function git_clone() {
 	git clone -b ${tag_name} --single-branch --depth 1 ${git_src_url}/${git_src_name};
     fi
 
-    popd;
     end_func ${func_name}
 }
 
@@ -164,8 +161,16 @@ EOF
     
 }
 
-function mariadb_javaclient_setup() {
-       
+function mariadb_setup() {
+
+    
+    # MariaDB Secure Installation without MariaDB root password
+    mariadb_secure_setup;
+
+    mysql -u root <<EOF
+CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER_NAME}'@'localhost' IDENTIFIED BY '${DB_USER_PWD}';
+EOF
+    
     local git_src_url="https://github.com/MariaDB/";
     local git_src_name="mariadb-connector-j";
     local git_src_dir=${SC_TOP}/${git_src_name};
@@ -237,14 +242,8 @@ function packages_preparation_for_archappl(){
     # Even if the service is active (running), it is OK to run "enable and start" again. 
     # systemctl can accept many services with one command
 
-    system_ctl "ntp mariadb tomcat"
-    
-    # MariaDB Secure Installation without MariaDB root password
-    mariadb_secure_setup;
+    system_ctl "ntpd mariadb tomcat"
 
-    mysql -u root <<EOF
-CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER_NAME}'@'localhost' IDENTIFIED BY '${DB_USER_PWD}';
-EOF
 
     end_func ${func_name};
 }
@@ -302,7 +301,7 @@ preparation
 
 packages_preparation_for_archappl;
 
-mariadb_javaclient_setup;
+mariadb_setup;
 
 epics_setup;
 
