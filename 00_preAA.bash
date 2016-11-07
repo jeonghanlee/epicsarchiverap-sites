@@ -116,7 +116,8 @@ function preparation() {
     #
     if [[ -e ${yum_pid} ]]; then
 	${SUDO_CMD} kill -9 $(cat ${yum_pid})
-	if [[ -e ${yum_pid} ]]; then
+	if [ $? -ne 0 ]; then
+	    printf "Remove an orphan yum pid\n";
 	    ${SUDO_CMD} rm -rf ${yum_pid}
 	fi
     fi
@@ -124,7 +125,8 @@ function preparation() {
     # Remove PackageKit
     #
     ${SUDO_CMD} yum -y remove PackageKit ;
-
+    ${SUDO_CMD} yum -y install epel-release git tree;	
+	
     end_func ${func_name};
 }
 
@@ -315,16 +317,17 @@ done 2>/dev/null &
 
 # root
 preparation
-# root
-prepare_stroage
+prepare_stroage;
+
 # root
 packages_preparation_for_archappl;
-# root
-replace_gnome_and_yum_update;
+
 # root
 mariadb_setup;
 # an user
 epics_setup;
+
+replace_gnome_and_yum_update;
 
 exit
 
