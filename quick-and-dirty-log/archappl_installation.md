@@ -776,6 +776,22 @@ root@ip4-111:/mnt/arch# tree -L 2
 
 6 directories, 0 files
 ```
+[root@ics-essiipsvc-01 home]# pwd
+/home
+[root@ics-essiipsvc-01 home]# mkdir -p arch/{sts,mts,lts}/ArchiverStore
+[root@ics-essiipsvc-01 home]#
+[root@ics-essiipsvc-01 home]# tree arch/
+arch/
+├── lts
+│   └── ArchiverStore
+├── mts
+│   └── ArchiverStore
+└── sts
+    └── ArchiverStore
+
+6 directories, 0 files
+[root@ics-essiipsvc-01 home]# 
+
 ## startup script
 
 * edit the startup script to replace the EPICS environment, and stroages
