@@ -56,7 +56,7 @@ export AACHAPPL_SINGLE_IDENTITY="appliance0"
 
 # The following variables are defined in archappl.
 # Do not change other names
-export ARCHAPPL_APPLIANCES=${DEPLOY_DIR}/appliances.xml
+export ARCHAPPL_APPLIANCES=${ARCHAPPL_TOP}/appliances.xml
 export ARCHAPPL_MYIDENTITY=${AACHAPPL_SINGLE_IDENTITY}
 
 
@@ -64,7 +64,7 @@ export ARCHAPPL_MYIDENTITY=${AACHAPPL_SINGLE_IDENTITY}
 # Somehow, hostname is conflicted between what I set, and what IT assigned.
 declare hostname_cmd="$(hostname)"
 export  _HOST_NAME="$(tr -d ' ' <<< $hostname_cmd )"
-export  _HOST_IP="$(hostname -i)" 
+export  _HOST_IP="$(ping -n  -c 1 ${_HOSTNAME} | awk 'BEGIN {FS="[=]|[ ]"} NR==2 {print $4}' | cut -d: -f1);
 export  _USER_NAME="$(whoami)"
 
 

@@ -35,6 +35,11 @@ declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
 
+# Generic : Redefine pushd and popd to reduce their output messages
+# 
+function pushd() { builtin pushd "$@" > /dev/null; }
+function popd()  { builtin popd  "$@" > /dev/null; }
+
 . ${SC_TOP}/setEnvAA.bash
 
 
