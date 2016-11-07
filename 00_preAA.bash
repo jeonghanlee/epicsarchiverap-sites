@@ -226,11 +226,11 @@ function packages_preparation_for_archappl(){
     package_list+=" ";
     # Tomcat
     package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc"
-    package_list+="";
+    package_list+=" ";
     # EPICS Base
     package_list+="readline-devel libXt-devel libXp-devel libXmu-devel libXpm-devel lesstif-devel gcc-c++ ncurses-devel perl-devel";
-    package_list+="";
-    package_list+="net-snmp net-snmp-utils net-snmp-sysinit net-snmp-devel darcs libxml2-devel libpng12-devel netcdf-devel hdf5-devel lbzip2-utils libusb-devel python-devel";
+    package_list+=" ";
+    package_list+="net-snmp net-snmp-utils net-snmp-devel darcs libxml2-devel libpng12-devel netcdf-devel hdf5-devel lbzip2-utils libusb-devel python-devel";
     
     ${SUDO_CMD} yum -y install $package_list
 
