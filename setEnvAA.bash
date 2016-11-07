@@ -61,10 +61,12 @@ export ARCHAPPL_MYIDENTITY=${AACHAPPL_SINGLE_IDENTITY}
 
 
 
-# Somehow, hostname is conflicted between what I set, and what IT assigned.
+# Hostname is not reiable to use it in the appliances.xml, so force to get the running
+# IP, and use it into... need to change them by other demands
+
 declare hostname_cmd="$(hostname)"
 export  _HOST_NAME="$(tr -d ' ' <<< $hostname_cmd )"
-export  _HOST_IP="$(ping -n  -c 1 ${_HOSTNAME} | awk 'BEGIN {FS="[=]|[ ]"} NR==2 {print $4}' | cut -d: -f1);
+export  _HOST_IP="$(ping -n  -c 1 ${_HOST_NAME} | awk 'BEGIN {FS="[=]|[ ]"} NR==2 {print $4}' | cut -d: -f1)";
 export  _USER_NAME="$(whoami)"
 
 
