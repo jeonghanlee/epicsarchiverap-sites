@@ -34,8 +34,6 @@ declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
-
-
 # Generic : Redefine pushd and popd to reduce their output messages
 # 
 function pushd() { builtin pushd "$@" > /dev/null; }
@@ -54,14 +52,12 @@ function checkstr() {
 
 
 # Generic : git_clone
-# 1.0.1 Monday, November  7 14:34:08 CET 2016
+# 1.0.2 Monday, Monday, November  7 15:53:13 CET 2016
 #
 # Required Global Variable
 # - SC_LOGDATE      : Input
 
 function git_clone() {
-
-    checkstr ${SC_LOGDATE};
     
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
     
@@ -70,21 +66,24 @@ function git_clone() {
     local git_src_name=$3;
     local tag_name=$4;
     
+    checkstr ${SC_LOGDATE};
+    
     if [[ ! -d ${git_src_dir} ]]; then
-	echo "No git source repository in the expected location ${git_src_dir}"
+	printf "No git source repository in the expected location %s\n" "${git_src_dir}";
     else
-	echo "Old git source repository in the expected location ${git_src_dir}"
-	echo "The old one is renamed to ${git_src_dir}_${SC_LOGDATE}"
-	mv  ${git_src_dir} olddir_${git_src_dir}_${SC_LOGDATE}
+	printf "Old git source repository in the expected location %s\b" "${git_src_dir}";
+	printf "The old one is renamed to %s_%s\n" "${git_src_dir}" "${SC_LOGDATE}";
+	mv  ${git_src_dir} ${git_src_dir}_${SC_LOGDATE}
     fi
     
     # Alwasy fresh cloning ..... in order to workaround any local 
     # modification in the repository, which was cloned before. 
     #
     if [ -z "$tag_name" ]; then
-	git clone ${git_src_url}/${git_src_name} ${git_src_dir};
+	# need to test this condition without "specificed" version
+	git clone "${git_src_url}/${git_src_name}" "${git_src_dir}";
     else
-	git clone -b ${tag_name} --single-branch --depth 1 ${git_src_url}/${git_src_name} ${git_src_dir};
+	git clone -b "${tag_name}" --single-branch --depth 1 "${git_src_url}/${git_src_name}" "${git_src_dir}";
     fi
 
     end_func ${func_name};
@@ -134,22 +133,33 @@ function preparation() {
 # Enable and Start an input Service
 # 
 function system_ctl(){
+    
     local func_name=${FUNCNAME[*]};  ini_func ${func_name};
 
     checkstr ${SUDO_CMD}; checkstr ${1};
+
+    printf "%s Service is enabling and starting...\n" "${1}";
+    
     ${SUDO_CMD} systemctl enable ${1}.service;
     ${SUDO_CMD} systemctl start ${1}.service;
 
     end_func ${func_name};
 }
 
-#
-# the same as mysql_secure_installation, but skip to setup the root password in the script.
-# The referece of the sql command is https://goo.gl/DnyijD
-# 
-function mariadb_secure_setup() {
+
+
+function mariadb_setup() {
+
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 
+    # MariaDB Secure Installation without MariaDB root password
+    # the same as mysql_secure_installation, but skip to setup
+    # the root password in the script. The referece of the sql commands
+    # is https://goo.gl/DnyijD
+ 
+ 
+    printf "Setup mysql_secure_installation...\n";
+    
     # UPDATE mysql.user SET Password=PASSWORD('$passwd') WHERE User='root';
     
     mysql -u root <<EOF
@@ -159,32 +169,25 @@ DROP DATABASE IF EXISTS test;
 DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 FLUSH PRIVILEGES;
 EOF
-    end_func ${func_name};
-    
-}
 
-function mariadb_setup() {
-
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
-    
-    # MariaDB Secure Installation without MariaDB root password
-    mariadb_secure_setup;
+    printf "Creat the Database %s if not exists...\n" "${DB_NAME}";
 
     mysql -u root <<EOF
 CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER_NAME}'@'localhost' IDENTIFIED BY '${DB_USER_PWD}';
 EOF
+    printf "Cloning the mariadb-connector-j... \n".
     
     local git_src_url="https://github.com/MariaDB/";
     local git_src_name="mariadb-connector-j";
     local git_src_dir=${SC_TOP}/${git_src_name};
-    # connector-j for tomcat
 
     git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}" "${DB_JAVACLIENT_VER}" ; 
 
     pushd $git_src_dir;
-    printf "Compiling mariadb-connector-j\n";
+    printf "Compiling mariadb-connector-j ... \n";
     mvn -Dmaven.test.skip=true package;
-    # move the java client to TOMCAT_HOME/lib
+
+    printf "Moving the java client to %s/lib" "${TOMCAT_HOME}"
     ${SUDO_CMD} cp -v  target/mariadb-java-client-${DB_JAVACLIENT_VER}.jar ${TOMCAT_HOME}/lib
     popd;
     
@@ -202,7 +205,7 @@ function epics_setup(){
     git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}" "${EPICS_BASE_VER}";
 
     pushd $git_src_dir;
-    printf "Compiling EPICS %s\n" "${EPICS_BASE_VER}";
+    printf "Compiling EPICS base %s ... \n" "${EPICS_BASE_VER}";
     make
     popd;
     
