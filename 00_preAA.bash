@@ -63,7 +63,8 @@ function git_clone() {
 
     checkstr ${SC_LOGDATE};
     
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name}
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    
     local git_src_dir=$1;
     local git_src_url=$2;
     local git_src_name=$3;
@@ -81,12 +82,12 @@ function git_clone() {
     # modification in the repository, which was cloned before. 
     #
     if [ -z "$tag_name" ]; then
-	git clone ${git_src_url}/${git_src_name}
+	git clone ${git_src_url}/${git_src_name} ${git_src_dir};
     else
-	git clone -b ${tag_name} --single-branch --depth 1 ${git_src_url}/${git_src_name};
+	git clone -b ${tag_name} --single-branch --depth 1 ${git_src_url}/${git_src_name} ${git_src_dir};
     fi
 
-    end_func ${func_name}
+    end_func ${func_name};
 }
 
 
@@ -106,8 +107,7 @@ declare -gr SUDO_CMD="sudo";
 #
 function preparation() {
     
-    local func_name=${FUNCNAME[*]}
-    ini_func ${func_name}
+    local func_name=${FUNCNAME[*]};  ini_func ${func_name};
 
     checkstr ${SUDO_CMD}
     
@@ -134,11 +134,13 @@ function preparation() {
 # Enable and Start an input Service
 # 
 function system_ctl(){
+    local func_name=${FUNCNAME[*]};  ini_func ${func_name};
 
     checkstr ${SUDO_CMD}; checkstr ${1};
     ${SUDO_CMD} systemctl enable ${1}.service;
     ${SUDO_CMD} systemctl start ${1}.service;
-    
+
+    end_func ${func_name};
 }
 
 #
@@ -146,8 +148,8 @@ function system_ctl(){
 # The referece of the sql command is https://goo.gl/DnyijD
 # 
 function mariadb_secure_setup() {
-
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+
     # UPDATE mysql.user SET Password=PASSWORD('$passwd') WHERE User='root';
     
     mysql -u root <<EOF
@@ -157,12 +159,13 @@ DROP DATABASE IF EXISTS test;
 DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 FLUSH PRIVILEGES;
 EOF
-    end_func ${func_name}
+    end_func ${func_name};
     
 }
 
 function mariadb_setup() {
 
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
     
     # MariaDB Secure Installation without MariaDB root password
     mariadb_secure_setup;
@@ -181,26 +184,29 @@ EOF
     pushd $git_src_dir;
     printf "Compiling mariadb-connector-j\n";
     mvn -Dmaven.test.skip=true package;
-
     # move the java client to TOMCAT_HOME/lib
     ${SUDO_CMD} cp -v  target/mariadb-java-client-${DB_JAVACLIENT_VER}.jar ${TOMCAT_HOME}/lib
-
     popd;
     
+    end_func ${func_name};
 }
 
 function epics_setup(){
-    
- 
+
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+
     local git_src_url="https://github.com/epics-base/";
     local git_src_name="epics-base";
     local git_src_dir=${EPICS_BASE};
     
     git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}" "${EPICS_BASE_VER}";
+
     pushd $git_src_dir;
     printf "Compiling EPICS %s\n" "${EPICS_BASE_VER}";
     make
     popd;
+    
+    end_func ${func_name};
 }
 
 #
@@ -215,23 +221,29 @@ function packages_preparation_for_archappl(){
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 	
     checkstr ${SUDO_CMD};
+
     declare -a package_list=();
 
     # ntp
     package_list+="ntp"
     package_list+=" ";
+
     # Basic package list 
     package_list+="git emacs tree screen xterm  xorg-x11-fonts-misc";
     package_list+=" ";
+
     # JAVA
     package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel";
     package_list+=" ";
+
     # MariaDB
     package_list+="mariadb-server mariadb-libs maven"
     package_list+=" ";
+
     # Tomcat
     package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc"
     package_list+=" ";
+
     # EPICS Base
     package_list+="readline-devel libXt-devel libXp-devel libXmu-devel libXpm-devel lesstif-devel gcc-c++ ncurses-devel perl-devel";
     package_list+=" ";
@@ -243,7 +255,6 @@ function packages_preparation_for_archappl(){
     # systemctl can accept many services with one command
 
     system_ctl "ntpd mariadb tomcat"
-
 
     end_func ${func_name};
 }
@@ -263,8 +274,6 @@ function replace_gnome_and_yum_update() {
     package_list+=" ";
     package_list+="lightdm";
 
-    echo  $package_list;
-
     ${SUDO_CMD} yum -y install $package_list
     ${SUDO_CMD} yum -y groupinstall "MATE Desktop"
 
@@ -277,14 +286,18 @@ function replace_gnome_and_yum_update() {
 }
 
 function prepare_stroage() {
+
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 
     printf "Make STS/MTS/LTS dirs at ARCHAPPL_STORAGE_TOP as %s\n\n---\n" "${ARCHAPPL_STORAGE_TOP}";
+
     ${SUDO_CMD} mkdir -p {${ARCHAPPL_SHORT_TERM_FOLDER},${ARCHAPPL_MEDIUM_TERM_FOLDER},${ARCHAPPL_LONG_TERM_FOLDER}};
+
     tree  -L 2 ${ARCHAPPL_STORAGE_TOP};
 
     end_func ${func_name};
 }
+
 
 ${SUDO_CMD} -v
 
