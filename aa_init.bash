@@ -148,4 +148,13 @@ pushd ${SC_GIT_SRC_DIR};
 git checkout develop;
 popd
 
+printf "Go %s\n" "${SC_GIT_SRC_DIR}";
+printf "Do bash the following scripts in order\n";
+printf "bash 00_preAA.bash\n";
+printf "bash 01_aaBuild.bash\n";
+printf "bash 02_aaSetup.bash\n";
+printf "bash 03_aaDeploy.bash\n";
+printf "\n";
+printf "bash aaService.bash start/stop/status\n";
+
 exit;
