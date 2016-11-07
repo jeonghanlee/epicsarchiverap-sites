@@ -149,7 +149,11 @@ function system_ctl(){
 }
 
 
-
+function mariadb_connectorj_download() {
+    
+    
+    http://central.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/1.5.4/mariadb-java-client-1.5.4.jar
+}
 function mariadb_setup() {
 
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
@@ -177,21 +181,31 @@ EOF
     mysql -u root <<EOF
 CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER_NAME}'@'localhost' IDENTIFIED BY '${DB_USER_PWD}';
 EOF
-    printf "Cloning the mariadb-connector-j... \n".
+    local jar_client_name="mariadb-java-client";
+    local mariadb_connectorj_jar="${jar_client_name}-${DB_JAVACLIENT_VER}.jar";
     
-    local git_src_url="https://github.com/MariaDB/";
-    local git_src_name="mariadb-connector-j";
-    local git_src_dir=${SC_TOP}/${git_src_name};
+    local maven_jar_url="http://central.maven.org/maven2/org/mariadb/jdbc";
+    #    http://central.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/1.5.4/mariadb-java-client-1.5.4.jar
 
-    git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}" "${DB_JAVACLIENT_VER}" ; 
 
-    pushd $git_src_dir;
-    printf "Compiling mariadb-connector-j ... \n";
-    mvn -Dmaven.test.skip=true package;
+    ${SUDO_CMD} wget -c -P ${TOMCAT_HOME}/lib ${maven_jar_url}/${jar_client_name}/${DB_JAVACLIENT_VER}/${mariadb_connectorj_jar};
 
-    printf "Moving the java client to %s/lib" "${TOMCAT_HOME}"
-    ${SUDO_CMD} cp -v  target/mariadb-java-client-${DB_JAVACLIENT_VER}.jar ${TOMCAT_HOME}/lib
-    popd;
+    
+    # printf "Cloning the mariadb-connector-j... \n".
+    
+    # local git_src_url="https://github.com/MariaDB/";
+    # local git_src_name="mariadb-connector-j";
+    # local git_src_dir=${SC_TOP}/${git_src_name};
+
+    # git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}" "${DB_JAVACLIENT_VER}" ; 
+
+    # pushd $git_src_dir;
+    # printf "Compiling mariadb-connector-j ... \n";
+    # mvn -Dmaven.test.skip=true package;
+
+    # printf "Moving the java client to %s/lib" "${TOMCAT_HOME}"
+    # ${SUDO_CMD} cp -v  target/${mariadb_connectorj_jar} ${TOMCAT_HOME}/lib
+    # popd;
     
     end_func ${func_name};
 }
