@@ -149,11 +149,6 @@ function system_ctl(){
 }
 
 
-function mariadb_connectorj_download() {
-    
-    
-    http://central.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/1.5.4/mariadb-java-client-1.5.4.jar
-}
 function mariadb_setup() {
 
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
@@ -184,28 +179,28 @@ EOF
     local jar_client_name="mariadb-java-client";
     local mariadb_connectorj_jar="${jar_client_name}-${DB_JAVACLIENT_VER}.jar";
     
-    local maven_jar_url="http://central.maven.org/maven2/org/mariadb/jdbc";
-    #    http://central.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/1.5.4/mariadb-java-client-1.5.4.jar
+    # local maven_jar_url="http://central.maven.org/maven2/org/mariadb/jdbc";
+    # #    http://central.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/1.5.4/mariadb-java-client-1.5.4.jar
 
 
-    ${SUDO_CMD} wget -c -P ${TOMCAT_HOME}/lib ${maven_jar_url}/${jar_client_name}/${DB_JAVACLIENT_VER}/${mariadb_connectorj_jar};
+    # ${SUDO_CMD} wget -c -P ${TOMCAT_HOME}/lib ${maven_jar_url}/${jar_client_name}/${DB_JAVACLIENT_VER}/${mariadb_connectorj_jar};
 
     
-    # printf "Cloning the mariadb-connector-j... \n".
+    printf "Cloning the mariadb-connector-j... \n".
     
-    # local git_src_url="https://github.com/MariaDB/";
-    # local git_src_name="mariadb-connector-j";
-    # local git_src_dir=${SC_TOP}/${git_src_name};
+    local git_src_url="https://github.com/MariaDB/";
+    local git_src_name="mariadb-connector-j";
+    local git_src_dir=${SC_TOP}/${git_src_name};
 
-    # git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}" "${DB_JAVACLIENT_VER}" ; 
+    git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}" "${DB_JAVACLIENT_VER}" ; 
 
-    # pushd $git_src_dir;
-    # printf "Compiling mariadb-connector-j ... \n";
-    # mvn -Dmaven.test.skip=true package;
+    pushd $git_src_dir;
+    printf "Compiling mariadb-connector-j ... \n";
+    mvn -Dmaven.test.skip=true package;
 
-    # printf "Moving the java client to %s/lib" "${TOMCAT_HOME}"
-    # ${SUDO_CMD} cp -v  target/${mariadb_connectorj_jar} ${TOMCAT_HOME}/lib
-    # popd;
+    printf "Moving the java client to %s/lib" "${TOMCAT_HOME}"
+    ${SUDO_CMD} cp -v  target/${mariadb_connectorj_jar} ${TOMCAT_HOME}/lib
+    popd;
     
     end_func ${func_name};
 }
@@ -268,7 +263,7 @@ function packages_preparation_for_archappl(){
     package_list+=" ";
     package_list+="net-snmp net-snmp-utils net-snmp-devel darcs libxml2-devel libpng12-devel netcdf-devel hdf5-devel lbzip2-utils libusb-devel python-devel";
     
-    ${SUDO_CMD} yum -y install $package_list
+    ${SUDO_CMD} yum -y install "${package_list}";
 
     # Even if the service is active (running), it is OK to run "enable and start" again. 
     # systemctl can accept many services with one command
@@ -330,16 +325,21 @@ done 2>/dev/null &
 . ${SC_TOP}/setEnvAA.bash
 
 # root
-preparation
-prepare_stroage;
+preparation;
+prepare_stroage &> ${SC_TOP}/storage.log &;
 
 # root
 packages_preparation_for_archappl;
 
-# root
-mariadb_setup;
+wait
+
 # an user
-epics_setup;
+epics_setup &>${SC_TOP}/epics.log & ;
+
+# root
+mariadb_setup &>${SC_TOP}/mariadb.log &;
+
+wait
 
 replace_gnome_and_yum_update;
 
