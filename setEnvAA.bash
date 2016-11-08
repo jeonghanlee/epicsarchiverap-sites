@@ -37,7 +37,7 @@ export EPICS_HOST_ARCH=linux-x86_64
 
 # LD_LIBRARY_PATH should have the EPICS and Tomcat libs 
 export LD_LIBRARY_PATH=${TOMCAT_HOME}/lib:${EPICS_BASE}/lib/${EPICS_HOST_ARCH}:${LD_LIBRARY_PATH}
-
+export PATH=${EPICS_BASE}/bin/${EPICS_HOST_ARCH}:${PATH}
 
 export AA_GIT_URL="https://github.com/slacmshankar";
 export AA_GIT_NAME="epicsarchiverap";
