@@ -18,10 +18,21 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.1.0 
+# version : 0.1.1 
 
 declare -gr THIS_SCRIPT="$(realpath "$0")"
 declare -gr THIS_TOP="$(dirname "$THIS_SCRIPT")"
+
+
+# Hostname is not reiable to use it in the appliances.xml, so force to get the running
+# IP, and use it into... need to change them by other demands
+
+declare hostname_cmd="$(hostname)"
+export  _HOST_NAME="$(tr -d ' ' <<< $hostname_cmd )"
+export  _HOST_IP="$(ping -n  -c 1 ${_HOST_NAME} | awk 'BEGIN {FS="[=]|[ ]"} NR==2 {print $4}' | cut -d: -f1)";
+export  _USER_NAME="$(whoami)"
+
+
 
 # preAA.bash, aaBuild.bash, aaService.bash
 #
@@ -39,6 +50,9 @@ export EPICS_HOST_ARCH=linux-x86_64
 export LD_LIBRARY_PATH=${TOMCAT_HOME}/lib:${EPICS_BASE}/lib/${EPICS_HOST_ARCH}:${LD_LIBRARY_PATH}
 export PATH=${EPICS_BASE}/bin/${EPICS_HOST_ARCH}:${PATH}
 
+export EPICS_CA_ADDR_LIST="127.0.0.1 ${_HOST_IP}";
+export EPICS_CA_AUTO_ADDR_LIST=yes;
+
 export AA_GIT_URL="https://github.com/slacmshankar";
 export AA_GIT_NAME="epicsarchiverap";
 export AA_GIT_DIR=${THIS_TOP}/${AA_GIT_NAME};
@@ -46,6 +60,13 @@ export AA_GIT_DIR=${THIS_TOP}/${AA_GIT_NAME};
 # aaSetup, aaService
 export AA_TARGET_TOP=/opt
 export ARCHAPPL_TOP=${AA_TARGET_TOP}/archappl
+
+# # Use an in memory persistence layer
+# export ARCHAPPL_PERSISTENCE_LAYER=org.epics.archiverappliance.config.persistence.InMemoryPersistence
+
+# # Tell the appliance that we are deploying all the components in one VM.
+# # This reduces the thread count and other parameters in an effort to optimize memory.
+# export ARCHAPPL_ALL_APPS_ON_ONE_JVM="true"
 
 #
 # This approach is only valid for the single appliance installation.
@@ -59,15 +80,6 @@ export AACHAPPL_SINGLE_IDENTITY="appliance0"
 export ARCHAPPL_APPLIANCES=${ARCHAPPL_TOP}/appliances.xml
 export ARCHAPPL_MYIDENTITY=${AACHAPPL_SINGLE_IDENTITY}
 
-
-
-# Hostname is not reiable to use it in the appliances.xml, so force to get the running
-# IP, and use it into... need to change them by other demands
-
-declare hostname_cmd="$(hostname)"
-export  _HOST_NAME="$(tr -d ' ' <<< $hostname_cmd )"
-export  _HOST_IP="$(ping -n  -c 1 ${_HOST_NAME} | awk 'BEGIN {FS="[=]|[ ]"} NR==2 {print $4}' | cut -d: -f1)";
-export  _USER_NAME="$(whoami)"
 
 
 
