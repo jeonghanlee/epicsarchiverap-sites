@@ -119,7 +119,7 @@ popd
 printf "\n%s\n" "----->"
 
 pushd ${SC_TOP}
-printf  "Put %s in $s\n" "${APPLIANCES_XML}" "${ARCHAPPL_TOP}";
+printf  "Put %s in %s\n" "${APPLIANCES_XML}" "${ARCHAPPL_TOP}";
 
 # 2) Put appliances.xml in  "${ARCHAPPL_TOP}"
 
@@ -170,7 +170,7 @@ printf " Deploy multiple tomcats into %s\n" "${ARCHAPPL_TOP}";
 # 3) Deploy multiple tomcats into ${DEPLOY_DIR} via the original source
 #
 printf "Calling %s %s\n" "${aa_deployMultipleTomcats_py}" "${ARCHAPPL_TOP}";
-${SUDO_CMD} python  "${aa_deployMultipleTomcats_py}" "${ARCHAPPL_TOP}"
+${SUDO_CMD} -E python  "${aa_deployMultipleTomcats_py}" "${ARCHAPPL_TOP}"
 
 
 printf "\n%s\n" "--------->"

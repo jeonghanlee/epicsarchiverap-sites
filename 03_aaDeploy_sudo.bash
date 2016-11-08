@@ -98,7 +98,7 @@ site_specific_dir="${SC_TOP}/site_specific_content"
 ## Change template for web sites
 if [[ -f ${site_specific_dir}/template_changes.html ]]; then
     printf "\nModifying static contents for the site specific information\n";
-    ${SUDO_CMD} java -cp ${ARCHAPPL_TOP}/mgmt/webapps/mgmt/WEB-INF/classes \
+    ${SUDO_CMD} -E java -cp ${ARCHAPPL_TOP}/mgmt/webapps/mgmt/WEB-INF/classes \
 		org.epics.archiverappliance.mgmt.bpl.SyncStaticContentHeadersFooters \
 		${site_specific_dir}/template_changes.html \
 		${ARCHAPPL_TOP}/mgmt/webapps/mgmt/ui
@@ -110,7 +110,7 @@ fi
 ## Copy site specific images
 if [[ -d ${site_specific_dir}/img ]]; then
     printf "\nCopying site specific images recursively from %s onto %s\n" "${SC_TOP}" "${ARCHAPPL_TOP}";
-    ${SUDO_CMD} cp -R ${site_specific_dir}/img/* ${ARCHAPPL_TOP}/mgmt/webapps/mgmt/ui/comm/img/ ;
+    ${SUDO_CMD} -E cp -R ${site_specific_dir}/img/* ${ARCHAPPL_TOP}/mgmt/webapps/mgmt/ui/comm/img/ ;
     printf "\n"
 fi
 
@@ -121,7 +121,7 @@ if [[ -d ${site_specific_dir}/css ]]; then
     printf "\nCopying site specific CSS files from %s onto %s\n" "${SC_TOP}" "${ARCHAPPL_TOP}";
     for service in ${tomcat_services[@]}; do
 	printf "%s %26s is deploying...\n" "-->" "new main.css in ${service}"
-	${SUDO_CMD} cp -R ${site_specific_dir}/css/main.css ${ARCHAPPL_TOP}/${service}/webapps/${service}/ui/comm/css/ ;
+	${SUDO_CMD} -E cp -R ${site_specific_dir}/css/main.css ${ARCHAPPL_TOP}/${service}/webapps/${service}/ui/comm/css/ ;
     done
     printf "\n";
 fi
