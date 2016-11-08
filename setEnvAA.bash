@@ -20,8 +20,8 @@
 # Date   : 
 # version : 0.1.1 
 
-THIS_SCRIPT=$(realpath "$0")
-THIS_TOP="$(dirname "$THIS_SCRIPT")"
+export THIS_SCRIPT=$(realpath "$0")
+export THIS_TOP="$(dirname "$THIS_SCRIPT")"
 
 
 # Hostname is not reiable to use it in the appliances.xml, so force to get the running

@@ -17,11 +17,10 @@
 #  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
 #
 # 
-# Shell  : aaBuild.bash
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.2 for CentOS 7.2
+# version : 0.9.3
 #
 
 # http://www.gnu.org/software/bash/manual/bashref.html#Bash-Builtins
@@ -46,7 +45,7 @@ function popd()  { builtin popd  "$@" > /dev/null; }
 
 
 function ini_func() { sleep 1; printf "\n>>>> You are entering in : %s\n" "${1}"; }
-function end_func() { sleep 1; printf "\n<<<< You are leaving from %s\n" "${1}"; }
+function end_func() { sleep 1; printf "\n<<<< You are leaving from %s\n"  "${1}"; }
 
 function checkstr() {
     if [ -z "$1" ]; then
@@ -203,8 +202,10 @@ function archappl_setup() {
     local git_src_url=${AA_GIT_URL};
     local git_src_name=${AA_GIT_NAME};
     local git_src_dir=${SC_TOP}/${git_src_name};
+
+    # we need the recursive option in order to build a web based viewer
     
-    git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}";
+    git_clone --recursive "${git_src_dir}" "${git_src_url}" "${git_src_name}";
 
     pushd $git_src_dir;
 

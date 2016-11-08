@@ -317,9 +317,9 @@ ${SUDO_CMD} -v
 
 while [ true ];
 do
-    ${SUDO_CMD} -n /bin/true;
-    sleep 60;
-    kill -0 "$$" || exit;
+   ${SUDO_CMD} -n /bin/true;
+   sleep 60;
+   kill -0 "$$" || exit;
 done 2>/dev/null &
 
 . ${SC_TOP}/setEnvAA.bash
@@ -340,10 +340,7 @@ epics_proc=$!
 # root
 mariadb_setup;
 
-
 wait "$epics_proc" 
-
-
 
 replace_gnome_and_yum_update;
 
