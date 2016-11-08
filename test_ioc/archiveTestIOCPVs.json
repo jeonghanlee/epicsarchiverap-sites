@@ -1,12 +1,12 @@
 [
-  {"SamplingPeriod": "2.0", "pv": "aauser:calc1", "SamplingMethod": "MONITOR"}
-, {"samplingperiod": "2.0", "pv": "aauser:calc2", "samplingmethod": "MONITOR"}
+  {"samplingperiod": "2.0", "pv": "aauser:calc1", "samplingmethod": "MONITOR"}
+, {"samplingPeriod": "2.0", "pv": "aauser:calc2", "samplingmethod": "MONITOR"}
 , {"samplingperiod": "2.0", "pv": "aauser:calc3", "samplingmethod": "MONITOR"}
 , {"samplingperiod": "2.0", "pv": "aauser:calc4", "samplingmethod": "MONITOR"}
-, {"samplingperiod": "1.0", "pv": "aauser:calcExample", "samplingmethod": "SCAN"}
-, {"samplingperiod": "1.0", "pv": "aauser:calcExample1", "samplingmethod": "SCAN"}
-, {"samplingperiod": "1.0", "pv": "aauser:calcExample2", "samplingmethod": "SCAN"}
-, {"samplingperiod": "1.0", "pv": "aauser:calcExample3", "samplingmethod": "SCAN"}
+, {"samplingPeriod": "1.1", "pv": "aauser:calcExample",  "samplingMethod": "MONITOR"}
+, {"samplingPeriod": "1.2", "pv": "aauser:calcExample1", "samplingMethod": "MONITOR"}
+, {"samplingPeriod": "2.0", "pv": "aauser:calcExample2", "samplingMethod": "MONITOR"}
+, {"samplingPeriod": "3.0", "pv": "aauser:calcExample3", "samplingMethod": "SCAN"}
 , {"samplingperiod": "2.0", "pv": "aauser:ai1", "samplingmethod": "MONITOR"}
 , {"samplingperiod": "2.0", "pv": "aauser:ai2", "samplingmethod": "MONITOR"}
 , {"samplingperiod": "2.0", "pv": "aauser:ai3", "samplingmethod": "MONITOR"}
