@@ -77,11 +77,11 @@ export LD_LIBRARY_PATH=${ARCHAPPL_TOP}/engine/webapps/engine/WEB-INF/lib/native/
 # has the different structures. 
 #
 export AACHAPPL_SINGLE_IDENTITY="appliance0"
-
+export APPLIANCES_XML="appliances.xml";
 # The following variables are defined in archappl.
 # Do not change other names
-export ARCHAPPL_APPLIANCES=${ARCHAPPL_TOP}/appliances.xml
-export ARCHAPPL_MYIDENTITY=${AACHAPPL_SINGLE_IDENTITY}
+export ARCHAPPL_APPLIANCES=${ARCHAPPL_TOP}/${APPLIANCES_XML};
+export ARCHAPPL_MYIDENTITY=${AACHAPPL_SINGLE_IDENTITY};
 
 
 
