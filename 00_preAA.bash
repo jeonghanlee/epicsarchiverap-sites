@@ -334,7 +334,7 @@ packages_preparation_for_archappl;
 # an user
 printf "EPICS Base installation is ongoing in background process\n";
 printf "The installation log is %s\n" "${SC_TOP}/epics.log";
-( epics_setup&>${SC_TOP}/epics.log )&;
+( epics_setup&>${SC_TOP}/epics.log )&
 epics_proc=$!
 
 # root
