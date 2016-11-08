@@ -326,7 +326,7 @@ done 2>/dev/null &
 
 # root
 preparation;
-prepare_stroage &> ${SC_TOP}/storage.log &;
+prepare_stroage;
 
 # root
 packages_preparation_for_archappl;
@@ -334,10 +334,16 @@ packages_preparation_for_archappl;
 # an user
 printf "EPICS Base installation is ongoing in background process\n";
 printf "The installation log is %s\n" "${SC_TOP}/epics.log";
-epics_setup &>${SC_TOP}/epics.log & ;
+( epics_setup&>${SC_TOP}/epics.log )&;
+epics_proc=$!
 
 # root
-mariadb_setup &>${SC_TOP}/mariadb.log;
+( mariadb_setup&>${SC_TOP}/epics.log )&;
+mariadb_proc=$!
+
+wait "$epics_proc" "$mariadb_proc" 
+
+
 
 replace_gnome_and_yum_update;
 
