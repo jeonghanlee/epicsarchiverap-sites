@@ -217,7 +217,7 @@ function epics_setup(){
 
     pushd $git_src_dir;
     printf "Compiling EPICS base %s ... \n" "${EPICS_BASE_VER}";
-    make
+    nice make
     popd;
     
     end_func ${func_name};
@@ -263,7 +263,7 @@ function packages_preparation_for_archappl(){
     package_list+=" ";
     package_list+="net-snmp net-snmp-utils net-snmp-devel darcs libxml2-devel libpng12-devel netcdf-devel hdf5-devel lbzip2-utils libusb-devel python-devel";
     
-    ${SUDO_CMD} yum -y install "${package_list}";
+    ${SUDO_CMD} yum -y install ${package_list};
 
     # Even if the service is active (running), it is OK to run "enable and start" again. 
     # systemctl can accept many services with one command
@@ -299,7 +299,7 @@ function replace_gnome_and_yum_update() {
     end_func ${func_name}
 }
 
-function prepare_stroage() {
+function prepare_storage() {
 
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 
@@ -326,20 +326,24 @@ done 2>/dev/null &
 
 # root
 preparation;
-prepare_stroage &> ${SC_TOP}/storage.log &;
+prepare_storage;
 
 # root
 packages_preparation_for_archappl;
 
-wait
-
 # an user
-epics_setup &>${SC_TOP}/epics.log & ;
+printf "EPICS Base installation is ongoing in background process\n";
+printf "The installation log is %s\n" "${SC_TOP}/epics.log";
+( epics_setup&>${SC_TOP}/epics.log )&
+epics_proc=$!
 
 # root
-mariadb_setup &>${SC_TOP}/mariadb.log &;
+mariadb_setup;
 
-wait
+
+wait "$epics_proc" 
+
+
 
 replace_gnome_and_yum_update;
 
