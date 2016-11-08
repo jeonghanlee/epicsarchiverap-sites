@@ -86,8 +86,7 @@ function git_clone() {
     if [ -z "$tag_name" ]; then
 	git clone --recursive "${git_src_url}/${git_src_name}" "${git_src_dir}";
     else
-	n
-	git clone -b "${tag_name}" --single-branch --depth 1 "${git_src_url}/${git_src_name}" "${git_src_dir}";
+	git clone --recursive -b "${tag_name}" --single-branch --depth 1 "${git_src_url}/${git_src_name}" "${git_src_dir}";
     fi
 
     end_func ${func_name};
