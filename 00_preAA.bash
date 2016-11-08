@@ -338,10 +338,10 @@ printf "The installation log is %s\n" "${SC_TOP}/epics.log";
 epics_proc=$!
 
 # root
-( mariadb_setup&>${SC_TOP}/epics.log )&;
-mariadb_proc=$!
+mariadb_setup;
 
-wait "$epics_proc" "$mariadb_proc" 
+
+wait "$epics_proc" 
 
 
 
