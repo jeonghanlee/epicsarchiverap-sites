@@ -263,7 +263,7 @@ function packages_preparation_for_archappl(){
     package_list+=" ";
     package_list+="net-snmp net-snmp-utils net-snmp-devel darcs libxml2-devel libpng12-devel netcdf-devel hdf5-devel lbzip2-utils libusb-devel python-devel";
     
-    ${SUDO_CMD} yum -y install "${package_list}";
+    ${SUDO_CMD} yum -y install ${package_list};
 
     # Even if the service is active (running), it is OK to run "enable and start" again. 
     # systemctl can accept many services with one command
@@ -331,15 +331,13 @@ prepare_stroage &> ${SC_TOP}/storage.log &;
 # root
 packages_preparation_for_archappl;
 
-wait
-
 # an user
+printf "EPICS Base installation is ongoing in background process\n";
+printf "The installation log is %s\n" "${SC_TOP}/epics.log";
 epics_setup &>${SC_TOP}/epics.log & ;
 
 # root
-mariadb_setup &>${SC_TOP}/mariadb.log &;
-
-wait
+mariadb_setup &>${SC_TOP}/mariadb.log;
 
 replace_gnome_and_yum_update;
 
