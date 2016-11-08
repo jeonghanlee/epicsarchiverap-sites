@@ -55,7 +55,7 @@ function checkstr() {
 }
 
 # Generic : git_clone
-# 1.0.2 Monday, Monday, November  7 15:53:13 CET 2016
+# 1.0.3 Tuesday, November  8 18:13:44 CET 2016
 #
 # Required Global Variable
 # - SC_LOGDATE      : Input
@@ -74,7 +74,7 @@ function git_clone() {
     if [[ ! -d ${git_src_dir} ]]; then
 	printf "No git source repository in the expected location %s\n" "${git_src_dir}";
     else
-	printf "Old git source repository in the expected location %s\b" "${git_src_dir}";
+	printf "Old git source repository in the expected location %s\n" "${git_src_dir}";
 	printf "The old one is renamed to %s_%s\n" "${git_src_dir}" "${SC_LOGDATE}";
 	mv  ${git_src_dir} ${git_src_dir}_${SC_LOGDATE}
     fi
@@ -82,10 +82,11 @@ function git_clone() {
     # Alwasy fresh cloning ..... in order to workaround any local 
     # modification in the repository, which was cloned before. 
     #
+    # we need the recursive option in order to build a web based viewer for Archappl
     if [ -z "$tag_name" ]; then
-	# need to test this condition without "specificed" version
-	git clone "${git_src_url}/${git_src_name}" "${git_src_dir}";
+	git clone --recursive "${git_src_url}/${git_src_name}" "${git_src_dir}";
     else
+	n
 	git clone -b "${tag_name}" --single-branch --depth 1 "${git_src_url}/${git_src_name}" "${git_src_dir}";
     fi
 
@@ -203,9 +204,9 @@ function archappl_setup() {
     local git_src_name=${AA_GIT_NAME};
     local git_src_dir=${SC_TOP}/${git_src_name};
 
-    # we need the recursive option in order to build a web based viewer
+  
     
-    git_clone --recursive "${git_src_dir}" "${git_src_url}" "${git_src_name}";
+    git_clone  "${git_src_dir}" "${git_src_url}" "${git_src_name}";
 
     pushd $git_src_dir;
 
