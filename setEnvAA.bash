@@ -20,8 +20,8 @@
 # Date   : 
 # version : 0.1.1 
 
-declare -gr THIS_SCRIPT="$(realpath "$0")"
-declare -gr THIS_TOP="$(dirname "$THIS_SCRIPT")"
+THIS_SCRIPT=$(realpath "$0")
+THIS_TOP="$(dirname "$THIS_SCRIPT")"
 
 
 # Hostname is not reiable to use it in the appliances.xml, so force to get the running
@@ -60,6 +60,9 @@ export AA_GIT_DIR=${THIS_TOP}/${AA_GIT_NAME};
 # aaSetup, aaService
 export AA_TARGET_TOP=/opt
 export ARCHAPPL_TOP=${AA_TARGET_TOP}/archappl
+
+export LD_LIBRARY_PATH=${ARCHAPPL_TOP}/engine/webapps/engine/WEB-INF/lib/native/${EPICS_HOST_ARCH}:${ARCHAPPL_TOP}/engine/webapps/engine/WEB-INF/lib:${LD_LIBRARY_PATH}
+
 
 # # Use an in memory persistence layer
 # export ARCHAPPL_PERSISTENCE_LAYER=org.epics.archiverappliance.config.persistence.InMemoryPersistence

@@ -78,16 +78,7 @@ function startTomcatAtLocation() {
     #
     echo ">> Starting TOMCAT at ${CATALINA_BASE}"
     # 
-    ARCH=`uname -m`
-    if [[ $ARCH == 'x86_64' || $ARCH == 'amd64' ]]
-    then
-	echo "Using 64 bit versions of libraries"
-	export LD_LIBRARY_PATH=${CATALINA_BASE}/webapps/engine/WEB-INF/lib/native/linux-x86_64:${LD_LIBRARY_PATH}
 
-    else
-	echo "Using 32 bit versions of libraries"
-	export LD_LIBRARY_PATH=${CATALINA_BASE}/webapps/engine/WEB-INF/lib/native/linux-x86:${LD_LIBRARY_PATH}
-    fi
     echo $LD_LIBRARY_PATH
 
     pushd ${CATALINA_BASE}/logs

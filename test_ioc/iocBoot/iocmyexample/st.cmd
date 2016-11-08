@@ -26,3 +26,6 @@ iocInit
 
 ## Start any sequence programs
 #seq sncExample, "user=aauser"
+
+dbl > ../../testIocPVs
+
