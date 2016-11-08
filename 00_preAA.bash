@@ -217,7 +217,7 @@ function epics_setup(){
 
     pushd $git_src_dir;
     printf "Compiling EPICS base %s ... \n" "${EPICS_BASE_VER}";
-    make
+    nice make
     popd;
     
     end_func ${func_name};
@@ -299,7 +299,7 @@ function replace_gnome_and_yum_update() {
     end_func ${func_name}
 }
 
-function prepare_stroage() {
+function prepare_storage() {
 
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 
@@ -326,7 +326,7 @@ done 2>/dev/null &
 
 # root
 preparation;
-prepare_stroage;
+prepare_storage;
 
 # root
 packages_preparation_for_archappl;
