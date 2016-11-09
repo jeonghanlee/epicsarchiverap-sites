@@ -51,12 +51,13 @@ declare -g SUDO_PID="";
 
 function sudo_start() {
     ${SUDO_CMD} -v;
-    ( while true; do ${SUDO_CMD} -vn; sleep 60; done; ) &
+    ( while true; do ${SUDO_CMD} -vn; sleep 30; done; ) &
     SUDO_PID="$!"
 }
 
 function sudo_end() {
-    ${SUDO_CMD} kill -9 "$SUDO_PID";
+    # silently kill the sudo process
+    ${SUDO_CMD} kill -13 "$SUDO_PID";
 }
 
 
@@ -146,7 +147,7 @@ git_src_dir=${SC_TOP}/${git_src_name};
 
 git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}" "develop" ; 
 
-printf "\nPlease go %s\n" "${SC_GIT_SRC_DIR}";
+printf "\nPlease go %s\n" "${git_src_dir}";
 printf "Do bash the following scripts in order\n";
 printf "$ bash 00_preAA.bash\n";
 printf "$ bash 01_aaBuild.bash\n";

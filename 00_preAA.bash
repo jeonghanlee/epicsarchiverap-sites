@@ -88,28 +88,21 @@ function git_clone() {
     end_func ${func_name};
 }
 
-#
-# Specific only for this script : Global vairables - readonly
-#
+
+
 declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
 
-# http://stackoverflow.com/questions/5866767/shell-script-sudo-permissions-lost-over-time
-
-function startsudo() {
-    ${SUDO_CMD} -v
-    ( while true; do ${SUDO_CMD} -v; sleep 50; done; ) &
+function sudo_start() {
+    ${SUDO_CMD} -v;
+    ( while true; do ${SUDO_CMD} -vn; sleep 30; done; ) &
     SUDO_PID="$!"
-    trap stopsudo SIGINT SIGTERM
 }
 
-function stopsudo() {
-    kill "$SUDO_PID";
-    trap - SIGINT SIGTERM
-    ${SUDO_CMD} -k
+function sudo_end() {
+    # silently kill the sudo process
+    ${SUDO_CMD} kill -13 "$SUDO_PID";
 }
-
-
 
 # Specific : preparation
 #
@@ -321,7 +314,7 @@ function prepare_storage() {
     end_func ${func_name};
 }
 
-startsudo;
+sudo_start;
 
 . ${SC_TOP}/setEnvAA.bash
 
@@ -362,7 +355,7 @@ case "$1" in
 	;;
 esac
 
-endsudo;
+sudo_end;
 
 exit
 

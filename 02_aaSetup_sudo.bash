@@ -35,27 +35,24 @@ function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
 
+
 declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
 
-
-# http://stackoverflow.com/questions/5866767/shell-script-sudo-permissions-lost-over-time
-function startsudo() {
-    ${SUDO_CMD} -v
-    ( while true; do ${SUDO_CMD} -v; sleep 50; done; ) &
+function sudo_start() {
+    ${SUDO_CMD} -v;
+    ( while true; do ${SUDO_CMD} -vn; sleep 30; done; ) &
     SUDO_PID="$!"
-    trap stopsudo SIGINT SIGTERM
 }
 
-function stopsudo() {
-    kill "$SUDO_PID";
-    trap - SIGINT SIGTERM
-    ${SUDO_CMD} -k
+function sudo_end() {
+    # silently kill the sudo process
+    ${SUDO_CMD} kill -13 "$SUDO_PID";
 }
 
 
 
-startsudo;
+sudo_start;
 
 . ${SC_TOP}/setEnvAA.bash
 
@@ -272,6 +269,9 @@ EOF
 ${SUDO_CMD} mv ${tomcat_context_container} ${ARCHAPPL_TOP}/mgmt/conf/ ; 
 popd
 
+
+sudo_end;
+
 printf "%s\n" "------|"
 
 
@@ -295,6 +295,6 @@ declare -r aa_deploy_db_tables_new=${aa_deploy_db_tables}_new.sql
 sed "s/CREATE TABLE /CREATE TABLE IF NOT EXISTS /g" ${aa_deploy_db_tables} > ${aa_deploy_db_tables_new};
 mysql --user=${DB_USER_NAME} --password=${DB_USER_PWD} --database=${DB_NAME} < ${aa_deploy_db_tables_new};
 
-endsudo;
+
 
 exit

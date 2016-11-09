@@ -35,7 +35,6 @@ function popd()  { builtin popd  "$@" > /dev/null; }
 
 . ${SC_TOP}/setEnvAA.bash
 
-
 # If you have your own policies file, please change this line.
 # export ARCHAPPL_POLICIES=/nfs/epics/archiver/production_policies.py
 

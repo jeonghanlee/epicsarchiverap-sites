@@ -45,22 +45,16 @@ function checkstr() {
 declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
 
-# http://stackoverflow.com/questions/5866767/shell-script-sudo-permissions-lost-over-time
-
-function startsudo() {
-    ${SUDO_CMD} -v
-    ( while true; do ${SUDO_CMD} -v; sleep 50; done; ) &
+function sudo_start() {
+    ${SUDO_CMD} -v;
+    ( while true; do ${SUDO_CMD} -vn; sleep 30; done; ) &
     SUDO_PID="$!"
-    trap stopsudo SIGINT SIGTERM
 }
 
-function stopsudo() {
-    kill "$SUDO_PID";
-    trap - SIGINT SIGTERM
-    ${SUDO_CMD} -k
+function sudo_end() {
+    # silently kill the sudo process
+    ${SUDO_CMD} kill -13 "$SUDO_PID";
 }
-
-
 
 declare -g  WARSRC_DIR=${SC_TOP};
 
@@ -83,7 +77,7 @@ function deploy_war_release() {
 }
 
 
-startsudo;
+sudo_start;
 
 . ${SC_TOP}/setEnvAA.bash
 
@@ -144,7 +138,7 @@ fi
 echo "Done deploying a new release from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}"
 
 
-endsudo;
+sudo_end;
 
 exit
 
