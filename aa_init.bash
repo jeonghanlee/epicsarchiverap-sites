@@ -49,19 +49,14 @@ function checkstr() {
 declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
 
-# http://stackoverflow.com/questions/5866767/shell-script-sudo-permissions-lost-over-time
-
-function startsudo() {
-    ${SUDO_CMD} -v
-    ( while true; do ${SUDO_CMD} -v; sleep 50; done; ) &
+function sudo_start() {
+    ${SUDO_CMD} -v;
+    ( while true; do ${SUDO_CMD} -vn; sleep 60; done; ) &
     SUDO_PID="$!"
-    trap stopsudo SIGINT SIGTERM
 }
 
-function stopsudo() {
-    kill "$SUDO_PID";
-    trap - SIGINT SIGTERM
-    ${SUDO_CMD} -k
+function sudo_end() {
+    ${SUDO_CMD} kill -9 "$SUDO_PID";
 }
 
 
@@ -141,8 +136,7 @@ function preparation() {
 }
 
 
-
-startsudo;
+sudo_start;
 
 preparation; 
 
@@ -161,6 +155,6 @@ printf "# bash 03_aaDeploy.bash\n";
 printf "\n";
 printf "# bash aaService.bash start/stop/status\n";
 
-endsudo;
+sudo_end;
 
 exit;
