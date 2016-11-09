@@ -47,6 +47,7 @@ declare -g SUDO_PID="";
 
 
 function sudo_start() {
+    ${SUDO_CMD} -v
     ( while [ true ]; do
 	  ${SUDO_CMD} -n /bin/true;
 	  sleep 60;

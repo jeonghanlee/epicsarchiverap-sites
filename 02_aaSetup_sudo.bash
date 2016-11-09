@@ -36,10 +36,13 @@ function popd()  { builtin popd  "$@" > /dev/null; }
 
 
 
+
+
 declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
 
 function sudo_start() {
+    ${SUDO_CMD} -v
     ( while [ true ]; do
 	  ${SUDO_CMD} -n /bin/true;
 	  sleep 60;
@@ -69,6 +72,9 @@ then
     printf "Please check it, and the old %s is renamed to %s\n" "${ARCHAPPL_TOP}" "${ARCHAPPL_TOP}-PLEASECHECK-${SC_LOGDATE}"
     ${SUDO_CMD} mv ${ARCHAPPL_TOP} ${ARCHAPPL_TOP}-PLEASECHECK-${SC_LOGDATE}
 fi
+
+
+declare -r SC_DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE};
 
 ${SUDO_CMD} mkdir -p ${SC_DEPLOY_DIR}
 ${SUDO_CMD} ln -s ${SC_DEPLOY_DIR} ${ARCHAPPL_TOP}

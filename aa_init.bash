@@ -51,6 +51,7 @@ declare -g SUDO_PID="";
 
 
 function sudo_start() {
+    ${SUDO_CMD} -v
     ( while [ true ]; do
 	  ${SUDO_CMD} -n /bin/true;
 	  sleep 60;
@@ -156,6 +157,5 @@ printf "# bash 03_aaDeploy.bash\n";
 printf "\n";
 printf "# bash aaService.bash start/stop/status\n";
 
-sudo_end;
 
 exit;
