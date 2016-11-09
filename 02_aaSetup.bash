@@ -19,14 +19,9 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.3 for CentOS 7.2
+# version : 0.9.4 for CentOS 7.2
 #
 #
-# sudo asSetup.bash
-#
-# 
-# PREFIX : SC_, so declare -p can show them in a place
-# 
 # Generic : Global vaiables - readonly
 #
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -34,22 +29,32 @@ declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
-
 # Generic : Redefine pushd and popd to reduce their output messages
 # 
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
 
+
+
+
+declare -gr SUDO_CMD="sudo";
+declare -g SUDO_PID="";
+
+function sudo_start() {
+    ${SUDO_CMD} -v
+    ( while [ true ]; do
+	  ${SUDO_CMD} -n /bin/true;
+	  sleep 60;
+	  kill -0 "$$" || exit;
+      done 2>/dev/null
+    )&
+}
+
+
+sudo_start;
+
 . ${SC_TOP}/setEnvAA.bash
-
-
-declare -r SC_DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE}
-
-# 0) It is safe to create archappl directory according to date, time, 
-#    then, create symlink to point to the real directory
-#    So, ARCHAPPL_DIR is the symlink.
-
 
 printf "\n%s\n" "->"
 
@@ -58,18 +63,21 @@ pushd ${AA_TARGET_TOP}
 if [[ -L ${ARCHAPPL_TOP} && -d ${ARCHAPPL_TOP} ]]
 then
     printf "%s is a symlink to a directory, so removing it.\n" "${ARCHAPPL_TOP}";
-    rm ${ARCHAPPL_TOP}
+    ${SUDO_CMD} rm ${ARCHAPPL_TOP}
 fi
 
 if [[ -d ${ARCHAPPL_TOP} ]]
 then
     printf "$s is the physical directory, it should NOT be." "${ARCHAPPL_TOP}";
     printf "Please check it, and the old %s is renamed to %s\n" "${ARCHAPPL_TOP}" "${ARCHAPPL_TOP}-PLEASECHECK-${SC_LOGDATE}"
-    mv ${ARCHAPPL_TOP} ${ARCHAPPL_TOP}-PLEASECHECK-${SC_LOGDATE}
+    ${SUDO_CMD} mv ${ARCHAPPL_TOP} ${ARCHAPPL_TOP}-PLEASECHECK-${SC_LOGDATE}
 fi
 
-mkdir -p ${SC_DEPLOY_DIR}
-ln -s ${SC_DEPLOY_DIR} ${ARCHAPPL_TOP}
+
+declare -r SC_DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE};
+
+${SUDO_CMD} mkdir -p ${SC_DEPLOY_DIR}
+${SUDO_CMD} ln -s ${SC_DEPLOY_DIR} ${ARCHAPPL_TOP}
 
 popd
 
@@ -79,8 +87,9 @@ pushd ${SC_TOP}
 
 printf "Put log4j.properties in ${TOMCAT_HOME}/lib\n"
 # 1) Put log4j.properties in ${TOMCAT_HOME}/lib
+declare LOG4J="log4j.properties";
 
-cat > ${TOMCAT_HOME}/lib/log4j.properties <<EOF
+cat > ${LOG4J} <<EOF
 # 
 #  Generated at  ${SC_LOGDATE}     
 #            on  ${_HOST_NAME}  
@@ -110,17 +119,18 @@ log4j.appender.A1.layout=org.apache.log4j.PatternLayout
 log4j.appender.A1.layout.ConversionPattern=%-4r [%t] %-5p %c %x - %m%n
 EOF
 
+# Permission and ownership should be considered later
+${SUDO_CMD} mv ${LOG4J} ${TOMCAT_HOME}/lib/ ;
 popd
 
-printf "\n%s\n" "----->"
 
-pushd ${SC_TOP}
-printf  "Put appliances.xml in $s\n" "${ARCHAPPL_TOP}";
 
 # 2) Put appliances.xml in  "${ARCHAPPL_TOP}"
+printf "\n%s\n" "----->"
+pushd ${SC_TOP}
+printf  "Put %s in %s\n" "${APPLIANCES_XML}" "${ARCHAPPL_TOP}";
 
-
-cat > ${ARCHAPPL_APPLIANCES} <<EOF
+cat > ${APPLIANCES_XML} <<EOF
 <?xml version='1.0' encoding='utf-8'?>
 <!--
   Took the contents from single\_machine\_install.sh, and modified 
@@ -133,6 +143,7 @@ cat > ${ARCHAPPL_APPLIANCES} <<EOF
                 ${SC_TOP}/${SC_SCRIPTNAME}
 
   Jeong Han Lee, han.lee@esss.se
+
 -->
 <appliances>
    <appliance>
@@ -147,27 +158,27 @@ cat > ${ARCHAPPL_APPLIANCES} <<EOF
 </appliances>
 EOF
 
+# Permission and ownership should be considered later
+${SUDO_CMD} mv ${APPLIANCES_XML} ${ARCHAPPL_TOP}/ ;
+
 popd
 
 
-printf "\n%s\n" "------->"
-
-## TODO
-#  I should develop a way if one wants to use "the binary file from the site"
-#  Wednesday, September  7 13:28:03 CEST 2016, jhlee
-
-
-declare -r aa_deployMultipleTomcats_py=${AA_GIT_DIR}/docs/samples/deployMultipleTomcats.py
-
-printf " Deploy multiple tomcats into %s\n" "${ARCHAPPL_TOP}";
 # 3) Deploy multiple tomcats into ${DEPLOY_DIR} via the original source
 #
+printf "\n%s\n" "------->"
+
+if [[ ! -d ${AA_GIT_DIR} ]]; then
+    printf "No git source repository in the expected location %s\n" "${AA_GIT_DIR}";
+    exit;
+fi
+
+declare -r aa_deployMultipleTomcats_py=${AA_GIT_DIR}/docs/samples/deployMultipleTomcats.py
+printf " Deploy multiple tomcats into %s\n" "${ARCHAPPL_TOP}";
 printf "Calling %s %s\n" "${aa_deployMultipleTomcats_py}" "${ARCHAPPL_TOP}";
-python  "${aa_deployMultipleTomcats_py}" "${ARCHAPPL_TOP}"
+${SUDO_CMD} -E python  "${aa_deployMultipleTomcats_py}" "${ARCHAPPL_TOP}"
 
 
-printf "\n%s\n" "--------->"
-printf  "Put context.xml in to %s/mgmt/conf/\n" "${ARCHAPPL_TOP}";
 
 # 4) Put context.xml in to ${ARCHAPPL_TOP}/mgmt/conf/
 #    in order that mgmt tomcat service can connect to
@@ -175,8 +186,12 @@ printf  "Put context.xml in to %s/mgmt/conf/\n" "${ARCHAPPL_TOP}";
 #    Only the mgmt web app needs to talk to the MySQL database. 
 #    It is an error/bug if the other components need to talk to MySQL;
 
-tomcat_context_container=${ARCHAPPL_TOP}/mgmt/conf/context.xml
+printf "\n%s\n" "--------->"
+printf  "Put context.xml in to %s/mgmt/conf/\n" "${ARCHAPPL_TOP}";
 
+pushd ${SC_TOP};
+
+tomcat_context_container=context.xml
 
 cat > ${tomcat_context_container} <<EOF
 <?xml version='1.0' encoding='utf-8'?>
@@ -209,6 +224,7 @@ cat > ${tomcat_context_container} <<EOF
                 ${SC_TOP}/${SC_SCRIPTNAME}
 
   Jeong Han Lee, han.lee@esss.se
+
 -->
 <Context>
 
@@ -252,6 +268,12 @@ cat > ${tomcat_context_container} <<EOF
 </Context>
 EOF
 
+# Permission and ownership should be considered later
+${SUDO_CMD} mv ${tomcat_context_container} ${ARCHAPPL_TOP}/mgmt/conf/ ; 
+popd
+
+
+
 printf "%s\n" "------|"
 
 
@@ -265,14 +287,16 @@ printf "%s\n" "------|"
 #| PVTypeInfo          |
 #+---------------------+
 
-
 declare -r aa_deploy_db_tables=${AA_GIT_DIR}/src/main/org/epics/archiverappliance/config/persistence/archappl_mysql.sql
 declare -r aa_deploy_db_tables_new=${aa_deploy_db_tables}_new.sql
 
-#
 # In the case, to run this script again, keep the original file, and create new file with "IF NOT EXITS", 
 # and use the new file to query to DB.
 # Thus, if the tables exist in DB, it will skip to create these tables
 #
 sed "s/CREATE TABLE /CREATE TABLE IF NOT EXISTS /g" ${aa_deploy_db_tables} > ${aa_deploy_db_tables_new};
 mysql --user=${DB_USER_NAME} --password=${DB_USER_PWD} --database=${DB_NAME} < ${aa_deploy_db_tables_new};
+
+
+
+exit

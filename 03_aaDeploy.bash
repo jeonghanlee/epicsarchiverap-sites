@@ -16,33 +16,20 @@
 #  You should have received a copy of the GNU General Public License along with
 #  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
 #
-# Shell  : 03_aaDeploy.bash
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.3 CentOS 7.2
+# version : 0.9.4
 #
 # 
-
-# Example to execute this script as follows:
-#
-# [root@]# bash 03_aaDeploy.bash
-# or
-# [root@]# bash /home/aauser/gitsrc/epicsarchiverap-sites/03_aaDeploy.bash
-# 
-# Generic : Global vaiables - readonly
-#
 declare -gr SC_SCRIPT="$(realpath "$0")"
-declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
-declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
 
 # Generic : Redefine pushd and popd to reduce their output messages
 # 
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
-
 
 function ini_func() { sleep 1; printf "\n>>>> You are entering in  : %s\n" "${1}"; }
 function end_func() { sleep 1; printf "\n<<<< You are leaving from : %s\n" "${1}"; }
@@ -55,13 +42,23 @@ function checkstr() {
 }
 
 
-. ${SC_TOP}/setEnvAA.bash
+declare -gr SUDO_CMD="sudo";
+declare -g SUDO_PID="";
 
-declare -g WARSRC_DIR=${SC_TOP};
 
-# For not CentOS users
-# One should check that jar and java should be in PATH
-#
+function sudo_start() {
+    ${SUDO_CMD} -v
+    ( while [ true ]; do
+	  ${SUDO_CMD} -n /bin/true;
+	  sleep 60;
+	  kill -0 "$$" || exit;
+      done 2>/dev/null
+    )&
+}
+
+
+declare -g  WARSRC_DIR=${SC_TOP};
+
 function deploy_war_release() {
 
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
@@ -72,24 +69,23 @@ function deploy_war_release() {
     printf "%s %18s is deploying...\n" "-->" "new ${target} war"
 
     pushd ${deploy_dir}/${target}/webapps;
-    rm -rf ${target}*;
-    cp ${warsrc_dir}/${target}.war .;
-    mkdir ${target};
-    cd ${target};
-    jar xf ../${target}.war;
+    ${SUDO_CMD} rm -rf ${target}*;
+    ${SUDO_CMD} mkdir ${target};
+    ${SUDO_CMD} unzip ${warsrc_dir}/${target}.war -d ${target};
     popd;
     
     end_func ${func_name};
 }
 
 
+sudo_start;
 
-if [[ ! -f ${WARSRC_DIR}/mgmt.war ]]
-then
-    printf "You need to call 01_aaBuild.bash and 02_aaSetup.bash first.\n The folder ${WARSRC_DIR} does not seem to have a mgmt.war.\n"
+. ${SC_TOP}/setEnvAA.bash
+
+if [[ ! -f ${WARSRC_DIR}/mgmt.war ]]; then
+    printf "The folder ${WARSRC_DIR} does not seem to have a mgmt.war.\n"
     exit 1
 fi
-
 
 tomcat_services=("mgmt" "engine" "etl" "retrieval")
 
@@ -108,39 +104,43 @@ site_specific_dir="${SC_TOP}/site_specific_content"
 ##
 ## Change template for web sites
 
-if [[ -f ${site_specific_dir}/template_changes.html ]]
-then
+if [[ -f ${site_specific_dir}/template_changes.html ]]; then
     echo ""
     echo "Modifying static contents for the site specific information"
-    java -cp ${ARCHAPPL_TOP}/mgmt/webapps/mgmt/WEB-INF/classes \
-	 org.epics.archiverappliance.mgmt.bpl.SyncStaticContentHeadersFooters \
-	 ${site_specific_dir}/template_changes.html \
-	 ${ARCHAPPL_TOP}/mgmt/webapps/mgmt/ui
+    ${SUDO_CMD} -E java -cp ${ARCHAPPL_TOP}/mgmt/webapps/mgmt/WEB-INF/classes \
+	org.epics.archiverappliance.mgmt.bpl.SyncStaticContentHeadersFooters \
+	${site_specific_dir}/template_changes.html \
+	${ARCHAPPL_TOP}/mgmt/webapps/mgmt/ui
     echo ""
 fi
 
 ##
 ## Copy site specific images
-if [[ -d ${site_specific_dir}/img ]]
-then
+if [[ -d ${site_specific_dir}/img ]]; then
     echo ""
     echo "Copying site specific images recursively from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}";
-    cp -R ${site_specific_dir}/img/* ${ARCHAPPL_TOP}/mgmt/webapps/mgmt/ui/comm/img/ ;
+    ${SUDO_CMD} cp -R ${site_specific_dir}/img/* ${ARCHAPPL_TOP}/mgmt/webapps/mgmt/ui/comm/img/ ;
     echo ""
 fi
 
 ##
 ## Copy site specific main.css file
-if [[ -d ${site_specific_dir}/css ]]
-then
+if [[ -d ${site_specific_dir}/css ]]; then
     echo ""
     echo "Copying site specific CSS files from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}";
     for service in ${tomcat_services[@]}; do
 	printf "%s %26s is deploying...\n" "-->" "new main.css in ${service}"
-	cp -R ${site_specific_dir}/css/main.css ${ARCHAPPL_TOP}/${service}/webapps/${service}/ui/comm/css/ ;
+	${SUDO_CMD} cp -R ${site_specific_dir}/css/main.css ${ARCHAPPL_TOP}/${service}/webapps/${service}/ui/comm/css/ ;
     done
     echo ""
-   
+    
 fi
 
 echo "Done deploying a new release from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}"
+
+
+
+exit
+
+
+
