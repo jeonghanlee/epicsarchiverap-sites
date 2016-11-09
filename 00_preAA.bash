@@ -210,8 +210,9 @@ EOF
 
     pushd $git_src_dir;
     printf "Compiling mariadb-connector-j ... \n";
-    ${SUDO_CMD} -v;
-    ${SUDO_CMD} mvn -Dmaven.test.skip=true package;
+    ${SUDO_CMD} -v
+    # Skip javadoc and source jar files to save time...
+    ${SUDO_CMD} -E mvn -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true package;
 
     printf "Moving the java client to %s/lib" "${TOMCAT_HOME}"
     ${SUDO_CMD} cp -v  target/${mariadb_connectorj_jar} ${TOMCAT_HOME}/lib
@@ -327,29 +328,29 @@ prepare_storage;
 # root
 packages_preparation_for_archappl;
 
-# # an user
-# printf "EPICS Base installation is ongoing in background process\n";
-# printf "The installation log is %s\n" "${SC_TOP}/epics.log";
-# ( epics_setup&>${SC_TOP}/epics.log )&
-# epics_proc=$!
+# an user
+printf "EPICS Base installation is ongoing in background process\n";
+printf "The installation log is %s\n" "${SC_TOP}/epics.log";
+( epics_setup&>${SC_TOP}/epics.log )&
+epics_proc=$!
 
-# # root
-# mariadb_setup;
+# root
+mariadb_setup;
 
-# printf "MariaDB Setup is done, however, \n";
-# printf "EPICS Base installation is ongoing in background process\n";
-# printf "The installation log is %s\n" "${SC_TOP}/epics.log";
+printf "MariaDB Setup is done, however, \n";
+printf "EPICS Base installation is ongoing in background process\n";
+printf "The installation log is %s\n" "${SC_TOP}/epics.log";
 
-# wait "$epics_proc"
+wait "$epics_proc"
 
-printf "MariaDB installation is ongoing in background process\n";
-printf "The installation log is %s\n" "${SC_TOP}/mariadb.log";
-( mariadb_setup&>${SC_TOP}/mariadb.log )&
-mariadb_proc=$!
+# printf "MariaDB installation is ongoing in background process\n";
+# printf "The installation log is %s\n" "${SC_TOP}/mariadb.log";
+# ( mariadb_setup&>${SC_TOP}/mariadb.log )&
+# mariadb_proc=$!
 
-epics_setup;
+# epics_setup;
 
-wait "${mariadb_proc}";
+# wait "${mariadb_proc}";
 
 # # root
 # mariadb_setup;
