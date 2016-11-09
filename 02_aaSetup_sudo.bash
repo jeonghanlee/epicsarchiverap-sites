@@ -51,7 +51,13 @@ declare -r SC_DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE}
 #    So, ARCHAPPL_DIR is the symlink.
 
 
-${SUDO_CMD} -v
+${SUDO_CMD} -v;
+
+while true; do
+  ${SUDO_CMD} -nv; sleep 1m
+  kill -0 $$ 2>/dev/null || exit
+done &
+
 
 printf "\n%s\n" "->"
 

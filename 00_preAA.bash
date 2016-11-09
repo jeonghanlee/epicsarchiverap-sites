@@ -238,6 +238,9 @@ function packages_preparation_for_archappl(){
 
     declare -a package_list=();
 
+    # epel-release;
+    package_list+="epel-release";
+    package_list+=" ";
     # ntp
     package_list+="ntp"
     package_list+=" ";
@@ -255,7 +258,7 @@ function packages_preparation_for_archappl(){
     package_list+=" ";
 
     # Tomcat
-    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc openssl-devel apr-devel"
+    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc"
     package_list+=" ";
 
     # EPICS Base
@@ -284,9 +287,8 @@ function replace_gnome_and_yum_update() {
     checkstr ${SUDO_CMD};
     declare -a package_list=();
 
-    package_list+="epel-release";
-    package_list+=" ";
     package_list+="lightdm";
+    package_list+=" ";
 
     ${SUDO_CMD} yum -y install $package_list
     ${SUDO_CMD} yum -y groupinstall "MATE Desktop"
@@ -294,7 +296,7 @@ function replace_gnome_and_yum_update() {
     ${SUDO_CMD} systemctl disable gdm.service
     ${SUDO_CMD} systemctl enable lightdm.service
 
-    ${SUDO_CMD} yum -y update
+    ${SUDO_CMD} yum -y update;
  
     end_func ${func_name}
 }
@@ -315,12 +317,10 @@ function prepare_storage() {
 
 ${SUDO_CMD} -v
 
-while [ true ];
-do
-   ${SUDO_CMD} -n /bin/true;
-   sleep 60;
-   kill -0 "$$" || exit;
-done 2>/dev/null &
+while true; do
+  ${SUDO_CMD} -nv; sleep 1m
+  kill -0 $$ 2>/dev/null || exit
+done &
 
 . ${SC_TOP}/setEnvAA.bash
 

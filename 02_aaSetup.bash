@@ -40,6 +40,7 @@ declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
+
 . ${SC_TOP}/setEnvAA.bash
 
 
