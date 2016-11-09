@@ -258,7 +258,7 @@ function packages_preparation_for_archappl(){
     package_list+=" ";
 
     # Tomcat
-    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc"
+    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc unzip"
     package_list+=" ";
 
     # EPICS Base
