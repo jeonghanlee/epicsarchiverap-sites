@@ -16,33 +16,20 @@
 #  You should have received a copy of the GNU General Public License along with
 #  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
 #
-# Shell  : 03_aaDeploy.bash
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.3 CentOS 7.2
+# version : 0.9.4
 #
 # 
-
-# Example to execute this script as follows:
-#
-# [root@]# bash 03_aaDeploy.bash
-# or
-# [root@]# bash /home/aauser/gitsrc/epicsarchiverap-sites/03_aaDeploy.bash
-# 
-# Generic : Global vaiables - readonly
-#
 declare -gr SC_SCRIPT="$(realpath "$0")"
-declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
-declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
 
 # Generic : Redefine pushd and popd to reduce their output messages
 # 
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
-
 
 function ini_func() { sleep 1; printf "\n>>>> You are entering in  : %s\n" "${1}"; }
 function end_func() { sleep 1; printf "\n<<<< You are leaving from : %s\n" "${1}"; }
@@ -54,17 +41,11 @@ function checkstr() {
     fi
 }
 
-
-#
-# Specific only for this script : Global vairables - readonly
+# 
 #
 declare -gr SUDO_CMD="sudo";
+declare -g  WARSRC_DIR=${SC_TOP};
 
-declare -g WARSRC_DIR=${SC_TOP};
-
-# For not CentOS users
-# One should check that jar and java should be in PATH
-#
 function deploy_war_release() {
 
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
@@ -77,9 +58,6 @@ function deploy_war_release() {
     pushd ${deploy_dir}/${target}/webapps;
     ${SUDO_CMD} rm -rf ${target}*;
     ${SUDO_CMD} mkdir ${target};
-#    ${SUDO_CMD} cd ${target};
-#    ${SUDO_CMD} jar xf ${warsrc_dir}/${target}.war;
-
     ${SUDO_CMD} unzip ${warsrc_dir}/${target}.war -d ${target};
     popd;
     
@@ -87,22 +65,19 @@ function deploy_war_release() {
 }
 
 
-${SUDO_CMD} -v
+${SUDO_CMD} -v;
 
 while true; do
-  ${SUDO_CMD} -nv; sleep 1m
-  kill -0 $$ 2>/dev/null || exit
+    ${SUDO_CMD} -nv; sleep 1m
+    kill -0 $$ 2>/dev/null || exit
 done &
 
 . ${SC_TOP}/setEnvAA.bash
 
-
-if [[ ! -f ${WARSRC_DIR}/mgmt.war ]]
-then
-    printf "You need to call 01_aaBuild.bash and 02_aaSetup.bash first.\n The folder ${WARSRC_DIR} does not seem to have a mgmt.war.\n"
+if [[ ! -f ${WARSRC_DIR}/mgmt.war ]]; then
+    printf "The folder ${WARSRC_DIR} does not seem to have a mgmt.war.\n"
     exit 1
 fi
-
 
 tomcat_services=("mgmt" "engine" "etl" "retrieval")
 
@@ -121,8 +96,7 @@ site_specific_dir="${SC_TOP}/site_specific_content"
 ##
 ## Change template for web sites
 
-if [[ -f ${site_specific_dir}/template_changes.html ]]
-then
+if [[ -f ${site_specific_dir}/template_changes.html ]]; then
     echo ""
     echo "Modifying static contents for the site specific information"
     ${SUDO_CMD} -E java -cp ${ARCHAPPL_TOP}/mgmt/webapps/mgmt/WEB-INF/classes \
@@ -134,8 +108,7 @@ fi
 
 ##
 ## Copy site specific images
-if [[ -d ${site_specific_dir}/img ]]
-then
+if [[ -d ${site_specific_dir}/img ]]; then
     echo ""
     echo "Copying site specific images recursively from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}";
     ${SUDO_CMD} cp -R ${site_specific_dir}/img/* ${ARCHAPPL_TOP}/mgmt/webapps/mgmt/ui/comm/img/ ;
@@ -144,8 +117,7 @@ fi
 
 ##
 ## Copy site specific main.css file
-if [[ -d ${site_specific_dir}/css ]]
-then
+if [[ -d ${site_specific_dir}/css ]]; then
     echo ""
     echo "Copying site specific CSS files from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}";
     for service in ${tomcat_services[@]}; do
@@ -153,7 +125,7 @@ then
 	${SUDO_CMD} cp -R ${site_specific_dir}/css/main.css ${ARCHAPPL_TOP}/${service}/webapps/${service}/ui/comm/css/ ;
     done
     echo ""
-   
+    
 fi
 
 echo "Done deploying a new release from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}"

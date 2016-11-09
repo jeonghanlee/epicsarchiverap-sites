@@ -43,7 +43,6 @@ declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
-
 function ini_func() { sleep 1; printf "\n>>>> You are entering in : %s\n" "${1}"; }
 function end_func() { sleep 1; printf "\n<<<< You are leaving from %s\n"  "${1}"; }
 
@@ -183,7 +182,6 @@ function set_archappl_verion() {
     #
     local archappl_git_hashver=""
     
-
     # Remove previx, v0.0.1_, because it will be added again due to build.xml 
     # 
     local prefix="v0.0.1_"
@@ -195,6 +193,7 @@ function set_archappl_verion() {
     ARCHAPPL_VERSION="${archappl_build_ver}_H${archappl_git_hashver}_B${archappl_build_date}"
 }
 
+
 function archappl_setup() {
     
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
@@ -202,8 +201,6 @@ function archappl_setup() {
     local git_src_url=${AA_GIT_URL};
     local git_src_name=${AA_GIT_NAME};
     local git_src_dir=${SC_TOP}/${git_src_name};
-
-  
     
     git_clone  "${git_src_dir}" "${git_src_url}" "${git_src_name}";
 
@@ -213,7 +210,6 @@ function archappl_setup() {
 
     set_archappl_verion
     
-
     printf "\n>>>"
     printf "\n>>> Now, we are going to build the archappl with the following version name:\n"
     printf "\n>>> %s\n" "${ARCHAPPL_VERSION}"

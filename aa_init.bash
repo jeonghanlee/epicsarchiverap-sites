@@ -35,7 +35,6 @@ declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
-
 function ini_func() { sleep 1; printf "\n>>>> You are entering in  : %s\n" "${1}"; }
 function end_func() { sleep 1; printf "\n<<<< You are leaving from : %s\n" "${1}"; }
 
@@ -75,7 +74,6 @@ function git_clone() {
     # modification in the repository, which was cloned before. 
     #
     if [ -z "$tag_name" ]; then
-	# need to test this condition without "specificed" version
 	git clone "${git_src_url}/${git_src_name}" "${git_src_dir}";
     else
 	git clone -b "${tag_name}" --single-branch --depth 1 "${git_src_url}/${git_src_name}" "${git_src_dir}";
@@ -84,9 +82,7 @@ function git_clone() {
     end_func ${func_name};
 }
 
-#
-# Specific only for this script : Global vairables - readonly
-#
+
 declare -gr SUDO_CMD="sudo";
 
 
@@ -94,9 +90,6 @@ declare -gr SUDO_CMD="sudo";
 #
 # 1.0.1 Wednesday, November  9 09:56:52 CET 2016
 #
-# Require Global vairable
-# - SUDO_CMD :  input
-# - 
 # - allow this script to execute yum, and remove PakageKit
 #
 function preparation() {
@@ -135,12 +128,11 @@ function preparation() {
 ${SUDO_CMD} -v;
 
 while true; do
-  ${SUDO_CMD} -nv; sleep 1m
-  kill -0 $$ 2>/dev/null || exit
+    ${SUDO_CMD} -nv; sleep 1m
+    kill -0 $$ 2>/dev/null || exit
 done &
 
 preparation
-
 
 git_src_name="epicsarchiverap-sites";
 git_src_url="https://github.com/jeonghanlee";

@@ -22,11 +22,6 @@
 # version : 0.9.4 for CentOS 7.2
 #
 #
-# sudo asSetup.bash
-#
-# 
-# PREFIX : SC_, so declare -p can show them in a place
-# 
 # Generic : Global vaiables - readonly
 #
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -34,17 +29,17 @@ declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
-
 # Generic : Redefine pushd and popd to reduce their output messages
 # 
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
+
 . ${SC_TOP}/setEnvAA.bash
 
 declare -gr SUDO_CMD="sudo";
+declare -r SC_DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE};
 
-declare -r SC_DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE}
 
 # 0) It is safe to create archappl directory according to date, time, 
 #    then, create symlink to point to the real directory
@@ -54,8 +49,8 @@ declare -r SC_DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE}
 ${SUDO_CMD} -v;
 
 while true; do
-  ${SUDO_CMD} -nv; sleep 1m
-  kill -0 $$ 2>/dev/null || exit
+    ${SUDO_CMD} -nv; sleep 1m
+    kill -0 $$ 2>/dev/null || exit
 done &
 
 
@@ -119,6 +114,7 @@ log4j.appender.A1.layout=org.apache.log4j.PatternLayout
 log4j.appender.A1.layout.ConversionPattern=%-4r [%t] %-5p %c %x - %m%n
 EOF
 
+# Permission and ownership should be considered later
 ${SUDO_CMD} mv ${LOG4J} ${TOMCAT_HOME}/lib/ ;
 popd
 
@@ -158,6 +154,7 @@ cat > ${APPLIANCES_XML} <<EOF
 </appliances>
 EOF
 
+# Permission and ownership should be considered later
 ${SUDO_CMD} mv ${APPLIANCES_XML} ${ARCHAPPL_TOP}/ ;
 
 popd
@@ -272,6 +269,7 @@ cat > ${tomcat_context_container} <<EOF
 </Context>
 EOF
 
+# Permission and ownership should be considered later
 ${SUDO_CMD} mv ${tomcat_context_container} ${ARCHAPPL_TOP}/mgmt/conf/ ; 
 popd
 
