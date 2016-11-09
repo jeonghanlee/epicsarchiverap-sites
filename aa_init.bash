@@ -157,5 +157,6 @@ printf "# bash 03_aaDeploy.bash\n";
 printf "\n";
 printf "# bash aaService.bash start/stop/status\n";
 
+${SUDO_CMD} -k;
 
 exit;

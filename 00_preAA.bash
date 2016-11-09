@@ -211,10 +211,10 @@ EOF
     pushd $git_src_dir;
     printf "Compiling mariadb-connector-j ... \n";
     # Skip javadoc and source jar files to save time...
-    mvn -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true package;
+    ${SUDO_CMD} -E mvn -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true package;
 
     printf "Moving the java client to %s/lib" "${TOMCAT_HOME}"
-    cp -v  target/${mariadb_connectorj_jar} ${TOMCAT_HOME}/lib
+    ${SUDO_CMD} -E cp -v  target/${mariadb_connectorj_jar} ${TOMCAT_HOME}/lib
     popd;
     
     end_func ${func_name};
@@ -292,11 +292,11 @@ function replace_gnome_with_mate() {
 
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 	
-    yum -y install lightdm
-    yum -y groupinstall "MATE Desktop"
+    ${SUDO_CMD} yum -y install lightdm
+    ${SUDO_CMD} yum -y groupinstall "MATE Desktop"
 
-    systemctl disable gdm.service
-    systemctl enable lightdm.service
+    ${SUDO_CMD} systemctl disable gdm.service
+    ${SUDO_CMD} systemctl enable lightdm.service
 
     end_func ${func_name}
 }
@@ -332,7 +332,7 @@ printf "The installation log is %s\n" "${SC_TOP}/epics.log";
 epics_proc=$!
 
 # root
-${SUDO_CMD} -E bash -c mariadb_setup;
+mariadb_setup;
 
 printf "MariaDB Setup is done, however, \n";
 printf "EPICS Base installation is ongoing in background process\n";
@@ -340,31 +340,15 @@ printf "The installation log is %s\n" "${SC_TOP}/epics.log";
 
 wait "$epics_proc"
 
-# printf "MariaDB installation is ongoing in background process\n";
-# printf "The installation log is %s\n" "${SC_TOP}/mariadb.log";
-# ( mariadb_setup&>${SC_TOP}/mariadb.log )&
-# mariadb_proc=$!
-
-# epics_setup;
-
-# wait "${mariadb_proc}";
-
-# # root
-# mariadb_setup;
-
-# printf "MariaDB Setup is done, however, \n";
-# printf "EPICS Base installation is ongoing in background process\n";
-# printf "The installation log is %s\n" "${SC_TOP}/epics.log";
-
 case "$1" in
     mate)
-	${SUDO_CMD} -E	replace_gnome_with_mate;
+	replace_gnome_with_mate;
 	;;
     update)
 	${SUDO_CMD} yum -y update;
 	;;
     all)
-	${SUDO_CMD} -E bash -c replace_gnome_with_mate;
+	replace_gnome_with_mate;
 	${SUDO_CMD} yum -y update;
 	;;
     *)
