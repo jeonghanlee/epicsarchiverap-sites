@@ -210,12 +210,11 @@ EOF
 
     pushd $git_src_dir;
     printf "Compiling mariadb-connector-j ... \n";
-    ${SUDO_CMD} -v
     # Skip javadoc and source jar files to save time...
-    ${SUDO_CMD} -E mvn -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true package;
+    mvn -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true package;
 
     printf "Moving the java client to %s/lib" "${TOMCAT_HOME}"
-    ${SUDO_CMD} cp -v  target/${mariadb_connectorj_jar} ${TOMCAT_HOME}/lib
+    cp -v  target/${mariadb_connectorj_jar} ${TOMCAT_HOME}/lib
     popd;
     
     end_func ${func_name};
@@ -293,13 +292,11 @@ function replace_gnome_with_mate() {
 
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 	
-    checkstr ${SUDO_CMD};
+    yum -y install lightdm
+    yum -y groupinstall "MATE Desktop"
 
-    ${SUDO_CMD} yum -y install lightdm
-    ${SUDO_CMD} yum -y groupinstall "MATE Desktop"
-
-    ${SUDO_CMD} systemctl disable gdm.service
-    ${SUDO_CMD} systemctl enable lightdm.service
+    systemctl disable gdm.service
+    systemctl enable lightdm.service
 
     end_func ${func_name}
 }
@@ -335,7 +332,7 @@ printf "The installation log is %s\n" "${SC_TOP}/epics.log";
 epics_proc=$!
 
 # root
-mariadb_setup;
+${SUDO_CMD} -E bash -c mariadb_setup;
 
 printf "MariaDB Setup is done, however, \n";
 printf "EPICS Base installation is ongoing in background process\n";
@@ -361,13 +358,13 @@ wait "$epics_proc"
 
 case "$1" in
     mate)
-	replace_gnome_with_mate;
+	${SUDO_CMD} -E	replace_gnome_with_mate;
 	;;
     update)
 	${SUDO_CMD} yum -y update;
 	;;
     all)
-	replace_gnome_with_mate;
+	${SUDO_CMD} -E bash -c replace_gnome_with_mate;
 	${SUDO_CMD} yum -y update;
 	;;
     *)
