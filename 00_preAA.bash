@@ -211,9 +211,9 @@ EOF
     pushd $git_src_dir;
     printf "Compiling mariadb-connector-j ... \n";
     # Skip javadoc and source jar files to save time...
-    ${SUDO_CMD} -E mvn -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true package;
+    mvn -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true package;
 
-    printf "Moving the java client to %s/lib" "${TOMCAT_HOME}"
+    printf "Moving the java client to %s/lib\n\n\n" "${TOMCAT_HOME}"
     ${SUDO_CMD} -E cp -v  target/${mariadb_connectorj_jar} ${TOMCAT_HOME}/lib
     popd;
     
