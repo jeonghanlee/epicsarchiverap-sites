@@ -95,13 +95,14 @@ declare -g SUDO_PID="";
 
 function sudo_start() {
     ${SUDO_CMD} -v;
-    ( while true; do ${SUDO_CMD} -vn; sleep 30; done; ) &
+    ( while true; do ${SUDO_CMD} -v; sleep 30; done; ) &
     SUDO_PID="$!"
 }
 
 function sudo_end() {
     # silently kill the sudo process
     ${SUDO_CMD} kill -13 "$SUDO_PID";
+    ${SUDO_CMD} -k;
 }
 
 # Specific : preparation
