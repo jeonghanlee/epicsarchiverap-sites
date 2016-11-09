@@ -49,17 +49,16 @@ function checkstr() {
 declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
 
+
 function sudo_start() {
-    ${SUDO_CMD} -v;
-    ( while true; do ${SUDO_CMD} -v; sleep 30; done; ) &
-    SUDO_PID="$!"
+    ( while [ true ]; do
+	  ${SUDO_CMD} -n /bin/true;
+	  sleep 60;
+	  kill -0 "$$" || exit;
+      done 2>/dev/null
+    )&
 }
 
-function sudo_end() {
-    # silently kill the sudo process
-    ${SUDO_CMD} kill -13 "$SUDO_PID";
-    ${SUDO_CMD} -k;
-}
 
 
 # Generic : git_clone
