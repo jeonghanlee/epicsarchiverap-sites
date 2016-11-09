@@ -19,12 +19,8 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : Monday, November  7 13:10:41 CET 2016
-# version : 0.1.0 
+# version : 0.1.1 
 #
-#  http://www.gnu.org/software/bash/manual/bashref.html#Bash-Builtins
-#
-# 
-# PREFIX : SC_, so declare -p can show them in a place
 # 
 # Generic : Global vaiables - readonly
 #
@@ -40,8 +36,8 @@ function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
 
-function ini_func() { sleep 1; printf "\n>>>> You are entering in : %s\n" "${1}"; }
-function end_func() { sleep 1; printf "\n<<<< You are leaving from %s\n" "${1}"; }
+function ini_func() { sleep 1; printf "\n>>>> You are entering in  : %s\n" "${1}"; }
+function end_func() { sleep 1; printf "\n<<<< You are leaving from : %s\n" "${1}"; }
 
 function checkstr() {
     if [ -z "$1" ]; then
@@ -50,49 +46,43 @@ function checkstr() {
     fi
 }
 
-
-# Generic : Global variables for git_clone, git_selection, and others
-# 
-declare -g SC_SELECTED_GIT_SRC=""
-declare -g SC_GIT_SRC_DIR=""
-declare -g SC_GIT_SRC_NAME=""
-declare -g SC_GIT_SRC_URL=""
-
-
 # Generic : git_clone
+# 1.0.2 Monday, Monday, November  7 15:53:13 CET 2016
 #
 # Required Global Variable
-# - SC_GIT_SRC_DIR  : Input
 # - SC_LOGDATE      : Input
-# - SC_GIT_SRC_URL  : Input
-# - SC_GIT_SRC_NAME : Input
-# 
+
 function git_clone() {
-
-    local func_name=${FUNCNAME[*]}
-    ini_func ${func_name}
-
-    checkstr ${SC_LOGDATE}
-    checkstr ${SC_GIT_SRC_URL}
-    checkstr ${SC_GIT_SRC_NAME}
     
-    if [[ ! -d ${SC_GIT_SRC_DIR} ]]; then
-	echo "No git source repository in the expected location ${SC_GIT_SRC_DIR}"
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    
+    local git_src_dir=$1;
+    local git_src_url=$2;
+    local git_src_name=$3;
+    local tag_name=$4;
+    
+    checkstr ${SC_LOGDATE};
+    
+    if [[ ! -d ${git_src_dir} ]]; then
+	printf "No git source repository in the expected location %s\n" "${git_src_dir}";
     else
-	echo "Old git source repository in the expected location ${SC_GIT_SRC_DIR}"
-	echo "The old one is renamed to ${SC_GIT_SRC_DIR}_${SC_LOGDATE}"
-	mv  ${SC_GIT_SRC_DIR} ${SC_GIT_SRC_DIR}_${SC_LOGDATE}
+	printf "Old git source repository in the expected location %s\b" "${git_src_dir}";
+	printf "The old one is renamed to %s_%s\n" "${git_src_dir}" "${SC_LOGDATE}";
+	mv  ${git_src_dir} ${git_src_dir}_${SC_LOGDATE}
     fi
     
     # Alwasy fresh cloning ..... in order to workaround any local 
     # modification in the repository, which was cloned before. 
     #
-    git clone ${SC_GIT_SRC_URL}/${SC_GIT_SRC_NAME}
+    if [ -z "$tag_name" ]; then
+	# need to test this condition without "specificed" version
+	git clone "${git_src_url}/${git_src_name}" "${git_src_dir}";
+    else
+	git clone -b "${tag_name}" --single-branch --depth 1 "${git_src_url}/${git_src_name}" "${git_src_dir}";
+    fi
 
-    end_func ${func_name}
+    end_func ${func_name};
 }
-
-
 
 #
 # Specific only for this script : Global vairables - readonly
@@ -109,8 +99,7 @@ declare -gr SUDO_CMD="sudo";
 #
 function preparation() {
     
-    local func_name=${FUNCNAME[*]}
-    ini_func ${func_name}
+    local func_name=${FUNCNAME[*]};  ini_func ${func_name};
 
     checkstr ${SUDO_CMD}
     
@@ -120,7 +109,8 @@ function preparation() {
     #
     if [[ -e ${yum_pid} ]]; then
 	${SUDO_CMD} kill -9 $(cat ${yum_pid})
-	if [[ -e ${yum_pid} ]]; then
+	if [ $? -ne 0 ]; then
+	    printf "Remove an orphan yum pid\n";
 	    ${SUDO_CMD} rm -rf ${yum_pid}
 	fi
     fi
@@ -128,9 +118,11 @@ function preparation() {
     # Remove PackageKit
     #
     ${SUDO_CMD} yum -y remove PackageKit ;
-
+    ${SUDO_CMD} yum -y install epel-release git tree;	
+	
     end_func ${func_name};
 }
+
 
 
 ${SUDO_CMD} -v
@@ -139,14 +131,11 @@ preparation
 
 ${SUDO_CMD} yum -y install git ;
 
-SC_GIT_SRC_NAME="epicsarchiverap-sites";
-SC_GIT_SRC_URL="https://github.com/jeonghanlee";
-SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME};
+git_src_name="epicsarchiverap-sites";
+git_src_url="https://github.com/jeonghanlee";
+git_src_dir=${SC_TOP}/${git_src_name};
 
-git_clone; 
-pushd ${SC_GIT_SRC_DIR};
-git checkout develop;
-popd
+git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}" "develop" ; 
 
 printf "\nPlease go %s\n" "${SC_GIT_SRC_DIR}";
 printf "Do bash the following scripts in order\n";
