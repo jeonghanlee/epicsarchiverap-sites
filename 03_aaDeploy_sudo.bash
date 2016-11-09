@@ -22,6 +22,7 @@
 # version : 0.9.4
 #
 # 
+# 
 # Generic : Global vaiables - readonly
 #
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -50,6 +51,7 @@ function checkstr() {
 . ${SC_TOP}/setEnvAA.bash
 
 declare -gr SUDO_CMD="sudo";
+declare -g WARSRC_DIR=${SC_TOP};
 
 # For not CentOS users
 # One should check that jar and java should be in PATH
@@ -76,18 +78,21 @@ function deploy_war_release() {
 
 ${SUDO_CMD} -v
 
-if [[ ! -f ${SC_TOP}/mgmt.war ]]; then
+if [[ ! -f ${WARSRC_DIR}/mgmt.war ]]
+then
     printf "You need to call 01_aaBuild.bash and 02_aaSetup.bash first.\n";
-    printf "The folder %s does not seem to have a mgmt.war.\n" "${SC_TOp}";
+    printf "The folder %s does not seem to have a mgmt.war.\n" "${SC_TOP}";
     exit 1
 fi
 
-tomcat_services=("mgmt" "engine" "etl" "retrieval");
+tomcat_services=("mgmt" "engine" "etl" "retrieval")
 
-printf "Deploying a new release from %s onto %s\n" "${SC_TOP}" "${ARCHAPPL_TOP}";
+printf "Deploying a new release from %s onto %s\n" "${WARSRC_DIR}" "${ARCHAPPL_TOP}";
 
+echo ""
+echo "Replacing old war files with new war files"
 for service in ${tomcat_services[@]}; do
-    deploy_war_release ${service} "${ARCHAPPL_TOP}" "${SC_TOP}";
+    deploy_war_release ${service} "${ARCHAPPL_TOP}" "${WARSRC_DIR}";
 done
 
 
@@ -96,36 +101,39 @@ site_specific_dir="${SC_TOP}/site_specific_content"
 
 ##
 ## Change template for web sites
+
 if [[ -f ${site_specific_dir}/template_changes.html ]]; then
-    printf "\nModifying static contents for the site specific information\n";
+    echo ""
+    echo "Modifying static contents for the site specific information"
     ${SUDO_CMD} -E java -cp ${ARCHAPPL_TOP}/mgmt/webapps/mgmt/WEB-INF/classes \
 		org.epics.archiverappliance.mgmt.bpl.SyncStaticContentHeadersFooters \
 		${site_specific_dir}/template_changes.html \
 		${ARCHAPPL_TOP}/mgmt/webapps/mgmt/ui
-    printf "\n";
+    echo ""
 fi
-
 
 ##
 ## Copy site specific images
 if [[ -d ${site_specific_dir}/img ]]; then
-    printf "\nCopying site specific images recursively from %s onto %s\n" "${SC_TOP}" "${ARCHAPPL_TOP}";
+    echo ""
+    echo "Copying site specific images recursively from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}";
     ${SUDO_CMD} -E cp -R ${site_specific_dir}/img/* ${ARCHAPPL_TOP}/mgmt/webapps/mgmt/ui/comm/img/ ;
-    printf "\n"
+    echo ""
 fi
-
 
 ##
 ## Copy site specific main.css file
 if [[ -d ${site_specific_dir}/css ]]; then
-    printf "\nCopying site specific CSS files from %s onto %s\n" "${SC_TOP}" "${ARCHAPPL_TOP}";
+    echo ""
+    echo "Copying site specific CSS files from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}";
     for service in ${tomcat_services[@]}; do
 	printf "%s %26s is deploying...\n" "-->" "new main.css in ${service}"
 	${SUDO_CMD} -E cp -R ${site_specific_dir}/css/main.css ${ARCHAPPL_TOP}/${service}/webapps/${service}/ui/comm/css/ ;
     done
-    printf "\n";
+    echo ""
+   
 fi
 
-printf "Done deploying a new release from %s onto %s\n" "${SC_TOP}" "${ARCHAPPL_TOP}";
+echo "Done deploying a new release from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}"
 
 exit;
