@@ -42,7 +42,7 @@
 %% Document Title
 %%
 \title{ICS Engineering Manual}
-\subtitle{for a Site-Specific EPICS Archiver Appliance Deployment}
+\subtitle{for an EPICS Archiver Appliance Deployment}
 %% Document Author(s), if more than one author,
 %% use \newline instead of \\ or \linebreak in order to seperate them
 \author{Jeong Han Lee, (han.lee@esss.se)}
@@ -71,21 +71,19 @@
 
 %%% Actual Document Start at below
 \chapter{Overview}
-At European Spallation Source (ESS), Integrated Control System (ICS) does use the Micro Research Finland (MRF) Timing System{\footnote{\url{http://www.mrf.fi/}}} as its timing system of the ESS site. The consistent and up-to-date engineering manual is essential for the ESS Timing system.
+At European Spallation Source (ESS) ERIC, Integrated Control System (ICS) does use the EPICS Archiver Appliance {\footnote{\url{http://slacmshankar.github.io/epicsarchiver_docs/index.html}}} as its archiver for ESS EPICS control systems. The consistent and up-to-date engineering manual is essential for the ESS Archiver Appliance deployment.
 
-
-\end{document}
-%% \section{Scope}
-%% \begin{itemize}
+\section{Scope}
+\begin{itemize}
 %% \item This document identifies one of the MRF Timing Event Receivers (EVR) that needs to be configured for an ESS subsystem that needs synchronous frequencies, trigger signals and sequences of events \cite{MRFEVENTSYSTEMDC}.
 %% \item This document provides the generic description of the MRF PCIe-EVR-300 and its interface board (IFB-300). In addition, it affords the minimal, essential, and generic information for the system configuration.  
-%% \item The purpose of this document is to describe the engineering procedure and troubleshooting about how the MRF PCIe-EVR-300 board will be integrated in cooperation with the ESS EPICS Environment (EEE).
+\item The purpose of this document is to describe the engineering procedure and troubleshooting about how the EPICS Archiver Appliance can be deployed quickly and easily within CentOS Linux environment.
 %% \item This document attempts to maintain consistency with existing ESS Timing system hardware as far as possible. 
-%% \end{itemize}
+\end{itemize}
 %% \textbf{Note that this is a very early draft document and should be updated as development progresses.}
 
-%% \section{Target Audience}
-%% This document is targeted to ICS engineers and technical stakeholders of the ESS timing system. It is assumed that the target audience has a technical background in the MRF Timing System, the EPICS development, and a Linux environment.
+\section{Target Audience}
+This document is targeted to ICS engineers and technical stakeholders of the ESS Archiver Appliance. It is assumed that the target audience has a technical background in the Archiver Appliance, the EPICS development, and a Linux environment.
 
 %% \chapter{System Description}
 %% MRF Technical Reference \citep[see][p45]{MRFEVENTSYSTEMDC} explained Event Receivers and wrote :
@@ -1907,3 +1905,6 @@ At European Spallation Source (ESS), Integrated Control System (ICS) does use th
 %%     \begin{lstlisting}
 %%       /usr/share/doc/fai-doc/examples/etc/    \end{lstlisting}
 %% \end{itemize}
+
+
+\end{document}
