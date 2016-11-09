@@ -45,6 +45,26 @@ function checkstr() {
     fi
 }
 
+
+declare -gr SUDO_CMD="sudo";
+declare -g SUDO_PID="";
+
+# http://stackoverflow.com/questions/5866767/shell-script-sudo-permissions-lost-over-time
+
+function startsudo() {
+    ${SUDO_CMD} -v
+    ( while true; do ${SUDO_CMD} -v; sleep 50; done; ) &
+    SUDO_PID="$!"
+    trap stopsudo SIGINT SIGTERM
+}
+
+function stopsudo() {
+    kill "$SUDO_PID";
+    trap - SIGINT SIGTERM
+    ${SUDO_CMD} -k
+}
+
+
 # Generic : git_clone
 # 1.0.2 Monday, Monday, November  7 15:53:13 CET 2016
 #
@@ -83,9 +103,6 @@ function git_clone() {
 }
 
 
-declare -gr SUDO_CMD="sudo";
-
-
 # Specific : preparation
 #
 # 1.0.1 Wednesday, November  9 09:56:52 CET 2016
@@ -97,8 +114,8 @@ function preparation() {
     local func_name=${FUNCNAME[*]};  ini_func ${func_name};
     checkstr ${SUDO_CMD};
 
-    ${SUDO_CMD} systemctl stop packagekitd
-    ${SUDO_CMD} systemctl disable packagekitd
+    ${SUDO_CMD} systemctl stop packagekit
+    ${SUDO_CMD} systemctl disable packagekit
     
     declare -r yum_pid="/var/run/yum.pid"
 
@@ -107,7 +124,7 @@ function preparation() {
     if [[ -e ${yum_pid} ]]; then
 	${SUDO_CMD} kill -9 $(cat ${yum_pid})
 	if [ $? -ne 0 ]; then
-	    printf "Remove an orphan yum pid\n";
+	    printf "Remove the orphan yum pid\n";
 	    ${SUDO_CMD} rm -rf ${yum_pid}
 	fi
     fi
@@ -125,14 +142,9 @@ function preparation() {
 
 
 
-${SUDO_CMD} -v;
+startsudo;
 
-while true; do
-    ${SUDO_CMD} -nv; sleep 1m
-    kill -0 $$ 2>/dev/null || exit
-done &
-
-preparation
+preparation; 
 
 git_src_name="epicsarchiverap-sites";
 git_src_url="https://github.com/jeonghanlee";
@@ -148,5 +160,7 @@ printf "# bash 02_aaSetup.bash\n";
 printf "# bash 03_aaDeploy.bash\n";
 printf "\n";
 printf "# bash aaService.bash start/stop/status\n";
+
+endsudo;
 
 exit;

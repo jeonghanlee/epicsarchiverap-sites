@@ -39,7 +39,6 @@ declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
-
 function ini_func() { sleep 1; printf "\n>>>> You are entering in  : %s\n" "${1}"; }
 function end_func() { sleep 1; printf "\n<<<< You are leaving from : %s\n" "${1}"; }
 
@@ -52,7 +51,7 @@ function checkstr() {
 
 
 # Generic : git_clone
-# 1.0.2 Monday, Monday, November  7 15:53:13 CET 2016
+# 1.0.3 Tuesday, November  8 18:13:44 CET 2016
 #
 # Required Global Variable
 # - SC_LOGDATE      : Input
@@ -71,7 +70,7 @@ function git_clone() {
     if [[ ! -d ${git_src_dir} ]]; then
 	printf "No git source repository in the expected location %s\n" "${git_src_dir}";
     else
-	printf "Old git source repository in the expected location %s\b" "${git_src_dir}";
+	printf "Old git source repository in the expected location %s\n" "${git_src_dir}";
 	printf "The old one is renamed to %s_%s\n" "${git_src_dir}" "${SC_LOGDATE}";
 	mv  ${git_src_dir} ${git_src_dir}_${SC_LOGDATE}
     fi
@@ -79,22 +78,37 @@ function git_clone() {
     # Alwasy fresh cloning ..... in order to workaround any local 
     # modification in the repository, which was cloned before. 
     #
+    # we need the recursive option in order to build a web based viewer for Archappl
     if [ -z "$tag_name" ]; then
-	# need to test this condition without "specificed" version
-	git clone "${git_src_url}/${git_src_name}" "${git_src_dir}";
+	git clone --recursive "${git_src_url}/${git_src_name}" "${git_src_dir}";
     else
-	git clone -b "${tag_name}" --single-branch --depth 1 "${git_src_url}/${git_src_name}" "${git_src_dir}";
+	git clone --recursive -b "${tag_name}" --single-branch --depth 1 "${git_src_url}/${git_src_name}" "${git_src_dir}";
     fi
 
     end_func ${func_name};
 }
 
-
-
 #
 # Specific only for this script : Global vairables - readonly
 #
 declare -gr SUDO_CMD="sudo";
+declare -g SUDO_PID="";
+
+# http://stackoverflow.com/questions/5866767/shell-script-sudo-permissions-lost-over-time
+
+function startsudo() {
+    ${SUDO_CMD} -v
+    ( while true; do ${SUDO_CMD} -v; sleep 50; done; ) &
+    SUDO_PID="$!"
+    trap stopsudo SIGINT SIGTERM
+}
+
+function stopsudo() {
+    kill "$SUDO_PID";
+    trap - SIGINT SIGTERM
+    ${SUDO_CMD} -k
+}
+
 
 
 # Specific : preparation
@@ -111,8 +125,8 @@ function preparation() {
     local func_name=${FUNCNAME[*]};  ini_func ${func_name};
     checkstr ${SUDO_CMD};
 
-    ${SUDO_CMD} systemctl stop packagekitd
-    ${SUDO_CMD} systemctl disable packagekitd
+    ${SUDO_CMD} systemctl stop packagekit
+    ${SUDO_CMD} systemctl disable packagekit
     
     declare -r yum_pid="/var/run/yum.pid"
 
@@ -121,7 +135,7 @@ function preparation() {
     if [[ -e ${yum_pid} ]]; then
 	${SUDO_CMD} kill -9 $(cat ${yum_pid})
 	if [ $? -ne 0 ]; then
-	    printf "Remove an orphan yum pid\n";
+	    printf "Remove the orphan yum pid\n";
 	    ${SUDO_CMD} rm -rf ${yum_pid}
 	fi
     fi
@@ -136,13 +150,14 @@ function preparation() {
 	
     end_func ${func_name};
 }
+
+
 #
 # Enable and Start an input Service
 # 
 function system_ctl_enable_start(){
     
     local func_name=${FUNCNAME[*]};  ini_func ${func_name};
-
     checkstr ${SUDO_CMD}; checkstr ${1};
 
     printf "Enable and Start the following service(s) : %s\n" "${1}";
@@ -152,6 +167,7 @@ function system_ctl_enable_start(){
 
     end_func ${func_name};
 }
+
 
 
 function mariadb_setup() {
@@ -181,15 +197,14 @@ EOF
     mysql -u root <<EOF
 CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER_NAME}'@'localhost' IDENTIFIED BY '${DB_USER_PWD}';
 EOF
+    
     local jar_client_name="mariadb-java-client";
     local mariadb_connectorj_jar="${jar_client_name}-${DB_JAVACLIENT_VER}.jar";
     
     # local maven_jar_url="http://central.maven.org/maven2/org/mariadb/jdbc";
-    # #    http://central.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/1.5.4/mariadb-java-client-1.5.4.jar
-
-
+    # # http://central.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/1.5.4/mariadb-java-client-1.5.4.jar
+    
     # ${SUDO_CMD} wget -c -P ${TOMCAT_HOME}/lib ${maven_jar_url}/${jar_client_name}/${DB_JAVACLIENT_VER}/${mariadb_connectorj_jar};
-
     
     printf "Cloning the mariadb-connector-j... \n".
     
@@ -210,6 +225,8 @@ EOF
     end_func ${func_name};
 }
 
+
+
 function epics_setup(){
 
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
@@ -228,17 +245,9 @@ function epics_setup(){
     end_func ${func_name};
 }
 
-#
-# Prerequisite Packages
-# * JAVA 1.8.0
-# * MariaDB, Maven
-# * TOMCAT
-#
-
 function packages_preparation_for_archappl(){
     
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
-	
     checkstr ${SUDO_CMD};
 
     declare -a package_list=();
@@ -284,25 +293,18 @@ function packages_preparation_for_archappl(){
 
 
 
-
-function replace_gnome_and_yum_update() {
+function replace_gnome_with_mate() {
 
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 	
     checkstr ${SUDO_CMD};
-    declare -a package_list=();
 
-    package_list+="lightdm";
-    package_list+=" ";
-
-    ${SUDO_CMD} yum -y install $package_list
+    ${SUDO_CMD} yum -y install lightdm
     ${SUDO_CMD} yum -y groupinstall "MATE Desktop"
 
     ${SUDO_CMD} systemctl disable gdm.service
     ${SUDO_CMD} systemctl enable lightdm.service
 
-    ${SUDO_CMD} yum -y update;
- 
     end_func ${func_name}
 }
 
@@ -319,13 +321,7 @@ function prepare_storage() {
     end_func ${func_name};
 }
 
-
-${SUDO_CMD} -v
-
-while true; do
-  ${SUDO_CMD} -nv; sleep 1m
-  kill -0 $$ 2>/dev/null || exit
-done &
+startsudo;
 
 . ${SC_TOP}/setEnvAA.bash
 
@@ -345,9 +341,28 @@ epics_proc=$!
 # root
 mariadb_setup;
 
+printf "MariaDB Setup is done, however, \n";
+printf "EPICS Base installation is ongoing in background process\n";
+printf "The installation log is %s\n" "${SC_TOP}/epics.log";
+
 wait "$epics_proc" 
 
-replace_gnome_and_yum_update;
+case "$1" in
+    mate)
+	replace_gnome_with_mate;
+	;;
+    update)
+	${SUDO_CMD} yum -y update;
+	;;
+    all)
+	replace_gnome_with_mate;
+	${SUDO_CMD} yum -y update;
+	;;
+    *)
+	;;
+esac
+
+endsudo;
 
 exit
 

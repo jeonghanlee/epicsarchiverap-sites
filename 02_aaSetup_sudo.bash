@@ -35,24 +35,29 @@ function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
 
-. ${SC_TOP}/setEnvAA.bash
-
 declare -gr SUDO_CMD="sudo";
-declare -r SC_DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE};
+declare -g SUDO_PID="";
 
 
-# 0) It is safe to create archappl directory according to date, time, 
-#    then, create symlink to point to the real directory
-#    So, ARCHAPPL_DIR is the symlink.
+# http://stackoverflow.com/questions/5866767/shell-script-sudo-permissions-lost-over-time
+function startsudo() {
+    ${SUDO_CMD} -v
+    ( while true; do ${SUDO_CMD} -v; sleep 50; done; ) &
+    SUDO_PID="$!"
+    trap stopsudo SIGINT SIGTERM
+}
+
+function stopsudo() {
+    kill "$SUDO_PID";
+    trap - SIGINT SIGTERM
+    ${SUDO_CMD} -k
+}
 
 
-${SUDO_CMD} -v;
 
-while true; do
-    ${SUDO_CMD} -nv; sleep 1m
-    kill -0 $$ 2>/dev/null || exit
-done &
+startsudo;
 
+. ${SC_TOP}/setEnvAA.bash
 
 printf "\n%s\n" "->"
 
@@ -118,13 +123,12 @@ EOF
 ${SUDO_CMD} mv ${LOG4J} ${TOMCAT_HOME}/lib/ ;
 popd
 
-printf "\n%s\n" "----->"
 
-pushd ${SC_TOP}
-printf  "Put %s in %s\n" "${APPLIANCES_XML}" "${ARCHAPPL_TOP}";
 
 # 2) Put appliances.xml in  "${ARCHAPPL_TOP}"
-
+printf "\n%s\n" "----->"
+pushd ${SC_TOP}
+printf  "Put %s in %s\n" "${APPLIANCES_XML}" "${ARCHAPPL_TOP}";
 
 cat > ${APPLIANCES_XML} <<EOF
 <?xml version='1.0' encoding='utf-8'?>
@@ -160,12 +164,9 @@ ${SUDO_CMD} mv ${APPLIANCES_XML} ${ARCHAPPL_TOP}/ ;
 popd
 
 
+# 3) Deploy multiple tomcats into ${DEPLOY_DIR} via the original source
+#
 printf "\n%s\n" "------->"
-
-## TODO
-#  I should develop a way if one wants to use "the binary file from the site"
-#  Wednesday, September  7 13:28:03 CEST 2016, jhlee
-
 
 if [[ ! -d ${AA_GIT_DIR} ]]; then
     printf "No git source repository in the expected location %s\n" "${AA_GIT_DIR}";
@@ -173,22 +174,20 @@ if [[ ! -d ${AA_GIT_DIR} ]]; then
 fi
 
 declare -r aa_deployMultipleTomcats_py=${AA_GIT_DIR}/docs/samples/deployMultipleTomcats.py
-
 printf " Deploy multiple tomcats into %s\n" "${ARCHAPPL_TOP}";
-# 3) Deploy multiple tomcats into ${DEPLOY_DIR} via the original source
-#
 printf "Calling %s %s\n" "${aa_deployMultipleTomcats_py}" "${ARCHAPPL_TOP}";
 ${SUDO_CMD} -E python  "${aa_deployMultipleTomcats_py}" "${ARCHAPPL_TOP}"
 
 
-printf "\n%s\n" "--------->"
-printf  "Put context.xml in to %s/mgmt/conf/\n" "${ARCHAPPL_TOP}";
 
 # 4) Put context.xml in to ${ARCHAPPL_TOP}/mgmt/conf/
 #    in order that mgmt tomcat service can connect to
 #    mariadb (CentOS) or mysql (others). 
 #    Only the mgmt web app needs to talk to the MySQL database. 
 #    It is an error/bug if the other components need to talk to MySQL;
+
+printf "\n%s\n" "--------->"
+printf  "Put context.xml in to %s/mgmt/conf/\n" "${ARCHAPPL_TOP}";
 
 pushd ${SC_TOP};
 
@@ -286,14 +285,16 @@ printf "%s\n" "------|"
 #| PVTypeInfo          |
 #+---------------------+
 
-
 declare -r aa_deploy_db_tables=${AA_GIT_DIR}/src/main/org/epics/archiverappliance/config/persistence/archappl_mysql.sql
 declare -r aa_deploy_db_tables_new=${aa_deploy_db_tables}_new.sql
 
-#
 # In the case, to run this script again, keep the original file, and create new file with "IF NOT EXITS", 
 # and use the new file to query to DB.
 # Thus, if the tables exist in DB, it will skip to create these tables
 #
 sed "s/CREATE TABLE /CREATE TABLE IF NOT EXISTS /g" ${aa_deploy_db_tables} > ${aa_deploy_db_tables_new};
 mysql --user=${DB_USER_NAME} --password=${DB_USER_PWD} --database=${DB_NAME} < ${aa_deploy_db_tables_new};
+
+endsudo;
+
+exit

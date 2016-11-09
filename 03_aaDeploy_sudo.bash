@@ -41,9 +41,27 @@ function checkstr() {
     fi
 }
 
-# 
-#
+
 declare -gr SUDO_CMD="sudo";
+declare -g SUDO_PID="";
+
+# http://stackoverflow.com/questions/5866767/shell-script-sudo-permissions-lost-over-time
+
+function startsudo() {
+    ${SUDO_CMD} -v
+    ( while true; do ${SUDO_CMD} -v; sleep 50; done; ) &
+    SUDO_PID="$!"
+    trap stopsudo SIGINT SIGTERM
+}
+
+function stopsudo() {
+    kill "$SUDO_PID";
+    trap - SIGINT SIGTERM
+    ${SUDO_CMD} -k
+}
+
+
+
 declare -g  WARSRC_DIR=${SC_TOP};
 
 function deploy_war_release() {
@@ -65,12 +83,7 @@ function deploy_war_release() {
 }
 
 
-${SUDO_CMD} -v;
-
-while true; do
-    ${SUDO_CMD} -nv; sleep 1m
-    kill -0 $$ 2>/dev/null || exit
-done &
+startsudo;
 
 . ${SC_TOP}/setEnvAA.bash
 
@@ -129,3 +142,11 @@ if [[ -d ${site_specific_dir}/css ]]; then
 fi
 
 echo "Done deploying a new release from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}"
+
+
+endsudo;
+
+exit
+
+
+

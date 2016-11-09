@@ -25,8 +25,6 @@
 
 # http://www.gnu.org/software/bash/manual/bashref.html#Bash-Builtins
 
-
-
 # 
 # PREFIX : SC_, so declare -p can show them in a place
 # 
@@ -228,5 +226,7 @@ function archappl_setup() {
 . ${SC_TOP}/setEnvAA.bash
 
 
-archappl_setup 
+archappl_setup
+
+exit;
 
