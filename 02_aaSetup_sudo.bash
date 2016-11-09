@@ -170,6 +170,11 @@ printf "\n%s\n" "------->"
 #  Wednesday, September  7 13:28:03 CEST 2016, jhlee
 
 
+if [[ ! -d ${AA_GIT_DIR} ]]; then
+    printf "No git source repository in the expected location %s\n" "${AA_GIT_DIR}";
+    exit;
+fi
+
 declare -r aa_deployMultipleTomcats_py=${AA_GIT_DIR}/docs/samples/deployMultipleTomcats.py
 
 printf " Deploy multiple tomcats into %s\n" "${ARCHAPPL_TOP}";

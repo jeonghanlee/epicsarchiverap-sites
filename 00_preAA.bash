@@ -99,6 +99,8 @@ declare -gr SUDO_CMD="sudo";
 
 # Specific : preparation
 #
+# 1.0.1 Wednesday, November  9 09:56:52 CET 2016
+#
 # Require Global vairable
 # - SUDO_CMD :  input
 # - 
@@ -107,8 +109,10 @@ declare -gr SUDO_CMD="sudo";
 function preparation() {
     
     local func_name=${FUNCNAME[*]};  ini_func ${func_name};
+    checkstr ${SUDO_CMD};
 
-    checkstr ${SUDO_CMD}
+    ${SUDO_CMD} systemctl stop packagekitd
+    ${SUDO_CMD} systemctl disable packagekitd
     
     declare -r yum_pid="/var/run/yum.pid"
 
@@ -125,16 +129,17 @@ function preparation() {
     # Remove PackageKit
     #
     ${SUDO_CMD} yum -y remove PackageKit ;
+    
+    # Install epel-release, git, and tree
+    #
     ${SUDO_CMD} yum -y install epel-release git tree;	
 	
     end_func ${func_name};
 }
-
-
 #
 # Enable and Start an input Service
 # 
-function system_ctl(){
+function system_ctl_enable_start(){
     
     local func_name=${FUNCNAME[*]};  ini_func ${func_name};
 
@@ -271,7 +276,7 @@ function packages_preparation_for_archappl(){
     # Even if the service is active (running), it is OK to run "enable and start" again. 
     # systemctl can accept many services with one command
 
-    system_ctl "ntpd mariadb tomcat"
+    system_ctl_enable_start "ntpd mariadb tomcat"
 
     end_func ${func_name};
 }

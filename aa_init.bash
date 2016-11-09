@@ -92,6 +92,8 @@ declare -gr SUDO_CMD="sudo";
 
 # Specific : preparation
 #
+# 1.0.1 Wednesday, November  9 09:56:52 CET 2016
+#
 # Require Global vairable
 # - SUDO_CMD :  input
 # - 
@@ -100,8 +102,10 @@ declare -gr SUDO_CMD="sudo";
 function preparation() {
     
     local func_name=${FUNCNAME[*]};  ini_func ${func_name};
+    checkstr ${SUDO_CMD};
 
-    checkstr ${SUDO_CMD}
+    ${SUDO_CMD} systemctl stop packagekitd
+    ${SUDO_CMD} systemctl disable packagekitd
     
     declare -r yum_pid="/var/run/yum.pid"
 
@@ -118,6 +122,9 @@ function preparation() {
     # Remove PackageKit
     #
     ${SUDO_CMD} yum -y remove PackageKit ;
+    
+    # Install epel-release, git, and tree
+    #
     ${SUDO_CMD} yum -y install epel-release git tree;	
 	
     end_func ${func_name};
@@ -134,7 +141,6 @@ done &
 
 preparation
 
-${SUDO_CMD} yum -y install git ;
 
 git_src_name="epicsarchiverap-sites";
 git_src_url="https://github.com/jeonghanlee";
