@@ -71,7 +71,7 @@ function deploy_war_release() {
     pushd ${deploy_dir}/${target}/webapps;
     ${SUDO_CMD} rm -rf ${target}*;
     ${SUDO_CMD} mkdir ${target};
-    ${SUDO_CMD} unzip ${warsrc_dir}/${target}.war -d ${target};
+    ${SUDO_CMD} unzip -q ${warsrc_dir}/${target}.war -d ${target};
     popd;
     
     end_func ${func_name};
