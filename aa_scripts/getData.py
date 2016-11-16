@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 # coding=utf-8 
 #
 #  Copyright (c) Jeong Han Lee
@@ -63,7 +63,7 @@
 #           - Clean up some lines in code, such as the argument default values, unused variables, 
 #  - 0.3.0 Tuesday, January  5 11:18:13 CET 2016, jhlee
 #           - introduce src and target location of the extracted file,
-#
+#  - 0.4.0 
 #    An example in cronjob (crontab -e) in every 5 mins
 #
 #  
@@ -89,8 +89,18 @@ import urllib2
 import json
 from datetime import timedelta, datetime, date
 
+
+# Theses ports should be the same as appliances.xml
+# e.g. /opt/archappl/appliances.xml
+#     <mgmt_url>http://10.4.3.86:17665/mgmt/bpl</mgmt_url>
+#     <data_retrieval_url>http://10.4.3.86:17668/retrieval</data_retrieval_url>
+
+mgmt_port="17665"
+retrieval_port="17668"
+
 # epoch_secs : 
-# This is the Java epoch seconds of the EPICS record processing timestamp. The times are in UTC; so any conversion to local time needs to happen at the client. 
+# This is the Java epoch seconds of the EPICS record processing timestamp. 
+# The times are in UTC; so any conversion to local time needs to happen at the client. 
 
 def convertDate(epoch_secs):
     _date = datetime.fromtimestamp(epoch_secs)
@@ -98,56 +108,65 @@ def convertDate(epoch_secs):
 
 
 def setMGMTurl(url):
-    return url + "/mgmt/bpl/"
-
+    return url + ":" + mgmt_port + "/mgmt/bpl/"
 
 def print_data_info(element):
     #  {u'nanos': 887037220, u'status': 0, u'secs': 1418979266, u'severity': 0, u'val': 24.0}
-#    print element.nanos
+    print element.nanos
     return 
 
 def setJsonRetUrl(url):
-    return url + "/retrieval/data/getData.json"
+    return url + ":" + retrieval_port + "/retrieval/data/getData.json"
 
 def setRawRetUrl(url):
-    return url + "/retrieval/data/getData.raw"
+    return url + ":" + retrieval_port + "/retrieval/data/getData.raw"
 
 
 
 def getSelectedPVs(url, args):
 
     pv_list = []
-    applianceMGMTUrl= url + "/mgmt/bpl/getAllPVs"
     #
     #   Want to use "list" because pv_list, which is "return values from AA" is list
     #    
-    script_path = os.path.dirname(os.path.realpath(__file__))
-#    input_filename = os.getcwd() +"/" + args.file
-    input_filename = script_path + "/" + args.file
+    if args.file :
+        script_path    = os.path.dirname(os.path.realpath(__file__))
+        input_filename = script_path + "/" + args.file
+        lines          = [line.strip() for line in open(input_filename)]
+    else:
+        # no input filter file exists, set all PVs
+        lines = ['*']
 
-    lines = [line.strip() for line in open(input_filename)]
+    if args.verbose:
+        print "getSelectedPVs function "
+        print "url, args      :", url, args
+        print "script_path    :", script_path
+        print "input_filename :", input_filename
+        print "type, lines    :", type(lines), lines
+        print "pattern        :", args.pattern
+        
 
-    #    print type(lines),  lines
-    #    print "mgmturl  :", applianceMGMTUrl
-    #    print patterns.split()
+    url_src = url + "getAllPVs" + args.pattern
 
-    for args.pattern in args.pattern.split():
-        #      print urllib.urlencode({"pv" : args.pattern})
+    if args.verbose : print "GetAllPV url : ", url_src
 
-        resp = urllib2.urlopen(url= applianceMGMTUrl + "?" + urllib.urlencode({"pv" : args.pattern}))
+    resp    = urllib2.urlopen(url_src)
+    patternMatchingPVs = json.load(resp)
 
-        matchingPVs = json.load(resp)
+    pv_list.extend(patternMatchingPVs)
+   
+    # filter file has * or no filter file,
+    # return all PVs with "pattern"
+    if '*' in lines:
+        if args.verbose: print pv_list
+        return pv_list
+    # if the filter file has some selected PVs,
+    # return only the matched "selected PV" from all PVs with "pattern"
+    else:
+        selectedPVs=set(pv_list).intersection(set(lines))
+        if args.verbose: print selectedPVs
+        return selectedPVs
 
-        pv_list.extend(matchingPVs)
-
-
-#    print type(lines), pv_list
-#    print set(pv_list).intersection(set(lines))
-#
-#   https://docs.python.org/2/library/stdtypes.html#set.intersection
-#   Compare two lists in python and return matches
-#
-    return set(pv_list).intersection(set(lines))
 
 
 
@@ -157,25 +176,22 @@ def main():
     #   https://docs.python.org/2/howto/argparse.html
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-i", "--ip",      help="Archiver Appliance IP address", default="10.0.5.23")
-    parser.add_argument("-p", "--pattern", help="PVs patterns, case sensitive",  default ="*")
+    parser.add_argument("-i", "--ip",      help="Archiver Appliance IP address", default="10.4.3.86")
+    parser.add_argument("-p", "--pattern", help="?pv=xxx&limit=nnn",  default ="")
+    # "?pv=*calc*"
+    # -p "?limit=100"
     parser.add_argument("-v", "--verbose", help="output verbosity",              action="store_true")
-    parser.add_argument("-d", "--days",    help="days to monitor from now", type=float, default=7.0)
-    parser.add_argument("-f", "--file",    help="filename which has selected PV list",  default="munji_pv_list")
+    parser.add_argument("-d", "--days",    help="days to monitor from now", type=float, default=1.0)
+    parser.add_argument("-f", "--file",    help="filename which has selected PV list",  default="test_pv_list")
     parser.add_argument("-s", "--src",     help="source location of generated data file", default="/tmp/")
-    parser.add_argument("-t", "--target",  help="target location of data file", default= os.environ['HOME']+"/pvs/")
+    parser.add_argument("-t", "--target",  help="target location of data file", default= os.environ['PWD'] )
     parser.add_argument("-m", "--mean",    help="data average during secs", default="")
     
     args = parser.parse_args()
 
 
-    url = "http://" + args.ip + ":17665"
+    url = "http://" + args.ip
 
-
-
-    matchingPVs = []
-    matchingPVs = getSelectedPVs(url, args)
-    
     if args.verbose:
         print ""
         print ">>>" 
@@ -186,6 +202,9 @@ def main():
         print ">>>  Target  : " + args.target
         print ">>>"
 
+    matchingPVs = []
+    matchingPVs = getSelectedPVs(setMGMTurl(url), args)
+    
         
     if matchingPVs:
 
@@ -233,6 +252,10 @@ def main():
             
         hostname = socket.gethostname() 
         hostip   = socket.gethostbyname(hostname)
+
+        if args.verbose:
+            print "hostname : ", hostname
+            print "hostip   : ", hostip
             
         report_filename = ""
         dest_directory = args.target + "/"
@@ -265,53 +288,64 @@ def main():
             queryString += '&'
             queryString += toString 
             queryString += suffixString
-            
-            dataresp = urllib2.urlopen(setJsonRetUrl(url) + queryString)
-            data     = json.load(dataresp)
 
             if args.verbose:
-                print queryString
-                print "Total Data Size " , len(data[0]['data'])
-                print ""
-              
-            try :
-                file = open(report_filename, "w")
-                file.write("# \n")
-                file.write("# Filename    : " + report_filename  + "\n")
-                file.write("# PV name     : " + pv               + "\n")
-                file.write("# From        : " + _from_iso_string + "\n")
-                file.write("# To          : " + _now_iso_string  + "\n")
-                file.write("# queryString : " + queryString      + "\n")
-                file.write("# hostname    : " + hostname         + "\n")
-                file.write("# host IP     : " + hostip           + "\n")
-                file.write("# \n")
-                file.write("# time, val, nanos, status, severity    \n")
-                
-                dataList = []
+                print "queryString : ",  queryString
+                print "url : ", url
 
-                for el in data[0]['data']:
-                    #        if args.verbose:
-                    #            print "%s, %s, %s, %s, %s " % (convertDate(el['secs']), el['val'], el['nanos'], el['status'], el['severity'])
-                    dataList.append("%s, %s, %s, %s, %s \n" % (convertDate(el['secs']), el['val'], el['nanos'], el['status'], el['severity']))
-                    
-                s = ''.join(dataList)
+            src_url=setJsonRetUrl(url) + queryString
 
-                file.write(s)
-                file.close()
+            if args.verbose:
+                print src_url
 
-                # Move the generated file from source - args.src - to target - args.target.
+            dataresp = urllib2.urlopen(src_url)
+            data     = json.load(dataresp)
+            
+
+   
+                 
+            if data :
+
+                if args.verbose:  print "Total Data Size " , len(data[0]['data'])
 
                 try :
-                    shutil.copy (report_filename, dest_directory)
-                except shutil.Error as e:
-                    print('Error: %s' % e)
-                    # eg. source or destination doesn't exist
-                except IOError as e:
-                    print('Error: %s' % e.strerror)
+                    file = open(report_filename, "w")
+                    file.write("# \n")
+                    file.write("# Filename    : " + report_filename  + "\n")
+                    file.write("# PV name     : " + pv               + "\n")
+                    file.write("# From        : " + _from_iso_string + "\n")
+                    file.write("# To          : " + _now_iso_string  + "\n")
+                    file.write("# queryString : " + queryString      + "\n")
+                    file.write("# hostname    : " + hostname         + "\n")
+                    file.write("# host IP     : " + hostip           + "\n")
+                    file.write("# \n")
+                    file.write("# time, val, nanos, status, severity    \n")
+                    
+                    dataList = []
+                    
+                    for el in data[0]['data']:
+                        #         #        if args.verbose:
+                        #         #            print "%s, %s, %s, %s, %s " % (convertDate(el['secs']), el['val'], el['nanos'], el['status'], el['severity'])
+                        dataList.append("%s, %s, %s, %s, %s \n" % (convertDate(el['secs']), el['val'], el['nanos'], el['status'], el['severity']))
+                        
+                    s = ''.join(dataList)
+                        
+                    file.write(s)
+                    file.close()
 
-            except IOError, (errno, strerror):
-                print "I/O error(%s): %s" % (errno, strerror)
+                    try :
+                        shutil.copy (report_filename, dest_directory)
+                    except shutil.Error as e:
+                        print('Error: %s' % e)
+                        # eg. source or destination doesn't exist
+                    except IOError as e:
+                        print('Error: %s' % e.strerror)
 
+                except IOError, (errno, strerror):
+                    print "I/O error(%s): %s" % (errno, strerror)
+
+            else:
+                if args.verbose:  print "data no", pv
 
     sys.exit()
 
