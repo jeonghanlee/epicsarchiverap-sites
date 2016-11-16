@@ -32,7 +32,7 @@ $ bash 03_aaDeploy.bash
 * almost all important variables are defined
 * E.g., TOMCAT_HOME, EPICS_BASE, ARCHAPPL_TOP, LD_LIBRARY_PATH, and so on... 
 
-## aaInit.bash
+## aa_init.bash
 * sudo permission is needed.
 * Remove the cumbersome package (PackageKit)
 * Install pre-required packages (git, epel-release, tree)
