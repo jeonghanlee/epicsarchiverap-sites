@@ -26,7 +26,11 @@ $ bash 02_aaSetup.bash
 $ bash 03_aaDeploy.bash
 ```
 
-# Things to know
+# Files
+
+## setEnvAA.bash
+* almost all important variables are defined
+* E.g., TOMCAT_HOME, EPICS_BASE, ARCHAPPL_TOP, LD_LIBRARY_PATH, and so on... 
 
 ## aaInit.bash
 * sudo permission is needed.
