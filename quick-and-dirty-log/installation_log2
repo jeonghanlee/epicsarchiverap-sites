@@ -1,0 +1,100 @@
+[aauser@archiver02 ~]$ wget -c https://raw.githubusercontent.com/jeonghanlee/epicsarchiverap-sites/develop/aa_init.bash
+--2016-11-10 10:57:40--  https://raw.githubusercontent.com/jeonghanlee/epicsarchiverap-sites/develop/aa_init.bash
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 151.101.84.133
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|151.101.84.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 4332 (4.2K) [text/plain]
+Saving to: ‘aa_init.bash’
+
+100%[====================================================================================================>] 4,332       --.-K/s   in 0s      
+
+2016-11-10 10:57:40 (48.6 MB/s) - ‘aa_init.bash’ saved [4332/4332]
+
+[aauser@archiver02 ~]$ bash aa_init.bash 
+
+We trust you have received the usual lecture from the local System
+Administrator. It usually boils down to these three things:
+
+    #1) Respect the privacy of others.
+    #2) Think before you type.
+    #3) With great power comes great responsibility.
+
+[sudo] password for aauser: 
+
+
+Please go /home/aauser/epicsarchiverap-sites
+Do bash the following scripts in order
+$ bash 00_preAA.bash
+$ bash 01_aaBuild.bash
+# bash 02_aaSetup.bash
+# bash 03_aaDeploy.bash
+
+# bash aaService.bash start/stop/status
+[aauser@archiver02 ~]$ cd epicsarchiverap-sites/
+[aauser@archiver02 epicsarchiverap-sites]$ ls
+00_preAA.bash    02_aaSetup.bash   aa_init.bash    aa_site_specific.png  LICENSE              README.md      site_specific_content
+01_aaBuild.bash  03_aaDeploy.bash  aaService.bash  docs                  quick-and-dirty-log  setEnvAA.bash  test_ioc
+[aauser@archiver02 epicsarchiverap-sites]$ bash 00_preAA.bash all
+[sudo] password for aauser: 
+
+
+Complete!
+[aauser@archiver02 epicsarchiverap-sites]$ bash 01_aaBuild.bash 
+
+>>>> You are entering in : archappl_setup
+
+
+<<<< You are leaving from git_clone
+ 0: git src                             master
+ 1: git src   v0.0.1_SNAPSHOT_03-November-2015
+ 2: git src        v0.0.1_SNAPSHOT_10-Sep-2015
+ 3: git src        v0.0.1_SNAPSHOT_12-May-2016
+ 4: git src        v0.0.1_SNAPSHOT_12-Oct-2016
+ 5: git src       v0.0.1_SNAPSHOT_20-Sept-2016
+ 6: git src       v0.0.1_SNAPSHOT_22-June-2016
+ 7: git src        v0.0.1_SNAPSHOT_23-Sep-2015
+ 8: git src    v0.0.1_SNAPSHOT_26-January-2016
+ 9: git src       v0.0.1_SNAPSHOT_29-July-2015
+10: git src      v0.0.1_SNAPSHOT_30-March-2016
+Select master or one of tags which can be built, followed by [ENTER]:
+
+
+wars:
+      [tar] Building tar: /home/aauser/epicsarchiverap-sites/archappl_v0.0.1_SNAPSHOT_12-Oct-2016_Ha6da166_B2016Nov10-1120-53CET.tar.gz
+
+BUILD SUCCESSFUL
+Total time: 38 seconds
+
+<<<< You are leaving from archappl_setup
+
+[aauser@archiver02 epicsarchiverap-sites]$ bash 02_aaSetup.bash 
+[sudo] password for aauser: 
+
+[aauser@archiver02 epicsarchiverap-sites]$ bash 03_aaDeploy.bash 
+Deploying a new release from /home/aauser/epicsarchiverap-sites onto /opt/archappl
+
+
+[aauser@archiver02 epicsarchiverap-sites]$ sudo su
+ABRT has detected 1 problem(s). For more info run: abrt-cli list
+[root@archiver02 epicsarchiverap-sites]# bash aaService.bash start
+>> Starting TOMCAT at /opt/archappl/mgmt
+
+>> Starting TOMCAT at /opt/archappl/engine
+
+>> Starting TOMCAT at /opt/archappl/etl
+
+>> Starting TOMCAT at /opt/archappl/retrieval
+
+-- Status outputs 
+-- http://archiver02:17665/mgmt/ui/index.html is the web address.
+-- OR
+-- http://10.4.3.86:17665/mgmt/ui/index.html is the web address.
+-- /opt/archappl/mgmt/logs/mgmt_catalina.err may help you.
+-- If eight numbers are printed below, the jsvc processes are running
+30530 30523 30497 30495 30493 30492 30490 30489
+--
+[root@archiver02 epicsarchiverap-sites]# 
+
+
+
+

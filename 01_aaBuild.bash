@@ -1,15 +1,29 @@
 #!/bin/bash
 #
+#  Copyright (c) 2016 Jeong Han Lee
+#  Copyright (c) 2016 European Spallation Source ERIC
+#
+#  The program is free software: you can redistribute
+#  it and/or modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation, either version 2 of the
+#  License, or any newer version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT
+#  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+#  more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
+#
 # 
-# Shell  : aaBuild.bash
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.2 for CentOS 7.2
+# version : 0.9.3
 #
 
 # http://www.gnu.org/software/bash/manual/bashref.html#Bash-Builtins
-
 
 # 
 # PREFIX : SC_, so declare -p can show them in a place
@@ -27,36 +41,54 @@ declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
+function ini_func() { sleep 1; printf "\n>>>> You are entering in : %s\n" "${1}"; }
+function end_func() { sleep 1; printf "\n<<<< You are leaving from %s\n"  "${1}"; }
 
-# Generic : Global variables for git_clone, git_selection, and others
-# 
-declare -g SC_SELECTED_GIT_SRC=""
-declare -g SC_GIT_SRC_DIR=""
-declare -g SC_GIT_SRC_NAME=""
-declare -g SC_GIT_SRC_URL=""
-
+function checkstr() {
+    if [ -z "$1" ]; then
+	printf "%s : input variable is not defined \n" "${FUNCNAME[*]}"
+	exit 1;
+    fi
+}
 
 # Generic : git_clone
+# 1.0.3 Tuesday, November  8 18:13:44 CET 2016
 #
-#
-function git_clone() {
+# Required Global Variable
+# - SC_LOGDATE      : Input
 
-    SC_GIT_SRC_DIR=${SC_TOP}/${SC_GIT_SRC_NAME}
+function git_clone() {
     
-    if [[ ! -d ${SC_GIT_SRC_DIR} ]]; then
-	echo "No git source repository in the expected location ${SC_GIT_SRC_DIR}"
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    
+    local git_src_dir=$1;
+    local git_src_url=$2;
+    local git_src_name=$3;
+    local tag_name=$4;
+    
+    checkstr ${SC_LOGDATE};
+    
+    if [[ ! -d ${git_src_dir} ]]; then
+	printf "No git source repository in the expected location %s\n" "${git_src_dir}";
     else
-	echo "Old git source repository in the expected location ${SC_GIT_SRC_DIR}"
-	echo "The old one is renamed to ${SC_GIT_SRC_DIR}_${SC_LOGDATE}"
-	mv  ${SC_GIT_SRC_DIR} ${SC_GIT_SRC_DIR}_${SC_LOGDATE}
+	printf "Old git source repository in the expected location %s\n" "${git_src_dir}";
+	printf "The old one is renamed to %s_%s\n" "${git_src_dir}" "${SC_LOGDATE}";
+	mv  ${git_src_dir} ${git_src_dir}_${SC_LOGDATE}
     fi
     
     # Alwasy fresh cloning ..... in order to workaround any local 
     # modification in the repository, which was cloned before. 
     #
-    git clone ${SC_GIT_SRC_URL}/${SC_GIT_SRC_NAME}
+    # we need the recursive option in order to build a web based viewer for Archappl
+    if [ -z "$tag_name" ]; then
+	git clone --recursive "${git_src_url}/${git_src_name}" "${git_src_dir}";
+    else
+	git clone --recursive -b "${tag_name}" --single-branch --depth 1 "${git_src_url}/${git_src_name}" "${git_src_dir}";
+    fi
 
+    end_func ${func_name};
 }
+
 
 # Generic : git_selection
 # - requirement : Global vairable : SC_SELECTED_GIT_SRC 
@@ -148,7 +180,6 @@ function set_archappl_verion() {
     #
     local archappl_git_hashver=""
     
-
     # Remove previx, v0.0.1_, because it will be added again due to build.xml 
     # 
     local prefix="v0.0.1_"
@@ -160,40 +191,42 @@ function set_archappl_verion() {
     ARCHAPPL_VERSION="${archappl_build_ver}_H${archappl_git_hashver}_B${archappl_build_date}"
 }
 
-#
-#
-SC_GIT_SRC_NAME="epicsarchiverap"
-SC_GIT_SRC_URL="https://github.com/slacmshankar"
 
-#
-#
-git_clone
+function archappl_setup() {
+    
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 
-#
-#
-pushd ${SC_GIT_SRC_DIR}
-#
-#
-git_selection
+    local git_src_url=${AA_GIT_URL};
+    local git_src_name=${AA_GIT_NAME};
+    local git_src_dir=${SC_TOP}/${git_src_name};
+    
+    git_clone  "${git_src_dir}" "${git_src_url}" "${git_src_name}";
 
-set_archappl_verion
+    pushd $git_src_dir;
+
+    git_selection
+
+    set_archappl_verion
+    
+    printf "\n>>>"
+    printf "\n>>> Now, we are going to build the archappl with the following version name:\n"
+    printf "\n>>> %s\n" "${ARCHAPPL_VERSION}"
+    printf "\n>>>"
+    # BUILDS_ALL_TIME is defined in build.xml in ${ARCHAPPL}
+    #
+    export BUILDS_ALL_TIME=${ARCHAPPL_VERSION}
+    ant;
+    popd;
+
+    end_func ${func_name};
+    
+}
 
 
-# BUILDS_ALL_TIME is defined in build.xml in ${ARCHAPPL}
-#
-export BUILDS_ALL_TIME=${ARCHAPPL_VERSION}
+. ${SC_TOP}/setEnvAA.bash
 
-# Should be changed according to a system
-#
-export TOMCAT_HOME=/usr/share/tomcat
 
-printf "\n>>>"
-printf "\n>>> Now, we are going to build the archappl with the following version name:\n"
-printf "\n>>> %s\n" "${ARCHAPPL_VERSION}"
-printf "\n>>>"
+archappl_setup
 
-# build
+exit;
 
-ant
-
-popd

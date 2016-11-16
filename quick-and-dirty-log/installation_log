@@ -1,0 +1,88 @@
+
+
+[aauser@ics-essiipsvc-01 ~]$ wget -c https://raw.githubusercontent.com/jeonghanlee/epicsarchiverap-sites/develop/aa_init.bash
+
+[aauser@ics-essiipsvc-01 ~]$ bash aa_init.bash 
+We trust you have received the usual lecture from the local System
+Administrator. It usually boils down to these three things:
+
+    #1) Respect the privacy of others.
+    #2) Think before you type.
+    #3) With great power comes great responsibility.
+
+[sudo] password for aauser: 
+
+
+<<<< You are leaving from : git_clone
+
+Please go /home/aauser/epicsarchiverap-sites
+Do bash the following scripts in order
+$ bash 00_preAA.bash
+$ bash 01_aaBuild.bash
+# bash 02_aaSetup.bash
+# bash 03_aaDeploy.bash
+
+# bash aaService.bash start/stop/status
+[aauser@ics-essiipsvc-01 ~]$ cd epicsarchiverap-sites/
+[aauser@ics-essiipsvc-01 epicsarchiverap-sites]$ bash 00_preAA.bash all
+[sudo] password for aauser: 
+
+[aauser@ics-essiipsvc-01 epicsarchiverap-sites]$ bash 01_aaBuild.bash 
+<<<< You are leaving from git_clone
+ 0: git src                             master
+ 1: git src   v0.0.1_SNAPSHOT_03-November-2015
+ 2: git src        v0.0.1_SNAPSHOT_10-Sep-2015
+ 3: git src        v0.0.1_SNAPSHOT_12-May-2016
+ 4: git src        v0.0.1_SNAPSHOT_12-Oct-2016
+ 5: git src       v0.0.1_SNAPSHOT_20-Sept-2016
+ 6: git src       v0.0.1_SNAPSHOT_22-June-2016
+ 7: git src        v0.0.1_SNAPSHOT_23-Sep-2015
+ 8: git src    v0.0.1_SNAPSHOT_26-January-2016
+ 9: git src       v0.0.1_SNAPSHOT_29-July-2015
+10: git src      v0.0.1_SNAPSHOT_30-March-2016
+Select master or one of tags which can be built, followed by [ENTER]:4
+
+>>> Selected        v0.0.1_SNAPSHOT_12-Oct-2016 --- 
+
+Note: checking out 'tags/v0.0.1_SNAPSHOT_12-Oct-2016'.
+
+
+
+BUILD SUCCESSFUL
+Total time: 43 seconds
+
+<<<< You are leaving from archappl_setup
+[aauser@ics-essiipsvc-01 epicsarchiverap-sites]$ bash 02_aaSetup.bash 
+[sudo] password for aauser: 
+--------->
+Put context.xml in to /opt/archappl/mgmt/conf/
+------|
+[aauser@ics-essiipsvc-01 epicsarchiverap-sites]$ bash 03_aaDeploy.bash 
+Deploying a new release from /home/aauser/epicsarchiverap-sites onto /opt/archappl
+
+Replacing old war files with new war files
+
+Copying site specific images recursively from /home/aauser/epicsarchiverap-sites onto /opt/archappl
+
+
+Copying site specific CSS files from /home/aauser/epicsarchiverap-sites onto /opt/archappl
+-->       new main.css in mgmt is deploying...
+-->     new main.css in engine is deploying...
+-->        new main.css in etl is deploying...
+-->  new main.css in retrieval is deploying...
+
+Done deploying a new release from /home/aauser/epicsarchiverap-sites onto /opt/archappl
+[aauser@ics-essiipsvc-01 epicsarchiverap-sites]$ sudo su
+ABRT has detected 1 problem(s). For more info run: abrt-cli list
+[root@ics-essiipsvc-01 epicsarchiverap-sites]# bash aaService.bash start 
+
+System only has the 4G memory, so # 
+export JAVA_HEAPSIZE="512m"
+#export JAVA_MAXMETASPACE="32m6M"
+#export JAVA_OPTS="-XX:MaxMetaspaceSize=${JAVA_MAXMETASPACE} -XX:+UseG1GC -Xms${JAVA_HEAPSIZE} -Xmx${JAVA_HEAPSIZE} -ea"
+
+export JAVA_OPTS="-Xms${JAVA_HEAPSIZE} -Xmx1024m -ea"
+
+use the 512m 1024m, and remove MaxMetaspaceSize...
+
+
