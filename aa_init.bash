@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : Monday, November  7 13:10:41 CET 2016
-# version : 0.1.1 
+# version : 0.1.2 
 #
 # 
 # Generic : Global vaiables - readonly
@@ -146,7 +146,7 @@ git_src_name="epicsarchiverap-sites";
 git_src_url="https://github.com/jeonghanlee";
 git_src_dir=${SC_TOP}/${git_src_name};
 
-git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}" "develop" ; 
+git_clone "${git_src_dir}" "${git_src_url}" "${git_src_name}" ; 
 
 printf "\nPlease go %s\n" "${git_src_dir}";
 printf "Do bash the following scripts in order\n";
