@@ -93,15 +93,17 @@ def setRawRetUrl(url):
 def getSelectedPVs(url, args):
 
     pv_list = []
+    script_path    = os.path.dirname(os.path.realpath(__file__))  
+
     #
     #   Want to use "list" because pv_list, which is "return values from AA" is list
     #    
     if args.file :
-        script_path    = os.path.dirname(os.path.realpath(__file__))
         input_filename = script_path + "/" + args.file
         lines          = [line.strip() for line in open(input_filename)]
     else:
         # no input filter file exists, set all PVs
+        input_filename =""
         lines = ['*']
 
     if args.verbose:
