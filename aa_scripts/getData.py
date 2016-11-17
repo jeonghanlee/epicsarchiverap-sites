@@ -21,38 +21,7 @@
 # Author  : Jeong Han Lee
 # email   : jeonghan.lee@gmail.com
 # Date    : Tuesday, January  5 10:46:51 CET 2016
-# Version : 0.3.0
-#
-#   * I intend to develop this script in order to extact or get data from
-#     Archiver Appliance Service, which is running on an Ethernet accessiable
-#     server. This script creates a file per a PV. In one example,
-#     
-#    # Filename    : /tmp/pi2_dht11_tem.txt
-#    # PV name     : PI2:DHT11:TEM
-#    # From        : 2014-12-15T19:15:02.200201
-#    # To          : 2014-12-22T19:15:02.200201
-#    # queryString : ?pv=mean_300(PI2:DHT11:TEM)&from=2014-12-15T19%3A15%3A02.200201%2B09%3A00&to=2014-12-22T19%3A15%3A02.200201%2B09%3A00
-#    # hostname    : kaffee
-#    # host IP     : 10.1.4.24
-#    # 
-#    # time, val, nanos, status, severity
-#    2014-12-19T11:07:30, 22.4814814815, 0, 0, 0 
-#    2014-12-19T11:12:30, 22.45, 0, 0, 0 
-#    2014-12-19T11:17:30, 21.6279069767, 0, 0, 0 
-#    2014-12-19T11:22:30, 21.4333333333, 0, 0, 0 
-#    2014-12-19T11:27:30, 21.4936708861, 0, 0, 0 
-#    2014-12-19T11:32:30, 21.4791666667, 0, 0, 0 
-#
-#     By default, time is the mean over 5 mins.
-#
-#
-#  *******************************************************************************************************
-#    Created files are located in /tmp/ and copy them in to $HOME/pvs by default.
-#    If the target directory doesn't exist, it will create it. 
-#    So from 0.3.0, one should use -t /var/www/data if one wants to use a *static* web site by using
-#    SIMILE Timeplot. See http://www.simile-widgets.org/timeplot/
-#  *******************************************************************************************************
-#
+# Version : 0.4.0
 #
 #  - 0.0.0  Friday, December 19 10:18:02 KST 2014
 #           Created.
@@ -61,19 +30,21 @@
 #  - 0.2.0  Monday, March 30 09:36:52 KST 2015, jhlee
 #           - Export the selected PV lists based on the input PV list (as input file)
 #           - Clean up some lines in code, such as the argument default values, unused variables, 
-#  - 0.3.0 Tuesday, January  5 11:18:13 CET 2016, jhlee
+#  - 0.3.0  Tuesday, January  5 11:18:13 CET 2016, jhlee
 #           - introduce src and target location of the extracted file,
-#  - 0.4.0 
+#  - 0.4.0  Thursday, November 17 12:30:40 CET 2016
+#           - clean up and fix the pattern
+# 
 #    An example in cronjob (crontab -e) in every 5 mins
 #
 #  
-#    AA ip   : 10.0.5.23
+#    AA ip   : 10.4.3.86
 #    Target  : /var/www/data
-#    Days    : 7
-#    PV list : test_pv_list
-#    Mean    : 5 mins average data (300 secs)        
-#
-#*/5 *  * * * export DISPLAY=:0.0 && /usr/bin/python /home/jhlee/scripts_for_epics/archiver.appliance.python/getData.py -i 10.0.5.23 -t /var/www/data/ -d 7 -f test_pv_list -m 300 >/dev/null 2>&1
+#    Days    : 1
+#    PV list : test_ioc_pv_list
+#    Mean    : no
+
+# */5 *  * * * export DISPLAY=:0.0 && /usr/bin/python /home/aauser/epicsarchiverap-sites/aa_scripts/getData.py -i 10.4.3.86 -d 1 -t /var/www/data/ -f ics_pv_list  >/dev/null 2>&1
 
 
 import os
@@ -81,14 +52,11 @@ import sys
 import argparse 
 import socket
 import shutil
-# import numpy as np
-#from chaco.shell import *
 
 import urllib
 import urllib2
 import json
 from datetime import timedelta, datetime, date
-
 
 # Theses ports should be the same as appliances.xml
 # e.g. /opt/archappl/appliances.xml
@@ -120,7 +88,6 @@ def setJsonRetUrl(url):
 
 def setRawRetUrl(url):
     return url + ":" + retrieval_port + "/retrieval/data/getData.raw"
-
 
 
 def getSelectedPVs(url, args):
@@ -168,9 +135,6 @@ def getSelectedPVs(url, args):
         return selectedPVs
 
 
-
-
-
 def main():
 
     #   https://docs.python.org/2/howto/argparse.html
@@ -182,7 +146,7 @@ def main():
     # -p "?limit=100"
     parser.add_argument("-v", "--verbose", help="output verbosity",              action="store_true")
     parser.add_argument("-d", "--days",    help="days to monitor from now", type=float, default=1.0)
-    parser.add_argument("-f", "--file",    help="filename which has selected PV list",  default="test_pv_list")
+    parser.add_argument("-f", "--file",    help="filename which has selected PV list",  default="")
     parser.add_argument("-s", "--src",     help="source location of generated data file", default="/tmp/")
     parser.add_argument("-t", "--target",  help="target location of data file", default= os.environ['PWD'] )
     parser.add_argument("-m", "--mean",    help="data average during secs", default="")
@@ -226,8 +190,7 @@ def main():
         #    Python datetime has the isoformat at https://docs.python.org/2/library/datetime.html
         #    Monday, December 22 13:42:51 KST 2014, jhlee
         
-
-        
+       
         #   Still don't understand what the following Strings means,
         #   get the structure form archiveViewer, and simply add only 
         #   magicString to queryString  
