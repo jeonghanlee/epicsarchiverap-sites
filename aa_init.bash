@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : Monday, November  7 13:10:41 CET 2016
-# version : 0.1.2 
+# version : 0.1.3
 #
 # 
 # Generic : Global vaiables - readonly
@@ -158,5 +158,12 @@ printf "\n";
 printf "# bash aaService.bash start/stop/status\n";
 
 ${SUDO_CMD} -k;
+
+
+# Remove some directories in ${HOME}
+printf "Remove Music, Pictures, Public, Templates, and Videos directories in ${HOME}.... \n";
+rm -rf ${HOME}/{Music,Pictures,Public,Templates,Videos};
+
+
 
 exit;
