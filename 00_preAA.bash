@@ -90,20 +90,26 @@ function git_clone() {
 
 
 
-declare -gr SUDO_CMD="sudo";
+declare -gr SUDO_CMD="";
 declare -g SUDO_PID="";
 
 
 function sudo_start() {
-    ${SUDO_CMD} -v -S <<< $(whiptail --title "SUDO Password Box" --passwordbox "Enter your password and choose Ok to continue." 10 60 3>&1 1>&2 2>&3);
-    ( while [ true ]; do
-	  ${SUDO_CMD} -n /bin/true;
-	  ${SUDO_CMD} sleep 60;
-	  kill -0 "$$" || exit;
-      done 2>/dev/null
-    )&
+    sudo -v -S <<< $(whiptail --title "SUDO Password Box" --passwordbox "Enter your password and choose Ok to continue." 10 60 3>&1 1>&2 2>&3);
+    sudo su
+    
+    # ( while [ true ]; do
+    # 	  ${SUDO_CMD} -n /bin/true;
+    # 	  ${SUDO_CMD} sleep 60;
+    # 	  kill -0 "$$" || exit;
+    #   done 2>/dev/null
+    # )&
 }
 
+function sudo_end() {
+    (exec exit)
+    
+}
 
 # Specific : preparation
 #
@@ -355,6 +361,7 @@ case "$1" in
 	;;
 esac
 
+sudo_end
 
 exit
 
