@@ -95,10 +95,10 @@ declare -g SUDO_PID="";
 
 
 function sudo_start() {
-    ${SUDO_CMD} -v
+    ${SUDO_CMD} -v -S <<< $(whiptail --title "SUDO Password Box" --passwordbox "Enter your password and choose Ok to continue." 10 60 3>&1 1>&2 2>&3);
     ( while [ true ]; do
 	  ${SUDO_CMD} -n /bin/true;
-	  sleep 60;
+	  ${SUDO_CMD} sleep 60;
 	  kill -0 "$$" || exit;
       done 2>/dev/null
     )&
