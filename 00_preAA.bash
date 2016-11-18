@@ -85,16 +85,18 @@ function git_clone() {
 
 
 
-declare -gr SUDO_CMD="";
+declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
 
 
 function sudo_start() {
-   ${SUDO_CMD} -v;
+    ${SUDO_CMD} -v;
+    USER_SUDOER="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
+    echo "${USER_SUDOER}" | (sudo su -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch')
+
    ( while [ true ]; do
-     	  ${SUDO_CMD} -n /bin/true;
      	  sleep 60;
-     	  kill -0 "$$" || exit;
+     	  kill -0 "$$" || sudo rm -f /etc/sudoers.d/arch && exit;
      done 2>/dev/null
    )&
 }
@@ -222,10 +224,10 @@ EOF
 
     printf "Moving the java client to %s/lib\n\n\n" "${TOMCAT_LIB}"
 	
-    #    ${SUDO_CMD} cp -v  target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}
+    ${SUDO_CMD} cp -v  target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}
     # Symbolic link should be created early
     # ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
-    exec sg tomcat "cp -v target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_HOME}"
+    #"cp -v target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_HOME}"
     popd;
     
     __end_func ${func_name};
@@ -289,38 +291,38 @@ function packages_preparation_for_archappl(){
 
     __system_ctl_enable_start "ntpd mariadb tomcat"
 
-    ${SUDO_CMD} usermod -a -G ${tomcat_group} ${_USER_NAME};
+    # ${SUDO_CMD} usermod -a -G ${tomcat_group} ${_USER_NAME};
     ${SUDO_CMD} ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
     
     __end_func ${func_name};
 }
 
-function __reload_user_group() {
+# function __reload_user_group() {
 
-    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-    #  __checkstr ${SUDO_CMD};
+#     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+#     #  __checkstr ${SUDO_CMD};
 
-    local tomcat_group="tomcat";
-    local current_primary_group=$(id -gn)
-    local temp_primary_group="";
+#     local tomcat_group="tomcat";
+#     local current_primary_group=$(id -gn)
+#     local temp_primary_group="";
 
-    ${SUDO_CMD} usermod -a -G ${tomcat_group} ${_USER_NAME};
+#     ${SUDO_CMD} usermod -a -G ${tomcat_group} ${_USER_NAME};
     
-    newgrp ${tomcat_group};
+#     newgrp ${tomcat_group};
 
-    temp_primary_group=$(id -gn);
+#     temp_primary_group=$(id -gn);
 
-    if test "${temp_primary_group}" != "${tomcat_group}"; then
-	printf "Changing group is wrong, exit...\n"
-	exit;
-    fi
+#     if test "${temp_primary_group}" != "${tomcat_group}"; then
+# 	printf "Changing group is wrong, exit...\n"
+# 	exit;
+#     fi
 
-    newgrp ${current_primary_group};
+#     newgrp ${current_primary_group};
 
-    printf "The user %s is in the %s group without logout.\n" "${_USER_NAME}" "${temp_primary_group}"
+#     printf "The user %s is in the %s group without logout.\n" "${_USER_NAME}" "${temp_primary_group}"
     
-    __end_func ${func_name};
-}
+#     __end_func ${func_name};
+# }
 
 function replace_gnome_with_mate() {
 
@@ -380,31 +382,11 @@ function firewall_setup_for_ca() {
 
 declare EPICS_LOG=${SC_TOP}/epics.log;
 
-
-sudo -v 
-
+sudo_start
 
 . ${SC_TOP}/setEnvAA.bash
 
 
-USER_SUDOER="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
-
-# reset_sudoers() {
-#   echo -b 'Resetting /etc/sudoers …'
-#   /usr/bin/sudo -E -- /usr/bin/sed -i '' "/^${USER_SUDOER}/d" /etc/sudoers
-# }
-
-# echo "${USER_SUDOER}" | /usr/bin/sudo -E -- /usr/bin/tee -a /etc/sudoers >/dev/null
-
-# sudo bash -c 'echo "foobar ALL=(ALL:ALL) ALL" | (EDITOR="tee -a" visudo)'
-
-echo "${USER_SUDOER}" | (sudo su -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch')
-
-( while [ true ]; do
-      sleep 60;
-      kill -0 "$$" || ( sudo rm -f /etc/sudoers.d/arch && exit);
-  done 2>/dev/null
-)&
 
 # root
 preparation;
