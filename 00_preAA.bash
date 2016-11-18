@@ -138,7 +138,8 @@ function preparation() {
     # Remove PackageKit
     #
     ${SUDO_CMD} yum -y remove PackageKit ;
-    
+
+
     # Install epel-release, git, and tree
     #
     ${SUDO_CMD} yum -y install epel-release git tree screen xterm  xorg-x11-fonts-misc;	
@@ -297,6 +298,12 @@ function packages_preparation_for_archappl(){
 
     system_ctl_enable_start "ntpd"
 
+    # Do we need virbr0?
+    # Default I would like to remove it
+    # The virbr0, or "Virtual Bridge 0" interface is used for NAT (Network Address Translation). 
+    ${SUDO_CMD} ifconfig virbr0 down 
+    ${SUDO_CMD} brctl delbr virbr0
+
     end_func ${func_name};
 }
 
@@ -325,6 +332,14 @@ function prepare_storage() {
     ${SUDO_CMD} mkdir -p {${ARCHAPPL_SHORT_TERM_FOLDER},${ARCHAPPL_MEDIUM_TERM_FOLDER},${ARCHAPPL_LONG_TERM_FOLDER}};
 
     tree  -L 2 ${ARCHAPPL_STORAGE_TOP};
+
+    end_func ${func_name};
+}
+
+
+function firewall_setup_for_ca() {
+
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 
     end_func ${func_name};
 }

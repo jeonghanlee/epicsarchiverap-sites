@@ -121,11 +121,19 @@ tomcat_services=("mgmt" "engine" "etl" "retrieval")
 
 function status() {
 
-    echo "-- Status outputs " 
+    printf ">>>> EPICS Env outputs\n";
+    printf "     EPICS_BASE %s\n" "${EPICS_BASE}";
+    printf "     LD_LIBRARY_PATH %s\n" "${LD_LIBRARY_PATH}";
+    printf "     EPICS_CA_ADDR_LIST %s\n" "${EPICS_CA_ADDR_LIST}";
+
+    printf ">>>> Status outputs \n" 
     echo "-- http://${_HOST_NAME}:17665/mgmt/ui/index.html is the web address.";
     echo "-- OR";
     echo "-- http://${_HOST_IP}:17665/mgmt/ui/index.html is the web address.";
+    echo "";
     echo "-- ${ARCHAPPL_TOP}/mgmt/logs/mgmt_catalina.err may help you.";
+    echo "-- tail -f ${ARCHAPPL_TOP}/mgmt/logs/mgmt_catalina.err";
+    echo ""
     echo "-- If eight numbers are printed below, the jsvc processes are running";
     pidof jsvc.exec;
     echo "--";
