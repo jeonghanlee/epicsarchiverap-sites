@@ -112,7 +112,7 @@ function sudo_start() {
 function preparation() {
     
     local func_name=${FUNCNAME[*]};  __ini_func ${func_name};
-    __checkstr ${SUDO_CMD};
+    #  __checkstr ${SUDO_CMD};
 
     ${SUDO_CMD} systemctl stop packagekit
     ${SUDO_CMD} systemctl disable packagekit
@@ -158,7 +158,7 @@ function preparation() {
 function __system_ctl_enable_start(){
     
     local func_name=${FUNCNAME[*]};  __ini_func ${func_name};
-    __checkstr ${SUDO_CMD}; __checkstr ${1};
+    #  __checkstr ${SUDO_CMD}; __checkstr ${1};
 
     printf "Enable and Start the following service(s) : %s\n" "${1}";
     
@@ -255,7 +255,7 @@ function epics_setup(){
 function packages_preparation_for_archappl(){
     
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-    __checkstr ${SUDO_CMD};
+    #  __checkstr ${SUDO_CMD};
 
     declare -a package_list=();
 
@@ -298,7 +298,7 @@ function packages_preparation_for_archappl(){
 function __reload_user_group() {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-    __checkstr ${SUDO_CMD};
+    #  __checkstr ${SUDO_CMD};
 
     local tomcat_group="tomcat";
     local current_primary_group=$(id -gn)
@@ -325,7 +325,7 @@ function __reload_user_group() {
 function replace_gnome_with_mate() {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-    __checkstr ${SUDO_CMD};
+    #  __checkstr ${SUDO_CMD};
     
     ${SUDO_CMD} yum -y install lightdm
     ${SUDO_CMD} yum -y groupinstall "MATE Desktop"
@@ -339,7 +339,7 @@ function replace_gnome_with_mate() {
 function prepare_storage() {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-    __checkstr ${SUDO_CMD};
+    #  __checkstr ${SUDO_CMD};
     
     printf "Make STS/MTS/LTS dirs at ARCHAPPL_STORAGE_TOP as %s\n\n---\n" "${ARCHAPPL_STORAGE_TOP}";
 
@@ -352,7 +352,7 @@ function prepare_storage() {
 
 function disable_virbro0() {
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-    __checkstr ${SUDO_CMD};
+    #  __checkstr ${SUDO_CMD};
     
     # Do we need virbr0?
     # Default I would like to remove it
