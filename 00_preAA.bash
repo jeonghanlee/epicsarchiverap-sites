@@ -141,7 +141,7 @@ function preparation() {
     
     # Install epel-release, git, and tree
     #
-    ${SUDO_CMD} yum -y install epel-release git tree;	
+    ${SUDO_CMD} yum -y install epel-release git tree screen xterm  xorg-x11-fonts-misc;	
 	
     end_func ${func_name};
 }
@@ -150,6 +150,9 @@ function preparation() {
 #
 # Enable and Start an input Service
 # 
+# Even if the service is active (running), it is OK to run "enable and start" again. 
+# systemctl can accept many services with one command
+
 function system_ctl_enable_start(){
     
     local func_name=${FUNCNAME[*]};  ini_func ${func_name};
@@ -215,9 +218,8 @@ EOF
     # Skip javadoc and source jar files to save time...
     mvn -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true package;
 
-    printf "Moving the java client to %s/lib\n\n\n" "${TOMCAT_HOME}"
-    # Due to the permission, we can copy it to only ${TOMCAT_HOME}
-    # Symlink should be ready in preparation	
+    printf "Moving the java client to %s/lib\n\n\n" "${TOMCAT_LIB}"
+	
     ${SUDO_CMD} cp -v  target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}
     popd;
     
@@ -245,18 +247,26 @@ function epics_setup(){
 }
 
 function packages_for_tomcat_mariadb() {
+
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
     checkstr ${SUDO_CMD};
 
     declare -a package_list=();
-  # MariaDB
+    
+    # JAVA
+    package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel";
+    package_list+=" ";
+    # MariaDB
     package_list+="mariadb-server mariadb-libs maven"
     package_list+=" ";
+    # Tomcat
     package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc tomcat-lib unzip"
     package_list+=" ";
 
     ${SUDO_CMD} yum -y install ${package_list};
-    system_ctl_enable_start "mariadb"
+
+    system_ctl_enable_start "mariadb tomcat"
+
     end_func ${func_name};
 }
 
@@ -272,20 +282,8 @@ function packages_preparation_for_archappl(){
     package_list+=" ";
 
     # Basic package list 
-    package_list+="git emacs tree screen xterm  xorg-x11-fonts-misc";
+    package_list+="emacs telnet";
     package_list+=" ";
-
-    # JAVA
-    package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel";
-    package_list+=" ";
-
-#    # MariaDB
-#    package_list+="mariadb-server mariadb-libs maven"
-#    package_list+=" ";
-
-#    # Tomcat
-#    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc tomcat-lib unzip"
-#    package_list+=" ";
 
     # EPICS Base
     package_list+="readline-devel libXt-devel libXp-devel libXmu-devel libXpm-devel lesstif-devel gcc-c++ ncurses-devel perl-devel";
@@ -293,16 +291,11 @@ function packages_preparation_for_archappl(){
     package_list+="net-snmp net-snmp-utils net-snmp-devel darcs libxml2-devel libpng12-devel netcdf-devel hdf5-devel lbzip2-utils libusb-devel python-devel";
     
     ${SUDO_CMD} yum -y install ${package_list};
-    # ${SUDO_CMD} usermod -a -G tomcat ${_USER_NAME};
-    #
-    # The real file will be copied in ${TOMCAT_HOME} during mariadb_setup
-    # 
-    # ${SUDO_CMD} ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
-
+  
     # Even if the service is active (running), it is OK to run "enable and start" again. 
     # systemctl can accept many services with one command
 
-    system_ctl_enable_start "ntpd tomcat"
+    system_ctl_enable_start "ntpd"
 
     end_func ${func_name};
 }
@@ -344,17 +337,15 @@ sudo_start;
 preparation;
 prepare_storage;
 
-
 package_for_tomcat_mariadb;
+
 printf "MariaDB Setup is ongoing in background process\n";
 printf "The installation log is %s\n" "${SC_TOP}/mariadb.log";
-(mariadb_setup&>${SC_TOP}/mariadb.log)&
+( mariadb_setup&>${SC_TOP}/mariadb.log )&
 mariadb_proc=$1
-
 
 # root
 packages_preparation_for_archappl;
-
 
 # an user
 printf "EPICS Base installation is ongoing in background process\n";
@@ -372,12 +363,15 @@ wait "$epics_proc" "$mariadb_proc"
 
 case "$1" in
     mate)
+	printf "Mate and lightdm are selected\n";
 	replace_gnome_with_mate;
 	;;
     update)
+	printf "yum update is selected\n";
 	${SUDO_CMD} yum -y update;
 	;;
     all)
+	printf "Mate,lightdm are yum update are selected.\n"; 
 	replace_gnome_with_mate;
 	${SUDO_CMD} yum -y update;
 	;;

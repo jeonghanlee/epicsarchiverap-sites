@@ -18,7 +18,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.1.1 
+# version : 0.1.2 
 
 export THIS_SCRIPT=$(realpath "$0")
 export THIS_TOP="$(dirname "$THIS_SCRIPT")"
@@ -50,12 +50,23 @@ export EPICS_BASE_VER="R3.15.4";
 export EPICS_BASE=${HOME}/epics/${EPICS_BASE_VER}
 export EPICS_HOST_ARCH=linux-x86_64
 
-# LD_LIBRARY_PATH should have the EPICS and Tomcat libs 
-export LD_LIBRARY_PATH=${TOMCAT_HOME}/lib:${EPICS_BASE}/lib/${EPICS_HOST_ARCH}:${LD_LIBRARY_PATH}
+# LD_LIBRARY_PATH should have the EPICS 
+export LD_LIBRARY_PATH=${EPICS_BASE}/lib/${EPICS_HOST_ARCH}:${LD_LIBRARY_PATH}
 export PATH=${EPICS_BASE}/bin/${EPICS_HOST_ARCH}:${PATH}
 
 export EPICS_CA_ADDR_LIST="127.0.0.1 ${_HOST_IP}";
 export EPICS_CA_AUTO_ADDR_LIST=yes;
+
+
+if [ -f ${HOME}/.bashrc_local ]; then
+# Overwrite EPICS_CA_ADDR_LIST and others...
+# 
+    . ${HOME}/.bashrc_local
+fi
+
+
+# Tomcat lib 
+export LD_LIBRARY_PATH=${TOMCAT_LIB}:${LD_LIBRARY_PATH}
 
 export AA_GIT_URL="https://github.com/slacmshankar";
 export AA_GIT_NAME="epicsarchiverap";
