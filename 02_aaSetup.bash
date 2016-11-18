@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.4 for CentOS 7.2
+# version : 0.9.5
 #
 #
 # Generic : Global vaiables - readonly
@@ -85,8 +85,8 @@ popd
 printf "\n%s\n" "--->"
 pushd ${SC_TOP}
 
-printf "Put log4j.properties in ${TOMCAT_HOME}/lib\n"
-# 1) Put log4j.properties in ${TOMCAT_HOME}/lib
+printf "Put log4j.properties in ${TOMCAT_LIB}\n"
+# 1) Put log4j.properties in ${TOMCAT_LIB}
 declare LOG4J="log4j.properties";
 
 cat > ${LOG4J} <<EOF
@@ -99,7 +99,7 @@ cat > ${LOG4J} <<EOF
 #
 #  Jeong Han Lee, han.lee@esss.se
 # 
-#  This file should be in ${TOMCAT_HOME}/lib/ 
+#  This file should be in ${TOMCAT_LIB}/ 
 #
 
 # Set root logger level and its only appender to A1.
@@ -120,7 +120,7 @@ log4j.appender.A1.layout.ConversionPattern=%-4r [%t] %-5p %c %x - %m%n
 EOF
 
 # Permission and ownership should be considered later
-${SUDO_CMD} mv ${LOG4J} ${TOMCAT_HOME}/lib/ ;
+${SUDO_CMD} mv ${LOG4J} ${TOMCAT_LIB}/ ;
 popd
 
 

@@ -19,13 +19,8 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.2.2-rc01
+# version : 0.2.2-rc2
 #
-#  http://www.gnu.org/software/bash/manual/bashref.html#Bash-Builtins
-#
-
-# 
-# PREFIX : SC_, so declare -p can show them in a place
 # 
 # Generic : Global vaiables - readonly
 #
@@ -39,10 +34,10 @@ declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
-function ini_func() { sleep 1; printf "\n>>>> You are entering in  : %s\n" "${1}"; }
-function end_func() { sleep 1; printf "\n<<<< You are leaving from : %s\n" "${1}"; }
+function __ini_func() { printf "\n>>>> You are entering in  : %s\n" "${1}"; }
+function __end_func() { printf "\n<<<< You are leaving from : %s\n" "${1}"; }
 
-function checkstr() {
+function __checkstr() {
     if [ -z "$1" ]; then
 	printf "%s : input variable is not defined \n" "${FUNCNAME[*]}"
 	exit 1;
@@ -58,14 +53,14 @@ function checkstr() {
 
 function git_clone() {
     
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
     
     local git_src_dir=$1;
     local git_src_url=$2;
     local git_src_name=$3;
     local tag_name=$4;
     
-    checkstr ${SC_LOGDATE};
+    __checkstr ${SC_LOGDATE};
     
     if [[ ! -d ${git_src_dir} ]]; then
 	printf "No git source repository in the expected location %s\n" "${git_src_dir}";
@@ -85,7 +80,7 @@ function git_clone() {
 	git clone --recursive -b "${tag_name}" --single-branch --depth 1 "${git_src_url}/${git_src_name}" "${git_src_dir}";
     fi
 
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
 
@@ -95,14 +90,13 @@ declare -g SUDO_PID="";
 
 
 function sudo_start() {
-#    sudo -v -S <<< $(whiptail --title "SUDO Password Box" --passwordbox "Enter your password and choose Ok to continue." 10 60 3>&1 1>&2 2>&3 || exit);
-   ${SUDO_CMD} -v;    
+   ${SUDO_CMD} -v;
    ( while [ true ]; do
      	  ${SUDO_CMD} -n /bin/true;
-     	  ${SUDO_CMD} sleep 60;
+     	  sleep 60;
      	  kill -0 "$$" || exit;
-       done 2>/dev/null
-    )&
+     done 2>/dev/null
+   )&
 }
 
 
@@ -117,8 +111,8 @@ function sudo_start() {
 #
 function preparation() {
     
-    local func_name=${FUNCNAME[*]};  ini_func ${func_name};
-    checkstr ${SUDO_CMD};
+    local func_name=${FUNCNAME[*]};  __ini_func ${func_name};
+    __checkstr ${SUDO_CMD};
 
     ${SUDO_CMD} systemctl stop packagekit
     ${SUDO_CMD} systemctl disable packagekit
@@ -139,12 +133,19 @@ function preparation() {
     #
     ${SUDO_CMD} yum -y remove PackageKit ;
 
-
     # Install epel-release, git, and tree
     #
-    ${SUDO_CMD} yum -y install epel-release git tree screen xterm  xorg-x11-fonts-misc;	
+    declare -a package_list=();
+
+    # ntp
+    package_list+="epel-release git tree"
+    package_list+=" ";
+    package_list+="screen xterm xorg-x11-fonts-misc";
+    package_list+=" ";
+    
+    ${SUDO_CMD} yum -y install ${package_list};
 	
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
 
@@ -154,24 +155,24 @@ function preparation() {
 # Even if the service is active (running), it is OK to run "enable and start" again. 
 # systemctl can accept many services with one command
 
-function system_ctl_enable_start(){
+function __system_ctl_enable_start(){
     
-    local func_name=${FUNCNAME[*]};  ini_func ${func_name};
-    checkstr ${SUDO_CMD}; checkstr ${1};
+    local func_name=${FUNCNAME[*]};  __ini_func ${func_name};
+    __checkstr ${SUDO_CMD}; checkstr ${1};
 
     printf "Enable and Start the following service(s) : %s\n" "${1}";
     
     ${SUDO_CMD} systemctl enable ${1}.service;
     ${SUDO_CMD} systemctl start ${1}.service;
 
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
 
 
 function mariadb_setup() {
 
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
 
  
     # MariaDB Secure Installation without MariaDB root password
@@ -221,17 +222,20 @@ EOF
 
     printf "Moving the java client to %s/lib\n\n\n" "${TOMCAT_LIB}"
 	
-    ${SUDO_CMD} cp -v  target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}
+    #    ${SUDO_CMD} cp -v  target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}
+    # Symbolic link should be created early
+    # ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
+    cp -v target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_HOME}
     popd;
     
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
 
 
 function epics_setup(){
 
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
 
     local git_src_url="https://github.com/epics-base/";
     local git_src_name="epics-base";
@@ -244,37 +248,14 @@ function epics_setup(){
     nice make
     popd;
     
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
-function packages_for_tomcat_mariadb() {
-
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
-    checkstr ${SUDO_CMD};
-
-    declare -a package_list=();
-    
-    # JAVA
-    package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel";
-    package_list+=" ";
-    # MariaDB
-    package_list+="mariadb-server mariadb-libs maven"
-    package_list+=" ";
-    # Tomcat
-    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc tomcat-lib unzip"
-    package_list+=" ";
-
-    ${SUDO_CMD} yum -y install ${package_list};
-
-    system_ctl_enable_start "mariadb tomcat"
-
-    end_func ${func_name};
-}
 
 function packages_preparation_for_archappl(){
     
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
-    checkstr ${SUDO_CMD};
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    __checkstr ${SUDO_CMD};
 
     declare -a package_list=();
 
@@ -286,6 +267,16 @@ function packages_preparation_for_archappl(){
     package_list+="emacs telnet";
     package_list+=" ";
 
+    # JAVA
+    package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel";
+    package_list+=" ";
+    # MariaDB
+    package_list+="mariadb-server mariadb-libs maven"
+    package_list+=" ";
+    # Tomcat
+    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc tomcat-lib unzip"
+    package_list+=" ";
+        
     # EPICS Base
     package_list+="readline-devel libXt-devel libXp-devel libXmu-devel libXpm-devel lesstif-devel gcc-c++ ncurses-devel perl-devel";
     package_list+=" ";
@@ -296,55 +287,108 @@ function packages_preparation_for_archappl(){
     # Even if the service is active (running), it is OK to run "enable and start" again. 
     # systemctl can accept many services with one command
 
-    system_ctl_enable_start "ntpd"
+    __system_ctl_enable_start "ntpd mariadb tomcat"
 
-    # Do we need virbr0?
-    # Default I would like to remove it
-    # The virbr0, or "Virtual Bridge 0" interface is used for NAT (Network Address Translation). 
-    ${SUDO_CMD} ifconfig virbr0 down 
-    ${SUDO_CMD} brctl delbr virbr0
-
-    end_func ${func_name};
+    __reload_user_group;
+    
+    ${SUDO_CMD} ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
+    
+    __end_func ${func_name};
 }
 
+function __reload_user_group() {
 
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    __checkstr ${SUDO_CMD};
 
+    local tomcat_group="tomcat";
+    local current_primary_group=$(id -gn)
+    local temp_primary_group="";
+
+    ${SUDO_CMD} usermod -a -G ${tomcat_group} ${_USER_NAME};
+    
+    newgrp ${tomcat_group};
+
+    temp_primary_group=$(id -gn);
+
+    if test "${temp_primary_group}" != "${tomcat_group}"; then
+	printf "Changing group is wrong, exit...\n"
+	exit;
+    done
+
+    newgrp ${current_primary_group};
+
+    printf "The user %s is in the %s group without logout.\n" "${_USER_NAME}" "${temp_primary_group}"
+    
+    __end_func ${func_name};
+}
 
 function replace_gnome_with_mate() {
 
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
-	
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    __checkstr ${SUDO_CMD};
+    
     ${SUDO_CMD} yum -y install lightdm
     ${SUDO_CMD} yum -y groupinstall "MATE Desktop"
 
     ${SUDO_CMD} systemctl disable gdm.service
     ${SUDO_CMD} systemctl enable lightdm.service
 
-    end_func ${func_name}
+    __end_func ${func_name}
 }
 
 function prepare_storage() {
 
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
-
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    __checkstr ${SUDO_CMD};
+    
     printf "Make STS/MTS/LTS dirs at ARCHAPPL_STORAGE_TOP as %s\n\n---\n" "${ARCHAPPL_STORAGE_TOP}";
 
     ${SUDO_CMD} mkdir -p {${ARCHAPPL_SHORT_TERM_FOLDER},${ARCHAPPL_MEDIUM_TERM_FOLDER},${ARCHAPPL_LONG_TERM_FOLDER}};
 
     tree  -L 2 ${ARCHAPPL_STORAGE_TOP};
 
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
+function disable_virbro0() {
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    __checkstr ${SUDO_CMD};
+    
+    # Do we need virbr0?
+    # Default I would like to remove it
+    # The virbr0, or "Virtual Bridge 0" interface is used for NAT (Network Address Translation). 
+    ${SUDO_CMD} ifconfig virbr0 down 
+    ${SUDO_CMD} brctl delbr virbr0
+
+    __end_func ${func_name};
+}
+
+    
 
 function firewall_setup_for_ca() {
 
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
 
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
-sudo_start;
+
+
+#
+#
+#
+
+declare EPICS_LOG=${SC_TOP}/epics.log;
+
+#sudo_start;
+
+( while [ true ]; do
+      ${SUDO_CMD} -n /bin/true;
+      sleep 60;
+      kill -0 "$$" || exit;
+  done 2>/dev/null
+)&
 
 . ${SC_TOP}/setEnvAA.bash
 
@@ -352,28 +396,26 @@ sudo_start;
 preparation;
 prepare_storage;
 
-packages_for_tomcat_mariadb;
-
-printf "MariaDB Setup is ongoing in background process\n";
-printf "The installation log is %s\n" "${SC_TOP}/mariadb.log";
-( mariadb_setup&>${SC_TOP}/mariadb.log )&
-mariadb_proc=$1
-
 # root
 packages_preparation_for_archappl;
 
 # an user
 printf "EPICS Base installation is ongoing in background process\n";
-printf "The installation log is %s\n" "${SC_TOP}/epics.log";
-( epics_setup&>${SC_TOP}/epics.log )&
+printf "The installation log is %s\n" "${EPICS_LOG}";
+( epics_setup&>${EPICS_LOG})&
 epics_proc=$!
 
+nice xterm -title "EPICS Installation Status" -geometry 140x15+0+0  -e "nice watch -n 2 tail -n 10 ${EPICS_LOG}"&
 
-printf "Package Installatoin is done, however, \n";
-printf "MariaDB Setup and EPICS Base installation are ongoing in background process\n";
-printf "The installation log is %s and %s\n" "${SC_TOP}/epics.log" "${SC_TOP}/mariadb.log";
+mariadb_setup
 
-wait "$epics_proc" "$mariadb_proc"
+disable_virbro0
+
+printf "\nMariaDB Setup is done, However, \n";
+printf "EPICS Base installation are ongoing in background process\n";
+printf "The installation log is %s\n" "${SC_TOP}/epics.log" ;
+
+wait "$epics_proc"
 
 case "$1" in
     mate)
