@@ -381,7 +381,7 @@ function firewall_setup_for_ca() {
 declare EPICS_LOG=${SC_TOP}/epics.log;
 
 
-/usr/bin/sudo -E -v || exit 1
+sudo -v 
 
 
 . ${SC_TOP}/setEnvAA.bash
@@ -394,13 +394,7 @@ reset_sudoers() {
   /usr/bin/sudo -E -- /usr/bin/sed -i '' "/^${USER_SUDOER}/d" /etc/sudoers
 }
 
-trap reset_sudoers EXIT
-
 echo "${USER_SUDOER}" | /usr/bin/sudo -E -- /usr/bin/tee -a /etc/sudoers >/dev/null
-
-
-# Trap Ctrl-C
-trap 'trap "" INT; echo -r "\nAborting …"; exit 1' INT
 
 
 
