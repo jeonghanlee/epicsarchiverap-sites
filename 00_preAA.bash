@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.2.1 
+# version : 0.2.2-rc01
 #
 #  http://www.gnu.org/software/bash/manual/bashref.html#Bash-Builtins
 #
@@ -352,7 +352,7 @@ sudo_start;
 preparation;
 prepare_storage;
 
-package_for_tomcat_mariadb;
+packages_for_tomcat_mariadb;
 
 printf "MariaDB Setup is ongoing in background process\n";
 printf "The installation log is %s\n" "${SC_TOP}/mariadb.log";
@@ -367,7 +367,6 @@ printf "EPICS Base installation is ongoing in background process\n";
 printf "The installation log is %s\n" "${SC_TOP}/epics.log";
 ( epics_setup&>${SC_TOP}/epics.log )&
 epics_proc=$!
-
 
 
 printf "Package Installatoin is done, however, \n";
