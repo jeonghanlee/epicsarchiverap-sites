@@ -92,7 +92,7 @@ declare -g SUDO_PID="";
 function sudo_start() {
     ${SUDO_CMD} -v;
     USER_SUDOER="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
-    echo "${USER_SUDOER}" | (sudo su -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch')
+    echo "${USER_SUDOER}" | sudo sh -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch'
 
    ( while [ true ]; do
      	  sleep 60;
@@ -382,11 +382,10 @@ function firewall_setup_for_ca() {
 
 declare EPICS_LOG=${SC_TOP}/epics.log;
 
-sudo_start
 
 . ${SC_TOP}/setEnvAA.bash
 
-
+sudo_start
 
 # root
 preparation;
