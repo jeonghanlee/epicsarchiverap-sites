@@ -90,26 +90,21 @@ function git_clone() {
 
 
 
-declare -gr SUDO_CMD="";
+declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
 
 
 function sudo_start() {
-    sudo -v -S <<< $(whiptail --title "SUDO Password Box" --passwordbox "Enter your password and choose Ok to continue." 10 60 3>&1 1>&2 2>&3);
-    sudo su
-    
-    # ( while [ true ]; do
-    # 	  ${SUDO_CMD} -n /bin/true;
-    # 	  ${SUDO_CMD} sleep 60;
-    # 	  kill -0 "$$" || exit;
-    #   done 2>/dev/null
-    # )&
+#    sudo -v -S <<< $(whiptail --title "SUDO Password Box" --passwordbox "Enter your password and choose Ok to continue." 10 60 3>&1 1>&2 2>&3 || exit);
+   ${SUDO_CMD} -v;    
+   ( while [ true ]; do
+     	  ${SUDO_CMD} -n /bin/true;
+     	  ${SUDO_CMD} sleep 60;
+     	  kill -0 "$$" || exit;
+       done 2>/dev/null
+    )&
 }
 
-function sudo_end() {
-    (exec exit)
-    
-}
 
 # Specific : preparation
 #
@@ -174,6 +169,7 @@ function mariadb_setup() {
 
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
 
+ 
     # MariaDB Secure Installation without MariaDB root password
     # the same as mysql_secure_installation, but skip to setup
     # the root password in the script. The referece of the sql commands
@@ -198,8 +194,8 @@ EOF
 CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER_NAME}'@'localhost' IDENTIFIED BY '${DB_USER_PWD}';
 EOF
     
-    local jar_client_name="mariadb-java-client";
-    local mariadb_connectorj_jar="${jar_client_name}-${DB_JAVACLIENT_VER}.jar";
+#    local jar_client_name="mariadb-java-client";
+#    local mariadb_connectorj_jar="${jar_client_name}-${DB_JAVACLIENT_VER}.jar";
     
     # local maven_jar_url="http://central.maven.org/maven2/org/mariadb/jdbc";
     # # http://central.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/1.5.4/mariadb-java-client-1.5.4.jar
@@ -220,7 +216,9 @@ EOF
     mvn -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true package;
 
     printf "Moving the java client to %s/lib\n\n\n" "${TOMCAT_HOME}"
-    ${SUDO_CMD} -E cp -v  target/${mariadb_connectorj_jar} ${TOMCAT_HOME}/lib
+    # Due to the permission, we can copy it to only ${TOMCAT_HOME}
+    # Symlink should be ready in preparation	
+    ${SUDO_CMD} cp -v  target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}
     popd;
     
     end_func ${func_name};
@@ -246,6 +244,22 @@ function epics_setup(){
     end_func ${func_name};
 }
 
+function packages_for_tomcat_mariadb() {
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    checkstr ${SUDO_CMD};
+
+    declare -a package_list=();
+  # MariaDB
+    package_list+="mariadb-server mariadb-libs maven"
+    package_list+=" ";
+    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc tomcat-lib unzip"
+    package_list+=" ";
+
+    ${SUDO_CMD} yum -y install ${package_list};
+    system_ctl_enable_start "mariadb"
+    end_func ${func_name};
+}
+
 function packages_preparation_for_archappl(){
     
     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
@@ -253,9 +267,6 @@ function packages_preparation_for_archappl(){
 
     declare -a package_list=();
 
-    # epel-release;
-    package_list+="epel-release";
-    package_list+=" ";
     # ntp
     package_list+="ntp"
     package_list+=" ";
@@ -268,13 +279,13 @@ function packages_preparation_for_archappl(){
     package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel";
     package_list+=" ";
 
-    # MariaDB
-    package_list+="mariadb-server mariadb-libs maven"
-    package_list+=" ";
+#    # MariaDB
+#    package_list+="mariadb-server mariadb-libs maven"
+#    package_list+=" ";
 
-    # Tomcat
-    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc unzip"
-    package_list+=" ";
+#    # Tomcat
+#    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc tomcat-lib unzip"
+#    package_list+=" ";
 
     # EPICS Base
     package_list+="readline-devel libXt-devel libXp-devel libXmu-devel libXpm-devel lesstif-devel gcc-c++ ncurses-devel perl-devel";
@@ -282,11 +293,16 @@ function packages_preparation_for_archappl(){
     package_list+="net-snmp net-snmp-utils net-snmp-devel darcs libxml2-devel libpng12-devel netcdf-devel hdf5-devel lbzip2-utils libusb-devel python-devel";
     
     ${SUDO_CMD} yum -y install ${package_list};
+    # ${SUDO_CMD} usermod -a -G tomcat ${_USER_NAME};
+    #
+    # The real file will be copied in ${TOMCAT_HOME} during mariadb_setup
+    # 
+    # ${SUDO_CMD} ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
 
     # Even if the service is active (running), it is OK to run "enable and start" again. 
     # systemctl can accept many services with one command
 
-    system_ctl_enable_start "ntpd mariadb tomcat"
+    system_ctl_enable_start "ntpd tomcat"
 
     end_func ${func_name};
 }
@@ -328,8 +344,17 @@ sudo_start;
 preparation;
 prepare_storage;
 
+
+package_for_tomcat_mariadb;
+printf "MariaDB Setup is ongoing in background process\n";
+printf "The installation log is %s\n" "${SC_TOP}/mariadb.log";
+(mariadb_setup&>${SC_TOP}/mariadb.log)&
+mariadb_proc=$1
+
+
 # root
 packages_preparation_for_archappl;
+
 
 # an user
 printf "EPICS Base installation is ongoing in background process\n";
@@ -337,14 +362,13 @@ printf "The installation log is %s\n" "${SC_TOP}/epics.log";
 ( epics_setup&>${SC_TOP}/epics.log )&
 epics_proc=$!
 
-# root
-mariadb_setup;
 
-printf "MariaDB Setup is done, however, \n";
-printf "EPICS Base installation is ongoing in background process\n";
-printf "The installation log is %s\n" "${SC_TOP}/epics.log";
 
-wait "$epics_proc"
+printf "Package Installatoin is done, however, \n";
+printf "MariaDB Setup and EPICS Base installation are ongoing in background process\n";
+printf "The installation log is %s and %s\n" "${SC_TOP}/epics.log" "${SC_TOP}/mariadb.log";
+
+wait "$epics_proc" "$mariadb_proc"
 
 case "$1" in
     mate)
@@ -360,8 +384,6 @@ case "$1" in
     *)
 	;;
 esac
-
-sudo_end
 
 exit
 

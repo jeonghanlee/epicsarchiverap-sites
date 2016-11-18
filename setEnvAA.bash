@@ -37,6 +37,10 @@ export  _USER_NAME="$(whoami)"
 # preAA.bash, aaBuild.bash, aaService.bash
 #
 export TOMCAT_HOME=/usr/share/tomcat
+#
+# /usr/share/tomcat/lib is the symbolic link to /usr/share/java/tomcat
+#
+export TOMCAT_LIB=/usr/share/tomcat/lib
 
 # We assume that we inherit the EPICS environment variables 
 # This includes setting up the LD_LIBRARY_PATH to include the JCA .so file.
@@ -95,6 +99,9 @@ export DB_NAME="archappl";
 export DB_JAVACLIENT_VER="1.5.4";
 export DB_CLASSNAME="org.mariadb.jdbc.Driver"
 export DB_AA_URL="mariadb"
+    
+export JAR_CLIENT_NAME="mariadb-java-client";
+export MARIADB_CONNECTORJ_JAR="${JAR_CLIENT_NAME}-${DB_JAVACLIENT_VER}.jar";
 
 # For MySQL, 
 #export DB_CLASSNAME="com.mysql.jdbc.Driver"
