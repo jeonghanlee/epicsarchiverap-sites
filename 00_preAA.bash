@@ -389,14 +389,22 @@ sudo -v
 
 USER_SUDOER="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
 
-reset_sudoers() {
-  echo -b 'Resetting /etc/sudoers …'
-  /usr/bin/sudo -E -- /usr/bin/sed -i '' "/^${USER_SUDOER}/d" /etc/sudoers
-}
+# reset_sudoers() {
+#   echo -b 'Resetting /etc/sudoers …'
+#   /usr/bin/sudo -E -- /usr/bin/sed -i '' "/^${USER_SUDOER}/d" /etc/sudoers
+# }
 
-echo "${USER_SUDOER}" | /usr/bin/sudo -E -- /usr/bin/tee -a /etc/sudoers >/dev/null
+# echo "${USER_SUDOER}" | /usr/bin/sudo -E -- /usr/bin/tee -a /etc/sudoers >/dev/null
 
+# sudo bash -c 'echo "foobar ALL=(ALL:ALL) ALL" | (EDITOR="tee -a" visudo)'
 
+echo "${USER_SUDOER}" | (sudo su -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch')
+
+( while [ true ]; do
+      sleep 60;
+      kill -0 "$$" || ( sudo rm -f /etc/sudoers.d/arch && exit);
+  done 2>/dev/null
+)&
 
 # root
 preparation;
