@@ -400,7 +400,7 @@ echo "${USER_SUDOER}" | /usr/bin/sudo -E -- /usr/bin/tee -a /etc/sudoers >/dev/n
 
 
 # Trap Ctrl-C
-trap 'trap "" INT; echo -r "\nAborting …"; cleanup; exit 1' INT
+trap 'trap "" INT; echo -r "\nAborting …"; exit 1' INT
 
 
 
