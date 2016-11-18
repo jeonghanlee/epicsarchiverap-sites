@@ -289,8 +289,7 @@ function packages_preparation_for_archappl(){
 
     __system_ctl_enable_start "ntpd mariadb tomcat"
 
-    __reload_user_group;
-    
+    ${SUDO_CMD} usermod -a -G ${tomcat_group} ${_USER_NAME};
     ${SUDO_CMD} ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
     
     __end_func ${func_name};
