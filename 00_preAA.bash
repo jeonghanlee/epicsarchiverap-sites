@@ -158,7 +158,7 @@ function preparation() {
 function __system_ctl_enable_start(){
     
     local func_name=${FUNCNAME[*]};  __ini_func ${func_name};
-    __checkstr ${SUDO_CMD}; checkstr ${1};
+    __checkstr ${SUDO_CMD}; __checkstr ${1};
 
     printf "Enable and Start the following service(s) : %s\n" "${1}";
     
@@ -225,7 +225,7 @@ EOF
     #    ${SUDO_CMD} cp -v  target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}
     # Symbolic link should be created early
     # ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
-    cp -v target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_HOME}
+    exec sg tomcat "cp -v target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_HOME}"
     popd;
     
     __end_func ${func_name};
@@ -314,7 +314,7 @@ function __reload_user_group() {
     if test "${temp_primary_group}" != "${tomcat_group}"; then
 	printf "Changing group is wrong, exit...\n"
 	exit;
-    done
+    fi
 
     newgrp ${current_primary_group};
 
