@@ -44,6 +44,12 @@ function __checkstr() {
     fi
 }
 
+function clean_sudo {
+    sudo rm -f /etc/sudoers.d/arch
+  # Your cleanup code here
+}
+
+trap clean_sudo EXIT
 
 # Generic : git_clone
 # 1.0.3 Tuesday, November  8 18:13:44 CET 2016
@@ -94,11 +100,11 @@ function sudo_start() {
     USER_SUDOER="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
     echo "${USER_SUDOER}" | sudo sh -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch'
 
-   ( while [ true ]; do
-     	  sleep 60;
-     	  kill -0 "$$" || sudo rm -f /etc/sudoers.d/arch && exit;
-     done 2>/dev/null
-   )&
+   # ( while [ true ]; do
+   #   	  sleep 60;
+   #   	  kill -0 "$$" || sudo rm -f /etc/sudoers.d/arch && exit;
+   #   done 2>/dev/null
+   # )&
 }
 
 
@@ -292,7 +298,7 @@ function packages_preparation_for_archappl(){
     __system_ctl_enable_start "ntpd mariadb tomcat"
 
     # ${SUDO_CMD} usermod -a -G ${tomcat_group} ${_USER_NAME};
-    ${SUDO_CMD} ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
+    #    ${SUDO_CMD} ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
     
     __end_func ${func_name};
 }
