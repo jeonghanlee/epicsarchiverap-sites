@@ -85,7 +85,7 @@ function git_clone() {
 
 
 
-declare -gr SUDO_CMD="sudo";
+declare -gr SUDO_CMD="";
 declare -g SUDO_PID="";
 
 
@@ -380,16 +380,29 @@ function firewall_setup_for_ca() {
 
 declare EPICS_LOG=${SC_TOP}/epics.log;
 
-#sudo_start;
 
-( while [ true ]; do
-      ${SUDO_CMD} -n /bin/true;
-      sleep 60;
-      kill -0 "$$" || exit;
-  done 2>/dev/null
-)&
+/usr/bin/sudo -E -v || exit 1
+
 
 . ${SC_TOP}/setEnvAA.bash
+
+
+USER_SUDOER="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
+
+reset_sudoers() {
+  echo -b 'Resetting /etc/sudoers …'
+  /usr/bin/sudo -E -- /usr/bin/sed -i '' "/^${USER_SUDOER}/d" /etc/sudoers
+}
+
+trap reset_sudoers EXIT
+
+echo "${USER_SUDOER}" | /usr/bin/sudo -E -- /usr/bin/tee -a /etc/sudoers >/dev/null
+
+
+# Trap Ctrl-C
+trap 'trap "" INT; echo -r "\nAborting …"; cleanup; exit 1' INT
+
+
 
 # root
 preparation;
