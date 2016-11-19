@@ -47,7 +47,7 @@ function sudo_start() {
     local user_sudoer="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
     # /etc/sudoers.d/arch should not be replaced with a variable
     echo "${user_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch'
-    __cleanup;
+    __cleanup&
 }
 
 
@@ -68,11 +68,10 @@ trap sudo_end EXIT SIGHUP SIGINT SIGKILL SIGTERM SIGPWR SIGQUIT
 
 
 function __cleanup() {
-    ( while [ true ]; do
-	  sleep 60;
-	  kill -0 "$$" || (sudo_end && exit);
-      done 2>/dev/null
-    ) &
+    while [ true ]; do
+	sleep 10;
+	kill -0 "$$" || sudo_end;
+    done 2>/dev/null
 }
 
 
