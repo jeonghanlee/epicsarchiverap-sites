@@ -100,7 +100,7 @@ function git_clone() {
 	mv  ${git_src_dir} ${git_src_dir}_${SC_LOGDATE}
     fi
     
-    # Alwasy fresh cloning ..... in order to workaround any local 
+    # Always fresh cloning ..... in order to workaround any local 
     # modification in the repository, which was cloned before. 
     #
     # we need the recursive option in order to build a web based viewer for Archappl
@@ -119,7 +119,7 @@ function git_clone() {
 #
 # 1.0.1 Wednesday, November  9 09:56:52 CET 2016
 #
-# Require Global vairable
+# Require Global variable
 # - SUDO_CMD :  input
 # - 
 # - allow this script to execute yum, and remove PakageKit
@@ -192,7 +192,7 @@ function mariadb_setup() {
     
     # MariaDB Secure Installation without MariaDB root password
     # the same as mysql_secure_installation, but skip to setup
-    # the root password in the script. The referece of the sql commands
+    # the root password in the script. The reference of the sql commands
     # is https://goo.gl/DnyijD
     
     
@@ -208,7 +208,7 @@ DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 FLUSH PRIVILEGES;
 EOF
 
-    printf "Creat the Database %s if not exists...\n" "${DB_NAME}";
+    printf "Create the Database %s if not exists...\n" "${DB_NAME}";
 
     mysql -u root <<EOF
 CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER_NAME}'@'localhost' IDENTIFIED BY '${DB_USER_PWD}';

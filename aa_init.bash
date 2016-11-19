@@ -22,7 +22,7 @@
 # version : 0.1.3
 #
 # 
-# Generic : Global vaiables - readonly
+# Generic : Global variables - read-only
 #
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
@@ -74,7 +74,7 @@ function git_clone() {
 	mv  ${git_src_dir} ${git_src_dir}_${SC_LOGDATE}
     fi
     
-    # Alwasy fresh cloning ..... in order to workaround any local 
+    # Always fresh cloning ..... in order to workaround any local 
     # modification in the repository, which was cloned before. 
     #
     if [ -z "$tag_name" ]; then

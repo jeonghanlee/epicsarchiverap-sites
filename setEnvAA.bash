@@ -24,7 +24,7 @@ export THIS_SCRIPT=$(realpath "$0")
 export THIS_TOP="$(dirname "$THIS_SCRIPT")"
 
 
-# Hostname is not reiable to use it in the appliances.xml, so force to get the running
+# Hostname is not reliable to use it in the appliances.xml, so force to get the running
 # IP, and use it into... need to change them by other demands
 
 declare hostname_cmd="$(hostname)"
