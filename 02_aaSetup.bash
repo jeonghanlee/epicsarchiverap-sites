@@ -41,18 +41,7 @@ function popd()  { builtin popd  "$@" > /dev/null; }
 declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
 
-function sudo_start() {
-    ${SUDO_CMD} -v
-    ( while [ true ]; do
-	  ${SUDO_CMD} -n /bin/true;
-	  sleep 60;
-	  kill -0 "$$" || exit;
-      done 2>/dev/null
-    )&
-}
-
-
-sudo_start;
+${SUDO_CMD} -v
 
 . ${SC_TOP}/setEnvAA.bash
 

@@ -19,18 +19,13 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.2.2-rc2
-#
-# 
-# Generic : Global vaiables - readonly
+# version : 0.2.2
 #
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
-# Generic : Redefine pushd and popd to reduce their output messages
-# 
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
@@ -44,12 +39,34 @@ function __checkstr() {
     fi
 }
 
-function clean_sudo {
-    sudo rm -f /etc/sudoers.d/arch
-  # Your cleanup code here
+declare -gr SUDO_CMD="sudo";
+declare -gr SUDOERSD_ARCH="/etc/sudoers.d/arch";
+
+function sudo_start() {
+    
+    ${SUDO_CMD} -v;
+    local user_sudoer="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
+    echo "${user_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f ${SUDOERSD_ARCH}'
 }
 
-trap clean_sudo EXIT
+
+function sudo_end () {
+    ${SUDO_CMD} rm -f ${SUDOERSD_ARCH};
+    exit
+}
+
+# https://en.wikipedia.org/wiki/Unix_signal
+
+# 1  : SIGHUP
+# 2  : SIGINT
+# 9  : SIGKILL
+# 15 : SIGTERM
+# 
+
+trap sudo_end EXIT SIGHUP SIGINT SIGKILL SIGTERM SIGPWR SIGQUIT
+
+
+
 
 # Generic : git_clone
 # 1.0.3 Tuesday, November  8 18:13:44 CET 2016
@@ -91,23 +108,6 @@ function git_clone() {
 
 
 
-declare -gr SUDO_CMD="sudo";
-declare -g SUDO_PID="";
-
-
-function sudo_start() {
-    ${SUDO_CMD} -v;
-    USER_SUDOER="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
-    echo "${USER_SUDOER}" | sudo sh -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch'
-
-   # ( while [ true ]; do
-   #   	  sleep 60;
-   #   	  kill -0 "$$" || sudo rm -f /etc/sudoers.d/arch && exit;
-   #   done 2>/dev/null
-   # )&
-}
-
-
 # Specific : preparation
 #
 # 1.0.1 Wednesday, November  9 09:56:52 CET 2016
@@ -120,7 +120,7 @@ function sudo_start() {
 function preparation() {
     
     local func_name=${FUNCNAME[*]};  __ini_func ${func_name};
-    #  __checkstr ${SUDO_CMD};
+    __checkstr ${SUDO_CMD};
 
     ${SUDO_CMD} systemctl stop packagekit
     ${SUDO_CMD} systemctl disable packagekit
@@ -136,7 +136,7 @@ function preparation() {
 	    ${SUDO_CMD} rm -rf ${yum_pid}
 	fi
     fi
-        
+    
     # Remove PackageKit
     #
     ${SUDO_CMD} yum -y remove PackageKit ;
@@ -152,7 +152,7 @@ function preparation() {
     package_list+=" ";
     
     ${SUDO_CMD} yum -y install ${package_list};
-	
+    
     __end_func ${func_name};
 }
 
@@ -166,7 +166,7 @@ function preparation() {
 function __system_ctl_enable_start(){
     
     local func_name=${FUNCNAME[*]};  __ini_func ${func_name};
-    #  __checkstr ${SUDO_CMD}; __checkstr ${1};
+    __checkstr ${SUDO_CMD}; __checkstr ${1};
 
     printf "Enable and Start the following service(s) : %s\n" "${1}";
     
@@ -182,13 +182,13 @@ function mariadb_setup() {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
 
- 
+    
     # MariaDB Secure Installation without MariaDB root password
     # the same as mysql_secure_installation, but skip to setup
     # the root password in the script. The referece of the sql commands
     # is https://goo.gl/DnyijD
- 
- 
+    
+    
     printf "Setup mysql_secure_installation...\n";
     
     # UPDATE mysql.user SET Password=PASSWORD('$passwd') WHERE User='root';
@@ -207,8 +207,8 @@ EOF
 CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER_NAME}'@'localhost' IDENTIFIED BY '${DB_USER_PWD}';
 EOF
     
-#    local jar_client_name="mariadb-java-client";
-#    local mariadb_connectorj_jar="${jar_client_name}-${DB_JAVACLIENT_VER}.jar";
+    #    local jar_client_name="mariadb-java-client";
+    #    local mariadb_connectorj_jar="${jar_client_name}-${DB_JAVACLIENT_VER}.jar";
     
     # local maven_jar_url="http://central.maven.org/maven2/org/mariadb/jdbc";
     # # http://central.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/1.5.4/mariadb-java-client-1.5.4.jar
@@ -229,11 +229,13 @@ EOF
     mvn -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true package;
 
     printf "Moving the java client to %s/lib\n\n\n" "${TOMCAT_LIB}"
-	
+    
     ${SUDO_CMD} cp -v  target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}
+    
     # Symbolic link should be created early
     # ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
     #"cp -v target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_HOME}"
+    
     popd;
     
     __end_func ${func_name};
@@ -263,7 +265,7 @@ function epics_setup(){
 function packages_preparation_for_archappl(){
     
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-    #  __checkstr ${SUDO_CMD};
+    __checkstr ${SUDO_CMD};
 
     declare -a package_list=();
 
@@ -284,56 +286,30 @@ function packages_preparation_for_archappl(){
     # Tomcat
     package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc tomcat-lib unzip"
     package_list+=" ";
-        
+    
     # EPICS Base
     package_list+="readline-devel libXt-devel libXp-devel libXmu-devel libXpm-devel lesstif-devel gcc-c++ ncurses-devel perl-devel";
     package_list+=" ";
     package_list+="net-snmp net-snmp-utils net-snmp-devel darcs libxml2-devel libpng12-devel netcdf-devel hdf5-devel lbzip2-utils libusb-devel python-devel";
     
     ${SUDO_CMD} yum -y install ${package_list};
-  
+    
     # Even if the service is active (running), it is OK to run "enable and start" again. 
     # systemctl can accept many services with one command
 
     __system_ctl_enable_start "ntpd mariadb tomcat"
 
     # ${SUDO_CMD} usermod -a -G ${tomcat_group} ${_USER_NAME};
-    #    ${SUDO_CMD} ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
+    # ${SUDO_CMD} ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
     
     __end_func ${func_name};
 }
 
-# function __reload_user_group() {
-
-#     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-#     #  __checkstr ${SUDO_CMD};
-
-#     local tomcat_group="tomcat";
-#     local current_primary_group=$(id -gn)
-#     local temp_primary_group="";
-
-#     ${SUDO_CMD} usermod -a -G ${tomcat_group} ${_USER_NAME};
-    
-#     newgrp ${tomcat_group};
-
-#     temp_primary_group=$(id -gn);
-
-#     if test "${temp_primary_group}" != "${tomcat_group}"; then
-# 	printf "Changing group is wrong, exit...\n"
-# 	exit;
-#     fi
-
-#     newgrp ${current_primary_group};
-
-#     printf "The user %s is in the %s group without logout.\n" "${_USER_NAME}" "${temp_primary_group}"
-    
-#     __end_func ${func_name};
-# }
 
 function replace_gnome_with_mate() {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-    #  __checkstr ${SUDO_CMD};
+    __checkstr ${SUDO_CMD};
     
     ${SUDO_CMD} yum -y install lightdm
     ${SUDO_CMD} yum -y groupinstall "MATE Desktop"
@@ -347,7 +323,7 @@ function replace_gnome_with_mate() {
 function prepare_storage() {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-    #  __checkstr ${SUDO_CMD};
+    __checkstr ${SUDO_CMD};
     
     printf "Make STS/MTS/LTS dirs at ARCHAPPL_STORAGE_TOP as %s\n\n---\n" "${ARCHAPPL_STORAGE_TOP}";
 
@@ -360,7 +336,7 @@ function prepare_storage() {
 
 function disable_virbro0() {
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-    #  __checkstr ${SUDO_CMD};
+    __checkstr ${SUDO_CMD};
     
     # Do we need virbr0?
     # Default I would like to remove it
@@ -371,7 +347,6 @@ function disable_virbro0() {
     __end_func ${func_name};
 }
 
-    
 
 function firewall_setup_for_ca() {
 
@@ -387,7 +362,6 @@ function firewall_setup_for_ca() {
 #
 
 declare EPICS_LOG=${SC_TOP}/epics.log;
-
 
 . ${SC_TOP}/setEnvAA.bash
 
@@ -405,16 +379,21 @@ printf "EPICS Base installation is ongoing in background process\n";
 printf "The installation log is %s\n" "${EPICS_LOG}";
 ( epics_setup&>${EPICS_LOG})&
 epics_proc=$!
-
 nice xterm -title "EPICS Installation Status" -geometry 140x15+0+0  -e "nice watch -n 2 tail -n 10 ${EPICS_LOG}"&
+
 
 mariadb_setup
 
 disable_virbro0
 
-printf "\nMariaDB Setup is done, However, \n";
-printf "EPICS Base installation are ongoing in background process\n";
-printf "The installation log is %s\n" "${SC_TOP}/epics.log" ;
+if [ -z "$1" ]; then
+    printf "%s : No option is selected. Exiting ... \n"
+    exit;
+fi
+
+printf "\nMariaDB Setup is done. And the option %s is selected \n" "$1";
+printf "Before going further, we should wait for EPICS Base installation\n";
+printf "The log file is shown in %s\n" "${EPICS_LOG}" ;
 
 wait "$epics_proc"
 
@@ -433,6 +412,7 @@ case "$1" in
 	${SUDO_CMD} yum -y update;
 	;;
     *)
+	printf "Not support yet.\n";
 	;;
 esac
 
