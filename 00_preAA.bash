@@ -40,18 +40,19 @@ function __checkstr() {
 }
 
 declare -gr SUDO_CMD="sudo";
-declare -gr SUDOERSD_ARCH="/etc/sudoers.d/arch";
 
 function sudo_start() {
     
     ${SUDO_CMD} -v;
     local user_sudoer="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
-    echo "${user_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f \"${SUDOERSD_ARCH}\"'
+    # /etc/sudoers.d/arch should not be replaced with a variable
+    echo "${user_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch'
+    __cleanup;
 }
 
 
 function sudo_end () {
-    ${SUDO_CMD} rm -f ${SUDOERSD_ARCH};
+    ${SUDO_CMD} rm -f /etc/sudoers.d/arch;
     exit
 }
 
@@ -66,6 +67,13 @@ function sudo_end () {
 trap sudo_end EXIT SIGHUP SIGINT SIGKILL SIGTERM SIGPWR SIGQUIT
 
 
+function __cleanup() {
+    ( while [ true ]; do
+	  sleep 60;
+	  kill -0 "$$" || (sudo_end && exit);
+      done 2>/dev/null
+    ) &
+}
 
 
 # Generic : git_clone
