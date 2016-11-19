@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.2.2
+# version : 0.2.3-rc0
 #
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
@@ -52,6 +52,7 @@ function sudo_start() {
 
 
 function sudo_end () {
+    gsettings set org.gnome.desktop.lockdown disable-lock-screen false;
     ${SUDO_CMD} rm -f /etc/sudoers.d/arch;
     exit
 }
@@ -128,6 +129,8 @@ function preparation() {
     
     local func_name=${FUNCNAME[*]};  __ini_func ${func_name};
     __checkstr ${SUDO_CMD};
+
+    gsettings set org.gnome.desktop.lockdown disable-lock-screen true
 
     ${SUDO_CMD} systemctl stop packagekit
     ${SUDO_CMD} systemctl disable packagekit

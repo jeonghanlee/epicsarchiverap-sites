@@ -22,7 +22,7 @@
 # version : 0.9.5
 #
 #
-# Generic : Global vaiables - readonly
+# Generic : Global variables - read-only
 #
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
