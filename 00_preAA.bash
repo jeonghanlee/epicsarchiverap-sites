@@ -64,12 +64,12 @@ function sudo_end () {
 # 15 : SIGTERM
 # 
 
-trap sudo_end EXIT SIGHUP SIGINT SIGKILL SIGTERM SIGPWR SIGQUIT
+trap sudo_end EXIT SIGINT SIGTERM
 
 
 function __cleanup() {
     while [ true ]; do
-	sleep 10;
+	sleep 30;
 	kill -0 "$$" || sudo_end;
     done 2>/dev/null
 }
