@@ -46,7 +46,7 @@ function sudo_start() {
     
     ${SUDO_CMD} -v;
     local user_sudoer="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
-    echo "${user_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f ${SUDOERSD_ARCH}'
+    echo "${user_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f \"${SUDOERSD_ARCH}\"'
 }
 
 
