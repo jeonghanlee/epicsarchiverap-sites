@@ -56,7 +56,8 @@ import shutil
 import urllib
 import urllib2
 import json
-from datetime import timedelta, datetime, date
+
+from datetime import timedelta, datetime, time, date, tzinfo
 
 # Theses ports should be the same as appliances.xml
 # e.g. /opt/archappl/appliances.xml
@@ -65,6 +66,12 @@ from datetime import timedelta, datetime, date
 
 mgmt_port="17665"
 retrieval_port="17668"
+
+
+# Time difference should has two digits
+
+def pri(n):
+    return "%02d" % n
 
 # epoch_secs : 
 # This is the Java epoch seconds of the EPICS record processing timestamp. 
@@ -75,13 +82,14 @@ def convertDate(epoch_secs):
     return _date.isoformat()
 
 
-def setMGMTurl(url):
-    return url + ":" + mgmt_port + "/mgmt/bpl/"
-
 def print_data_info(element):
     #  {u'nanos': 887037220, u'status': 0, u'secs': 1418979266, u'severity': 0, u'val': 24.0}
     print element.nanos
     return 
+
+
+def setMGMTurl(url):
+    return url + ":" + mgmt_port + "/mgmt/bpl/"
 
 def setJsonRetUrl(url):
     return url + ":" + retrieval_port + "/retrieval/data/getData.json"
@@ -166,13 +174,20 @@ def main():
         print ">>>  Target  : " + args.target
         print ">>>"
 
+
     matchingPVs = []
     matchingPVs = getSelectedPVs(setMGMTurl(url), args)
     
         
     if matchingPVs:
 
-        _now  = datetime.now()
+        # Python datetime has the isoformat at https://docs.python.org/2/library/datetime.html
+        _now     = datetime.now()
+        _utc_now = datetime.utcnow()
+        _delta   =  _now - _utc_now
+        
+        _delta_hh,_delta_mm = divmod((_delta.days * 24*60*60 + _delta.seconds + 30) // 60, 60)
+
         _from = _now - timedelta(days=args.days)
 
         _from_iso_string = _from.isoformat()
@@ -180,34 +195,27 @@ def main():
         
         fromString       = urllib.urlencode( {'from' : _from_iso_string} ) 
         toString         = urllib.urlencode( {'to'   : _now_iso_string } )
-
-        #   userString = urllib.urlencode( {'userreduced' : "true"} )
-        
-        #    _from        = datetime(2014,12,19,17,40,00,00)
-        #    _from_string = _from.strftime("%Y-%m-%dT%H:%M:%S")
-        #    _now_string  = _now.strftime ("%Y-%m-%dT%H:%M:%S")
-        #    "From" and "To" have the iso time format at  http://epicsarchiverap.sourceforge.net/userguide.html
-        #    Python datetime has the isoformat at https://docs.python.org/2/library/datetime.html
-        #    Monday, December 22 13:42:51 KST 2014, jhlee
-        
        
-        #   Still don't understand what the following Strings means,
-        #   get the structure form archiveViewer, and simply add only 
-        #   magicString to queryString  
-        #  
-        #   Monday, December 22 10:40:19 KST 2014, jhlee
-        #
-        magicString = "%2B09%3A00"
         # http://en.wikipedia.org/wiki/Percent-encoding
         # %2B : "+"
         # %3A : ":"
+        tzString = "%2B"
+        tzString += pri(_delta_hh)
+        tzString += "%3A"
+        tzString += pri(_delta_mm)
+      
         # userString  = "&usereduced=true"
         # cahowString = "&ca_how=0"
         # cacountString = "&ca_count=1907"
         
-        suffixString = magicString
+
+        # Add the Time difference between UTC and the local time
+        suffixString = tzString
         # suffixString = magicString# + userString + cahowString + cacountString
         
+        fromString += suffixString
+        toString   += suffixString
+
         if args.verbose:
             print "fromString : ",  fromString
             print "toString   : ",  toString
@@ -225,7 +233,6 @@ def main():
     
         if not os.path.exists(dest_directory):
             os.makedirs(dest_directory)
-
             
         mean_sstring = ""
         mean_estring = ""
@@ -247,10 +254,8 @@ def main():
             queryString += mean_estring
             queryString += '&'
             queryString += fromString 
-            queryString += magicString
             queryString += '&'
             queryString += toString 
-            queryString += suffixString
 
             if args.verbose:
                 print "queryString : ",  queryString
