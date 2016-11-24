@@ -20,8 +20,8 @@
 # Shell   : getData.py
 # Author  : Jeong Han Lee
 # email   : jeonghan.lee@gmail.com
-# Date    : Tuesday, January  5 10:46:51 CET 2016
-# Version : 0.4.0
+# Date    : Thursday, November 24 12:19:25 CET 2016
+# Version : 0.4.2
 #
 #  - 0.0.0  Friday, December 19 10:18:02 KST 2014
 #           Created.
@@ -38,7 +38,9 @@
 #           - fix the hard-coded local time according to UTC
 #           - add "archived" the entire target directory in target path
 #           - remove the intermediate path
- 
+#  - 0.4.2  Thursday, November 24 12:17:39 CET 2016
+#           - use ftime as the directory and zip file names
+#           - add the remove function in valid with zip option.   
 #    An example in cronjob (crontab -e) in every 5 mins
 #
 #  
@@ -52,9 +54,9 @@
 
 # Get date from Archiver Appliance to put them in ${HOME}/Archappl_ipaddress/CURRENT_TIME
 # Compress that directory and put them in ${HOME}/Archappl_ipaddress/
-# /usr/bin/python /home/aauser/epicsarchiverap-sites/aa_scripts/getData.py -i 10.0.4.22 -d 1  -f test_ioc_pv_list -t ${HOME} -z
 # /usr/bin/python /home/aauser/epicsarchiverap-sites/aa_scripts/getData.py -i 10.0.4.22 -d 1  -t ${HOME} -z -f test_ioc_pv_list
-
+# /usr/bin/python /home/aauser/epicsarchiverap-sites/aa_scripts/getData.py -i 10.0.4.22 -d 1  -f test_ioc_pv_list -t ${HOME} -z
+# /usr/bin/python /home/aauser/epicsarchiverap-sites/aa_scripts/getData.py -i 10.0.4.22 -d 1  -f test_ioc_pv_list -t ${HOME} -z -rm
 
 
 
@@ -155,6 +157,15 @@ def getSelectedPVs(url, args):
         if args.verbose: print selectedPVs
         return selectedPVs
 
+def remove_folder(path):
+    # check if folder exists
+    if os.path.exists(path):
+         # remove if exists
+         shutil.rmtree(path)
+
+
+
+
 
 def main():
 
@@ -172,6 +183,7 @@ def main():
     # parser.add_argument("-t", "--target",   help="target location of data file", default=os.environ['HOME'] )
     parser.add_argument("-m", "--mean",     help="data average during secs", default="")
     parser.add_argument("-z", "--zip",      help="output files are zippped", action="store_true")
+    parser.add_argument("-rm", "--remove",   help="delete the target directory after creating a zip", action="store_true")
     parser.add_argument("-t", "--targetpath", help="put the files in a directory directly", default=os.environ['HOME'] )
     
     args = parser.parse_args()
@@ -199,6 +211,8 @@ def main():
         # Python datetime has the isoformat at https://docs.python.org/2/library/datetime.html
         _now     = datetime.now()
         _utc_now = datetime.utcnow()
+     
+
         _delta   =  _now - _utc_now
         
         _delta_hh,_delta_mm = divmod((_delta.days * 24*60*60 + _delta.seconds + 30) // 60, 60)
@@ -207,7 +221,8 @@ def main():
 
         _from_iso_string = _from.isoformat()
         _now_iso_string  = _now.isoformat()
-        
+        _now_ftime_string = _now.strftime("%Y%m%e-%H%M%S");
+
         fromString       = urllib.urlencode( {'from' : _from_iso_string} ) 
         toString         = urllib.urlencode( {'to'   : _now_iso_string } )
        
@@ -262,7 +277,7 @@ def main():
 
         target_path += "Archappl_" + args.ip + "/";
         
-        target_path_per_each_call = target_path + _now_iso_string + "/";
+        target_path_per_each_call = target_path + _now_ftime_string + "/";
     
         if not os.path.exists(target_path_per_each_call):
             try:
@@ -355,7 +370,7 @@ def main():
 
         if args.zip:
                
-            base_name = _now_iso_string
+            base_name = _now_ftime_string 
             base_dir  = target_path_per_each_call
             root_dir  = target_path
             if args.verbose:
@@ -366,6 +381,12 @@ def main():
             try : 
                 os.chdir(root_dir)
                 shutil.make_archive(base_name, 'zip', target_path_per_each_call)
+                if args.remove:
+                    try : 
+                        remove_folder(target_path_per_each_call)
+                    except OSError as e: 
+                        if e.errno != errno.ENOENT: 
+                            raise 
 
             except shutil.Error as e:
                 print('Error: %s' % e)
