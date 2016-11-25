@@ -21,7 +21,7 @@
 # Author  : Jeong Han Lee
 # email   : jeonghan.lee@gmail.com
 # Date    : Thursday, November 24 12:19:25 CET 2016
-# Version : 0.4.2
+# Version : 0.4.3
 #
 #  - 0.0.0  Friday, December 19 10:18:02 KST 2014
 #           Created.
@@ -40,7 +40,10 @@
 #           - remove the intermediate path
 #  - 0.4.2  Thursday, November 24 12:17:39 CET 2016
 #           - use ftime as the directory and zip file names
-#           - add the remove function in valid with zip option.   
+#           - add the remove function in valid with zip option.  
+#  - 0.4.3 Friday, November 25 09:34:01 CET 2016
+#           - add import errno
+#  
 #    An example in cronjob (crontab -e) in every 5 mins
 #
 #  
@@ -66,6 +69,7 @@ import sys
 import argparse 
 import socket
 import shutil
+import errno
 
 import urllib
 import urllib2
@@ -283,9 +287,11 @@ def main():
             try:
                 os.makedirs(target_path_per_each_call)
 
-            except OSError as exc: 
+            except OSError as exc:
                 if exc.errno != errno.EEXIST:
-                    raise
+                    raise exc
+                pass
+
                     
         for pv in sorted(matchingPVs):
            
