@@ -107,7 +107,5 @@ Select master or one of tags which can be built, followed by [ENTER]:
 ![Connection Example](aa_site_specific.png)
 
 
-```
-
 # Acknowledgement
 A special word of thanks goes to Murali Shankar who develops the Archiver Appliance and answers my stupid questions again and again and again.
