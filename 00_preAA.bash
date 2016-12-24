@@ -288,7 +288,7 @@ function packages_preparation_for_archappl(){
     package_list+=" ";
 
     # JAVA
-    package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel";
+    package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel ant";
     package_list+=" ";
     # MariaDB
     package_list+="mariadb-server mariadb-libs maven"
