@@ -41,19 +41,38 @@ function __checkstr() {
 
 declare -gr SUDO_CMD="sudo";
 
+
+# No way to keep the sudo permission without injecting an user ALL permission
+# in /etc/sudoers.d/ in CentOS.
+# However, after all setup is done, I would like to delete the injected permission.
+# Unfornately, in CentOS, that directory permission is 750. So, it should be the
+# sudo permission again, which will prompt sudo password again after the whole
+# procedure is done.
+# In Debian 8 (Jessie), that directory permission is 755. So, in sudo_start
+# I changed it 755, and will use the permission 755 after that.
+# Saturday, December 31 00:21:44 CET 2016, jhlee
+
 function sudo_start() {
+
+    # disable lock-screen
+    gsettings set org.gnome.desktop.lockdown disable-lock-screen true
     
     ${SUDO_CMD} -v;
+
     local user_sudoer="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
+    ${SUDO_CMD} chmod 755 /etc/sudoers.d;
     # /etc/sudoers.d/arch should not be replaced with a variable
     echo "${user_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch'
+    
     __cleanup&
 }
 
 
 function sudo_end () {
+    # enable lock-screen
     gsettings set org.gnome.desktop.lockdown disable-lock-screen false;
-    ${SUDO_CMD} rm -f /etc/sudoers.d/arch;
+    # an user can delete that file
+    rm -f /etc/sudoers.d/arch;
     exit
 }
 
@@ -63,8 +82,10 @@ function sudo_end () {
 # 2  : SIGINT
 # 9  : SIGKILL
 # 15 : SIGTERM
-# 
+#
 
+# If the following signals are, enable lock-screen and delete the injected sudo permission
+#
 trap sudo_end EXIT SIGINT SIGTERM
 
 
@@ -129,8 +150,6 @@ function preparation() {
     
     local func_name=${FUNCNAME[*]};  __ini_func ${func_name};
     __checkstr ${SUDO_CMD};
-
-    gsettings set org.gnome.desktop.lockdown disable-lock-screen true
 
     ${SUDO_CMD} systemctl stop packagekit
     ${SUDO_CMD} systemctl disable packagekit
