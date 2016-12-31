@@ -42,6 +42,8 @@ function __checkstr() {
 declare -gr SUDO_CMD="sudo";
 
 
+# The following explaination doesn't work properly. So, I commented out
+#
 # No way to keep the sudo permission without injecting an user ALL permission
 # in /etc/sudoers.d/ in CentOS.
 # However, after all setup is done, I would like to delete the injected permission.
@@ -52,18 +54,23 @@ declare -gr SUDO_CMD="sudo";
 # I changed it 755, and will use the permission 755 after that.
 # Saturday, December 31 00:21:44 CET 2016, jhlee
 
+# 
+
 function sudo_start() {
 
     # disable lock-screen
     gsettings set org.gnome.desktop.lockdown disable-lock-screen true
-    
+
+    This can be used to allow users to create or delete their own time stamps via “sudo -v” and “sudo -k” respectively.
     ${SUDO_CMD} -v;
 
-    local user_sudoer="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
-    ${SUDO_CMD} chmod 755 /etc/sudoers.d;
+    #    local user_sudoer="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
+    #    ${SUDO_CMD} chmod 755 /etc/sudoers.d;
     # /etc/sudoers.d/arch should not be replaced with a variable
-    echo "${user_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch'
-    
+    #    echo "${user_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch'
+
+    local timeout_sudoer="Defaults:${_USER_NAME} timestamp_timeout=-1"
+    echo "${timeout_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch'
     __cleanup&
 }
 
@@ -72,7 +79,8 @@ function sudo_end () {
     # enable lock-screen
     gsettings set org.gnome.desktop.lockdown disable-lock-screen false;
     # an user can delete that file
-    rm -f /etc/sudoers.d/arch;
+    #rm -f /etc/sudoers.d/arch;
+    ${SUDO_CMD} -K;
     exit
 }
 
