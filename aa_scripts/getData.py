@@ -3,7 +3,7 @@
 #
 #  Copyright (c) Jeong Han Lee
 #
-#  This getData.py is free software: you can redistribute
+#  This program is free software: you can redistribute
 #  it and/or modify it under the terms of the GNU General Public License
 #  as published by the Free Software Foundation, either version 2 of the
 #  License, or any newer version.
@@ -17,11 +17,10 @@
 #  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
 #
 #
-# Shell   : getData.py
-# Author  : Jeong Han Lee
-# email   : jeonghan.lee@gmail.com
-# Date    : Thursday, November 24 12:19:25 CET 2016
-# Version : 0.4.3
+#  author  : Jeong Han Lee
+#  email   : jeonghan.lee@gmail.com
+#  date    : Saturday, December 31 20:43:50 CET 2016
+#  version : 0.4.4
 #
 #  - 0.0.0  Friday, December 19 10:18:02 KST 2014
 #           Created.
@@ -41,11 +40,14 @@
 #  - 0.4.2  Thursday, November 24 12:17:39 CET 2016
 #           - use ftime as the directory and zip file names
 #           - add the remove function in valid with zip option.  
-#  - 0.4.3 Friday, November 25 09:34:01 CET 2016
+#  - 0.4.3  Friday, November 25 09:34:01 CET 2016
 #           - add import errno
-#  
-#    An example in cronjob (crontab -e) in every 5 mins
+#  - 0.4.4  Saturday, December 31 20:40:34 CET 2016
+#           - remove the leading zero in the directory name
+#           - clean up old codes and comments  
 #
+#
+#    An example in cronjob (crontab -e) in every 5 mins
 #  
 #    AA ip   : 10.4.3.86
 #    Target  : /var/www/data
@@ -63,7 +65,6 @@
 
 
 
-
 import os
 import sys
 import argparse 
@@ -76,16 +77,15 @@ import urllib2
 import json
 
 from datetime import timedelta, datetime, time, date, tzinfo
-from shutil import make_archive
+from shutil   import make_archive
 
-# Theses ports should be the same as appliances.xml
-# e.g. /opt/archappl/appliances.xml
+# The following PORTS (mgmt_port and retrieval_port) should be the same as the archiever appliance setup.
+# e.g.  /opt/archappl/appliances.xml
 #     <mgmt_url>http://10.4.3.86:17665/mgmt/bpl</mgmt_url>
 #     <data_retrieval_url>http://10.4.3.86:17668/retrieval</data_retrieval_url>
 
-mgmt_port="17665"
-retrieval_port="17668"
-
+mgmt_port      = "17665"
+retrieval_port = "17668"
 
 # Time difference should has two digits
 
@@ -171,87 +171,69 @@ def remove_folder(path):
          shutil.rmtree(path)
 
 
-
-
-
 def main():
 
     #   https://docs.python.org/2/howto/argparse.html
+    
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-i", "--ip",      help="Archiver Appliance IP address", default="10.4.3.86")
-    parser.add_argument("-p", "--pattern", help="?pv=xxx&limit=nnn",  default ="")
-    # "?pv=*calc*"
-    # -p "?limit=100"
-    parser.add_argument("-v", "--verbose",  help="output verbosity",              action="store_true")
-    parser.add_argument("-d", "--days",     help="days to monitor from now", type=float, default=1.0)
-    parser.add_argument("-f", "--file",     help="filename which has selected PV list",  default="")
-    #    parser.add_argument("-im", "--intermediate",  help="put the files in the intermediate dir first", default="")
-    # parser.add_argument("-t", "--target",   help="target location of data file", default=os.environ['HOME'] )
-    parser.add_argument("-m", "--mean",     help="data average during secs", default="")
-    parser.add_argument("-z", "--zip",      help="output files are zippped", action="store_true")
-    parser.add_argument("-rm", "--remove",   help="delete the target directory after creating a zip", action="store_true")
-    parser.add_argument("-t", "--targetpath", help="put the files in a directory directly", default=os.environ['HOME'] )
+    parser.add_argument("-i",  "--ip",         help="Archiver Appliance IP address",                    default="10.4.3.86")
+    parser.add_argument("-p",  "--pattern",    help="?pv=xxx&limit=nnn",                                default ="")
+    parser.add_argument("-v",  "--verbose",    help="output verbosity",                                 action="store_true")
+    parser.add_argument("-d",  "--days",       help="days to monitor from now",                         type=float, default=1.0)
+    parser.add_argument("-f",  "--file",       help="filename which has selected PV list",              default="")
+    parser.add_argument("-m",  "--mean",       help="data average during secs",                         default="")
+    parser.add_argument("-z",  "--zip",        help="output files are zippped",                         action="store_true")
+    parser.add_argument("-rm", "--remove",     help="delete the target directory after creating a zip", action="store_true")
+    parser.add_argument("-t",  "--targetpath", help="put the files in a directory directly",            default=os.environ['HOME'] )
     
     args = parser.parse_args()
-
-
-    url = "http://" + args.ip
+    url  = "http://" + args.ip
 
     if args.verbose:
         print ""
         print ">>>" 
-        print ">>> Default URL and Pattern are used as follows:"
-        print ">>>  URL :" + url
+        print ">>> Default URL and Pattern are used as follows: "
+        print ">>>  URL : "     + url
         print ">>>  Pattern : " + args.pattern
-#        print ">>>  Source  : " + args.intermediate
         print ">>>  Target  : " + args.targetpath
         print ">>>"
 
 
     matchingPVs = []
     matchingPVs = getSelectedPVs(setMGMTurl(url), args)
+
     
-        
     if matchingPVs:
 
         # Python datetime has the isoformat at https://docs.python.org/2/library/datetime.html
-        _now     = datetime.now()
-        _utc_now = datetime.utcnow()
-     
-
-        _delta   =  _now - _utc_now
-        
+        _now                = datetime.now()
+        _utc_now            = datetime.utcnow()
+        _delta              = _now - _utc_now
         _delta_hh,_delta_mm = divmod((_delta.days * 24*60*60 + _delta.seconds + 30) // 60, 60)
+        _from               = _now - timedelta(days=args.days)
+        _from_iso_string    = _from.isoformat()
+        _now_iso_string     = _now.isoformat()
 
-        _from = _now - timedelta(days=args.days)
+        # %d [01-31] can remove the leading zero instead of %e [1-31].
+        # https://www.gnu.org/software/libc/manual/html_node/Formatting-Calendar-Time.html#index-strftime-2660
 
-        _from_iso_string = _from.isoformat()
-        _now_iso_string  = _now.isoformat()
-        _now_ftime_string = _now.strftime("%Y%m%e-%H%M%S");
-
-        fromString       = urllib.urlencode( {'from' : _from_iso_string} ) 
-        toString         = urllib.urlencode( {'to'   : _now_iso_string } )
+        _now_ftime_string   = _now.strftime("%Y%m%d-%H%M%S");
+        fromString          = urllib.urlencode( {'from' : _from_iso_string} ) 
+        toString            = urllib.urlencode( {'to'   : _now_iso_string } )
        
         # http://en.wikipedia.org/wiki/Percent-encoding
         # %2B : "+"
         # %3A : ":"
-        tzString = "%2B"
+        tzString  = "%2B"
         tzString += pri(_delta_hh)
         tzString += "%3A"
         tzString += pri(_delta_mm)
       
-        # userString  = "&usereduced=true"
-        # cahowString = "&ca_how=0"
-        # cacountString = "&ca_count=1907"
-        
-
         # Add the Time difference between UTC and the local time
-        suffixString = tzString
-        # suffixString = magicString# + userString + cahowString + cacountString
-        
-        fromString += suffixString
-        toString   += suffixString
+        suffixString  = tzString
+        fromString   += suffixString
+        toString     += suffixString
 
         if args.verbose:
             print "fromString : ",  fromString
@@ -265,7 +247,6 @@ def main():
             print "hostname : ", hostname
             print "hostip   : ", hostip
             
-           
         mean_sstring = ""
         mean_estring = ""
         
@@ -273,16 +254,13 @@ def main():
             mean_sstring += 'mean_' + args.mean + '('
             mean_estring += ')'
             
-
-#        if args.intermediate:
-#            intermediate_directory = args.intermediate + "/";
-        if args.targetpath.startswith('/') : 
+        if args.targetpath.startswith('/') :
             target_path = args.targetpath + "/";
         else:
             print "\nAbsolute TARGET PATH is needed";
             sys.exit()
 
-        target_path += "Archappl_" + args.ip + "/";
+        target_path += "archappl_" + args.ip + "/";
         
         target_path_per_each_call = target_path + _now_ftime_string + "/";
     
@@ -295,44 +273,38 @@ def main():
                     raise exc
                 pass
 
-                    
         for pv in sorted(matchingPVs):
            
             if args.verbose:
                 print pv
     
             report_filename = pv.replace(":", "_").lower() + ".txt"
-            queryString = '?pv='
-            queryString += mean_sstring 
-            queryString += pv
-            queryString += mean_estring
-            queryString += '&'
-            queryString += fromString 
-            queryString += '&'
-            queryString += toString 
 
+            queryString     = '?pv='
+            queryString    += mean_sstring 
+            queryString    += pv
+            queryString    += mean_estring
+            queryString    += '&'
+            queryString    += fromString 
+            queryString    += '&'
+            queryString    += toString
 
-            src_url=setJsonRetUrl(url) + queryString
-
+            src_url         = setJsonRetUrl(url) + queryString
+            dataresp        = urllib2.urlopen(src_url)
+            data            = json.load(dataresp)
 
             if args.verbose:
                 print "queryString : ",  queryString
                 print "url         : ", url
                 print "source url  : ", src_url
 
-
-            dataresp = urllib2.urlopen(src_url)
-            data     = json.load(dataresp)
             
             if data :
     
                 if args.verbose:  print "Total Data Size " , len(data[0]['data'])
 
                 try :
-#                    if args.intermediate:
-#                        
- #                       file = open(intermediate_directory + report_filename, "w");
- #                   else :
+
                     file = open(target_path_per_each_call  + report_filename, "w")
 
                     file.write("# \n")
@@ -345,12 +317,13 @@ def main():
                     file.write("# host IP     : " + hostip           + "\n")
                     file.write("# \n")
                     file.write("# time, val, nanos, status, severity    \n")
+                    file.write("# \n")
                     
                     dataList = []
                     
                     for el in data[0]['data']:
-                        #         #        if args.verbose:
-                        #         #            print "%s, %s, %s, %s, %s " % (convertDate(el['secs']), el['val'], el['nanos'], el['status'], el['severity'])
+                        #        if args.verbose:
+                        #            print "%s, %s, %s, %s, %s " % (convertDate(el['secs']), el['val'], el['nanos'], el['status'], el['severity'])
                         dataList.append("%s, %s, %s, %s, %s \n" % (convertDate(el['secs']), el['val'], el['nanos'], el['status'], el['severity']))
                         
                     s = ''.join(dataList)
@@ -358,21 +331,8 @@ def main():
                     file.write(s)
                     file.close()
  
-                    # if args.intermediate:
-                    #     try :
-                        #     shutil.copy (intermediate_directory + report_filename, target_path_per_each_call)
-        
-                        # except shutil.Error as e:
-                        #     print('Error: %s' % e)
-                        #     # eg. source or destination doesn't exist
-                        # except IOError as e:
-                        #     print('Error: %s' % e.strerror)
-
-                
                 except IOError, (errno, strerror):
                     print "I/O error(%s): %s" % (errno, strerror)
-
-
 
             else:
                 if args.verbose:  print "data no", pv
@@ -382,6 +342,7 @@ def main():
             base_name = _now_ftime_string 
             base_dir  = target_path_per_each_call
             root_dir  = target_path
+            
             if args.verbose:
                 print "Base name : ", base_name
                 print "Base dir  : ", base_dir
@@ -401,7 +362,6 @@ def main():
                 print('Error: %s' % e)
             except IOError as e:
                 print('Error: %s' % e.strerror)
-
 
     sys.exit()
 
