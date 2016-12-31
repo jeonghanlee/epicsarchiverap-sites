@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.2.3-rc0
+# version : 0.2.3-rc1
 #
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
@@ -54,23 +54,28 @@ declare -gr SUDO_CMD="sudo";
 # I changed it 755, and will use the permission 755 after that.
 # Saturday, December 31 00:21:44 CET 2016, jhlee
 
-# 
+# So, _USER_NAME sudo permission has -1 timestamp_timeout. Then the user's time stamp will
+# not expire until the system is rebooted. This can be used to allow users to create or
+# delete their own time stamps via “sudo -v” and “sudo -k” respectively.
+# Saturday, December 31 14:27:14 CET 2016, jhlee
 
 function sudo_start() {
 
     # disable lock-screen
     gsettings set org.gnome.desktop.lockdown disable-lock-screen true
 
-    This can be used to allow users to create or delete their own time stamps via “sudo -v” and “sudo -k” respectively.
-    ${SUDO_CMD} -v;
-
     #    local user_sudoer="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
     #    ${SUDO_CMD} chmod 755 /etc/sudoers.d;
-    # /etc/sudoers.d/arch should not be replaced with a variable
+    #    /etc/sudoers.d/arch should not be replaced with a variable
     #    echo "${user_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch'
 
     local timeout_sudoer="Defaults:${_USER_NAME} timestamp_timeout=-1"
     echo "${timeout_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch'
+
+    
+    # create ${_USER_NANE}'s time stamps of sudo. 
+    ${SUDO_CMD} -v;
+
     __cleanup&
 }
 
@@ -78,8 +83,11 @@ function sudo_start() {
 function sudo_end () {
     # enable lock-screen
     gsettings set org.gnome.desktop.lockdown disable-lock-screen false;
+
     # an user can delete that file
     #rm -f /etc/sudoers.d/arch;
+
+    # delete ${_USER_NANE}'s time stamps of sudo.
     ${SUDO_CMD} -K;
     exit
 }
@@ -384,6 +392,9 @@ function disable_virbro0() {
     __end_func ${func_name};
 }
 
+# firewalld has the strange behaviours, which I don't understand how it works with EPICS IOC and Archappl,
+# Since ESS has a clear rule (no firewall) inside the control network, I turn off it completely and leave the
+# empty function for reference.
 
 function firewall_setup_for_ca() {
 
