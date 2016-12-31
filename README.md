@@ -3,7 +3,7 @@ A Site-Specific (ESS) EPICS Archiver Appliance Deployment
 
 # Requirements
 
-* CentOS 7 (Tested with 7.2 1511) 
+* CentOS 7 (Tested with 7.3 1611) 
 
 # License
 
