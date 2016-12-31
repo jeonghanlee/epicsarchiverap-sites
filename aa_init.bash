@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : Monday, November  7 13:10:41 CET 2016
-# version : 0.1.3
+# version : 0.1.4
 #
 # 
 # Generic : Global variables - read-only
@@ -35,16 +35,16 @@ declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
-function ini_func() { sleep 1; printf "\n>>>> You are entering in  : %s\n" "${1}"; }
-function end_func() { sleep 1; printf "\n<<<< You are leaving from : %s\n" "${1}"; }
 
-function checkstr() {
+function __ini_func() { printf "\n>>>> You are entering in  : %s\n" "${1}"; }
+function __end_func() { printf "\n<<<< You are leaving from : %s\n" "${1}"; }
+
+function __checkstr() {
     if [ -z "$1" ]; then
 	printf "%s : input variable is not defined \n" "${FUNCNAME[*]}"
 	exit 1;
     fi
 }
-
 
 declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
@@ -64,7 +64,7 @@ function git_clone() {
     local git_src_name=$3;
     local tag_name=$4;
     
-    checkstr ${SC_LOGDATE};
+    __checkstr ${SC_LOGDATE};
     
     if [[ ! -d ${git_src_dir} ]]; then
 	printf "No git source repository in the expected location %s\n" "${git_src_dir}";
@@ -83,7 +83,7 @@ function git_clone() {
 	git clone -b "${tag_name}" --single-branch --depth 1 "${git_src_url}/${git_src_name}" "${git_src_dir}";
     fi
 
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
 
@@ -95,8 +95,8 @@ function git_clone() {
 #
 function preparation() {
     
-    local func_name=${FUNCNAME[*]};  ini_func ${func_name};
-    checkstr ${SUDO_CMD};
+    local func_name=${FUNCNAME[*]};  __ini_func ${func_name};
+    __checkstr ${SUDO_CMD};
 
     ${SUDO_CMD} systemctl stop packagekit
     ${SUDO_CMD} systemctl disable packagekit
@@ -121,7 +121,7 @@ function preparation() {
     #
     ${SUDO_CMD} yum -y install epel-release git tree;	
 	
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
 ${SUDO_CMD} -v
@@ -147,6 +147,6 @@ printf "# bash aaService.bash start/stop/status\n";
 printf "Remove Music, Pictures, Public, Templates, and Videos directories in ${HOME}.... \n";
 rm -rf ${HOME}/{Music,Pictures,Public,Templates,Videos};
 
-
+${SUDO_CMD} -K;
 
 exit;

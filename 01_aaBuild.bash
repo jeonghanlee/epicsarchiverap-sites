@@ -19,8 +19,8 @@
 # 
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
-# Date   : 
-# version : 0.9.3
+# Date   : Saturday, December 31 17:39:22 CET 2016
+# version : 0.9.4
 #
 
 # http://www.gnu.org/software/bash/manual/bashref.html#Bash-Builtins
@@ -91,21 +91,39 @@ function git_clone() {
 
 
 # Generic : git_selection
-# - requirement : Global vairable : SC_SELECTED_GIT_SRC 
+#
+# 1.0.4 : Saturday, December 31 17:14:42 CET 2016
+#         only for archappl
+#
+# Require Global vairable
+# - SC_SELECTED_GIT_SRC  : Output
 #
 function git_selection() {
 
+    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+
     local git_ckoutcmd=""
     local checked_git_src=""
+
+    
     declare -i index=0
     declare -i master_index=0
     declare -i list_size=0
     declare -i selected_one=0
     declare -a git_src_list=()
 
+    
+    local n_tags=${1};
+
+    # no set n_tags, set default 10
+    
+    if [[ ${n_tags} -eq 0 ]]; then
+	n_tags=20;
+    fi
 
     git_src_list+=("master")
-    git_src_list+=($(git tag -l | sort -n))
+
+    git_src_list+=($(git tag -l | xargs -I@ git log --format=format:"%ai @%n" -1 @ | sort -r | head -n${n_tags} | awk '{print $4}'))
     
     for tag in "${git_src_list[@]}"
     do
@@ -123,8 +141,10 @@ function git_selection() {
     # do I need this? 
     # selected_one=${line/.*}
 
+    # Without selection number, type [ENTER], 0 is selected as default.
+    #
     selected_one=${line}
-
+    
     let "list_size = ${#git_src_list[@]} - 1"
     
     if [[ "$selected_one" -gt "$list_size" ]]; then
@@ -158,7 +178,14 @@ function git_selection() {
 	$git_ckoutcmd
     fi
 
+    git submodule update --init --recursive
+    
+    end_func ${func_name}
+ 
 }
+
+
+
 
 #
 # Specific only for this script : Global variables - read-only

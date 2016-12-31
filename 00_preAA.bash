@@ -434,16 +434,17 @@ mariadb_setup
 
 disable_virbro0
 
-if [ -z "$1" ]; then
-    printf "%s : No option is selected. Exiting ... \n"
-    exit;
-fi
 
 printf "\nMariaDB Setup is done. And the option %s is selected \n" "$1";
 printf "Before going further, we should wait for EPICS Base installation\n";
 printf "The log file is shown in %s\n" "${EPICS_LOG}" ;
 
 wait "$epics_proc"
+
+if [ -z "$1" ]; then
+    printf "%s : No option is selected. Exiting ... \n"
+    exit;
+fi
 
 case "$1" in
     mate)
