@@ -11,53 +11,80 @@
 
 # a normal user
 
-* -i : ip address :  10.4.3.86
+* -i : ip address :  10.0.4.22
 * -d : days to monitor from now" : 1
-* -s : raw output file dir (src) - intermediate stage : /tmp
 * -t : target output file dir : $PWD
 * -m : no mean (secs)  - raw archived data : 
 * -v : verbose  : want to see any progress while running this script
 * -p : pattern  : getAllPVs options : "?pv=aauser:*&limit=100"
 ## 
 
-* Get all PVs from 10.4.3.86, and save them in pv dir
+* Get all PVs , and save them in pvs dir
 
 ```
-$ python getData.py -i 10.4.3.86 -t ./pvs
+$/usr/bin/python /home/aauser/epicsarchiverap-sites/aa_scripts/getData.py -i 10.0.4.22 -d 1  -t ${HOME}/pvs 
 
-$ ls pvs
-aauser_ai1.txt  aauser_ai3.txt         aauser_aiexample2.txt  aauser_aiexample.txt    aauser_calc1.txt  aauser_calc3.txt         aauser_calcexample2.txt  aauser_calcexample.txt
-aauser_ai2.txt  aauser_aiexample1.txt  aauser_aiexample3.txt  aauser_asubexample.txt  aauser_calc2.txt  aauser_calcexample1.txt  aauser_calcexample3.txt
+$ /tree -L 2 pvs/
+pvs/
+└── [aauser     39]  Archappl_10.0.4.22
+    └── [aauser   8.0K]  2016-11-23T14:30:11.614285
 
-$ head -n 20  pvs/aauser_calc1.txt 
+2 directories, 0 files
+
+$ ls  pvs/Archappl_10.0.4.22/2016-11-23T14\:30\:11.614285/
+aauser_ai1.txt                     ics-evg_evtclk-pll-bandwidth-rb.txt  ics-evg_mxc5-polarity-rb.txt           ics-evg_sfp0-speed-link-i.txt    ics-evg_trigevt5-evtcode-rb.txt   ics-evr_sfp0-bitrate-upper-i.txt
+aauser_ai2.txt                     ics-evg_evtclk-pll-sts.txt           ics-evg_mxc5-status-rb.txt             ics-evg_sfp0-status-i.txt        ics-evg_trigevt6-enable-rb.txt    ics-evr_sfp0-date-manu-i.txt
+aauser_ai3.txt                     ics-evg_evtclk-rfdiv-rb.txt          ics-evg_mxc6-frequency-rb.txt          ics-evg_sfp0-t-i.txt             ics-evg_trigevt6-evtcode-rb.txt   ics-evr_sfp0-linklength-50fiber-i.txt
+aauser_aiexample1.txt              ics-evg_evtclk-rffreq-rb.txt         ics-evg_mxc6-polarity-rb.txt           ics-evg_sfp0-vendor-i.txt        ics-evg_trigevt7-enable-rb.txt    ics-evr_sfp0-linklength-62fiber-i.txt
+aauser_aiexample2.txt              ics-evg_evtclk-source-rb.txt         ics-evg_mxc6-status-rb.txt             ics-evg_softevt-enable-rb.txt    ics-evg_trigevt7-evtcode-rb.txt   ics-evr_sfp0-linklength-9fiber-i.txt
+aauser_aiexample3.txt              ics-evg_mxc0-frequency-rb.txt        ics-evg_mxc7-frequency-rb.txt          ics-evg_softevt-evtcode-rb.txt   ics-evr_cg-sts.txt                ics-evr_sfp0-linklength-copper-i.txt
+aauser_aiexample.txt               ics-evg_mxc0-polarity-rb.txt         ics-evg_mxc7-polarity-rb.txt           ics-evg_softseqenable-rb.txt     ics-evr_cnt-fifoevt-i.txt         ics-evr_sfp0-part-i.txt
+aauser_asubexample.txt             ics-evg_mxc0-status-rb.txt           ics-evg_mxc7-status-rb.txt             ics-evg_softseqmask-rb.txt       ics-evr_cnt-fifoloop-i.txt        ics-evr_sfp0-powervcc-i.txt
+aauser_calc1.txt                   ics-evg_mxc1-frequency-rb.txt        ics-evg_sfp0-bitrate-lower-i.txt       ics-evg_synctimestamp-cmd.txt    ics-evr_cnt-hwoflw-i.txt          ics-evr_sfp0-pwr-rx-i.txt
+aauser_calc2.txt                   ics-evg_mxc1-polarity-rb.txt         ics-evg_sfp0-bitrate-upper-i.txt       ics-evg_timestamp-rb.txt         ics-evr_cnt-irq-i.txt             ics-evr_sfp0-pwr-tx-i.txt
+aauser_calc3.txt                   ics-evg_mxc1-status-rb.txt           ics-evg_sfp0-date-manu-i.txt           ics-evg_trigevt0-enable-rb.txt   ics-evr_cnt-linktimo-i.txt        ics-evr_sfp0-rev-i.txt
+aauser_calcexample1.txt            ics-evg_mxc2-frequency-rb.txt        ics-evg_sfp0-linklength-50fiber-i.txt  ics-evg_trigevt0-evtcode-rb.txt  ics-evr_cnt-rxerr-i.txt           ics-evr_sfp0-serial-i.txt
+aauser_calcexample2.txt            ics-evg_mxc2-polarity-rb.txt         ics-evg_sfp0-linklength-62fiber-i.txt  ics-evg_trigevt1-enable-rb.txt   ics-evr_cnt-swoflw-i.txt          ics-evr_sfp0-speed-link-i.txt
+aauser_calcexample3.txt            ics-evg_mxc2-status-rb.txt           ics-evg_sfp0-linklength-9fiber-i.txt   ics-evg_trigevt1-evtcode-rb.txt  ics-evr_event-14-cnt-i.txt        ics-evr_sfp0-status-i.txt
+aauser_calcexample.txt             ics-evg_mxc3-frequency-rb.txt        ics-evg_sfp0-linklength-copper-i.txt   ics-evg_trigevt2-enable-rb.txt   ics-evr_hwtype-i.txt              ics-evr_sfp0-t-i.txt
+aauser_compressexample.txt         ics-evg_mxc3-polarity-rb.txt         ics-evg_sfp0-part-i.txt                ics-evg_trigevt2-evtcode-rb.txt  ics-evr_link-clk-i.txt            ics-evr_sfp0-vendor-i.txt
+aauser_subexample.txt              ics-evg_mxc3-status-rb.txt           ics-evg_sfp0-powervcc-i.txt            ics-evg_trigevt3-enable-rb.txt   ics-evr_link-clkperiod-i.txt      ics-evr_time-clock-i.txt
+aauser_xxxexample.txt              ics-evg_mxc4-frequency-rb.txt        ics-evg_sfp0-pwr-rx-i.txt              ics-evg_trigevt3-evtcode-rb.txt  ics-evr_link-clk-sp.txt           ics-evr_time-div-i.txt
+ics-evg_dbusstatus-rb.txt          ics-evg_mxc4-polarity-rb.txt         ics-evg_sfp0-pwr-tx-i.txt              ics-evg_trigevt4-enable-rb.txt   ics-evr_link-sts.txt              ics-evr_time-i.txt
+ics-evg_evtclk-fracsynfreq-rb.txt  ics-evg_mxc4-status-rb.txt           ics-evg_sfp0-rev-i.txt                 ics-evg_trigevt4-evtcode-rb.txt  ics-evr_pos-i.txt                 ics-evr_time-src-sel.txt
+ics-evg_evtclk-frequency-rb.txt    ics-evg_mxc5-frequency-rb.txt        ics-evg_sfp0-serial-i.txt              ics-evg_trigevt5-enable-rb.txt   ics-evr_sfp0-bitrate-lower-i.txt  ics-evr_time-valid-sts.txt
+
+$ lhead -n 20 pvs/Archappl_10.0.4.22/2016-11-23T14\:30\:11.614285/aauser_calc1.txt 
 # 
-# Filename    : /tmp/aauser_calc1.txt
+# Filename    : aauser_calc1.txt
 # PV name     : aauser:calc1
-# From        : 2016-11-16T12:26:00.037991
-# To          : 2016-11-17T12:26:00.037991
-# queryString : ?pv=aauser:calc1&from=2016-11-16T12%3A26%3A00.037991%2B09%3A00&to=2016-11-17T12%3A26%3A00.037991%2B09%3A00
-# hostname    : archiver02
-# host IP     : 10.4.3.86
+# From        : 2016-11-22T14:30:11.614285
+# To          : 2016-11-23T14:30:11.614285
+# queryString : ?pv=aauser:calc1&from=2016-11-22T14%3A30%3A11.614285%2B01%3A00&to=2016-11-23T14%3A30%3A11.614285%2B01%3A00
+# hostname    : ics-archappl01
+# host IP     : 10.0.4.22
 # 
 # time, val, nanos, status, severity    
-2016-11-16T04:25:59, 8.0, 750274004, 3, 2 
-2016-11-16T04:26:00, 9.0, 750281404, 3, 2 
-2016-11-16T04:26:01, 0.0, 750282395, 5, 2 
-2016-11-16T04:26:02, 1.0, 750284686, 5, 2 
-2016-11-16T04:26:03, 2.0, 750280592, 5, 2 
-2016-11-16T04:26:04, 3.0, 750289207, 6, 1 
-2016-11-16T04:26:05, 4.0, 750278684, 6, 1 
-2016-11-16T04:26:06, 5.0, 750281975, 0, 0 
-2016-11-16T04:26:07, 6.0, 750281163, 4, 1 
-2016-11-16T04:26:08, 7.0, 750285106, 4, 1 
+2016-11-22T14:30:11, 5.0, 373390132, 0, 0 
+2016-11-22T14:30:12, 6.0, 373420748, 4, 1 
+2016-11-22T14:30:13, 7.0, 373386625, 4, 1 
+2016-11-22T14:30:14, 8.0, 373400133, 3, 2 
+2016-11-22T14:30:15, 9.0, 373362140, 3, 2 
+2016-11-22T14:30:16, 0.0, 373350756, 5, 2 
+2016-11-22T14:30:17, 1.0, 373386525, 5, 2 
+2016-11-22T14:30:18, 2.0, 373447182, 5, 2 
+2016-11-22T14:30:19, 3.0, 373395814, 6, 1 
+2016-11-22T14:30:20, 4.0, 373353181, 6, 1 
 
-$ wc -l pvs/aauser_calc1.txt 
-86411 pvs/aauser_calc1.txt
+
+
+$ wc -l pvs/Archappl_10.0.4.22/2016-11-23T14\:30\:11.614285/aauser_calc1.txt 
+86411 pvs/Archappl_10.0.4.22/2016-11-23T14:30:11.614285/aauser_calc1.txt
 
 ```
 
 
-* Get defined PVs in test_ioc_pv_list from 10.4.3.86 with 2 days ago and 1min mean and verbose in pvs dir
+* Get defined PVs in test_ioc_pv_list with 2 days ago and 1min mean and verbose in pvs dir
 
 
 ```
@@ -81,37 +108,41 @@ aauser:calc1
 ```
 
 ```
-$ python getData.py -i 10.4.3.86 -t ./pvs -d 2 -f test_pv_list -m 60
+$ /usr/bin/python /home/aauser/epicsarchiverap-sites/aa_scripts/getData.py -i 10.0.4.22 -d 2  -f test_ioc_pv_list  -t ${HOME}/pvs  -m 60
+$ tree -L 2 pvs/
+pvs/
+└── [aauser     72]  Archappl_10.0.4.22
+    ├── [aauser   8.0K]  2016-11-23T14:30:11.614285
+    └── [aauser   4.0K]  2016-11-23T14:33:40.249434
 
-$ head -n 20  pvs/aauser_calc1.txt 
+
+~$ head -n 20 pvs/Archappl_10.0.4.22/2016-11-23T14\:33\:40.249434/aauser_calc1.txt 
 # 
-# Filename    : /tmp/aauser_calc1.txt
+# Filename    : aauser_calc1.txt
 # PV name     : aauser:calc1
-# From        : 2016-11-15T12:27:30.463180
-# To          : 2016-11-17T12:27:30.463180
-# queryString : ?pv=mean_60(aauser:calc1)&from=2016-11-15T12%3A27%3A30.463180%2B09%3A00&to=2016-11-17T12%3A27%3A30.463180%2B09%3A00
-# hostname    : archiver02
-# host IP     : 10.4.3.86
+# From        : 2016-11-21T14:33:40.249434
+# To          : 2016-11-23T14:33:40.249434
+# queryString : ?pv=mean_60(aauser:calc1)&from=2016-11-21T14%3A33%3A40.249434%2B01%3A00&to=2016-11-23T14%3A33%3A40.249434%2B01%3A00
+# hostname    : ics-archappl01
+# host IP     : 10.0.4.22
 # 
 # time, val, nanos, status, severity    
-2016-11-15T04:27:30, 4.61290322581, 0, 0, 2 
-2016-11-15T04:28:30, 4.5, 0, 0, 2 
-2016-11-15T04:29:30, 4.5, 0, 0, 2 
-2016-11-15T04:30:30, 4.5, 0, 0, 2 
-2016-11-15T04:31:30, 4.5, 0, 0, 2 
-2016-11-15T04:32:30, 4.5, 0, 0, 2 
-2016-11-15T04:33:30, 4.5, 0, 0, 2 
-2016-11-15T04:34:30, 4.5, 0, 0, 2 
-2016-11-15T04:35:30, 4.5, 0, 0, 2 
-2016-11-15T04:36:30, 4.5, 0, 0, 2 
+2016-11-21T14:33:30, 4.42857142857, 0, 0, 2 
+2016-11-21T14:34:30, 4.5, 0, 0, 2 
+2016-11-21T14:35:30, 4.5, 0, 0, 2 
+2016-11-21T14:36:30, 4.5, 0, 0, 2 
+2016-11-21T14:37:30, 4.5, 0, 0, 2 
+2016-11-21T14:38:30, 4.5, 0, 0, 2 
+2016-11-21T14:39:30, 4.5, 0, 0, 2 
+2016-11-21T14:40:30, 4.5, 0, 0, 2 
+2016-11-21T14:41:30, 4.5, 0, 0, 2 
+2016-11-21T14:42:30, 4.5, 0, 0, 2 
 
-$ wc -l pvs/aauser_calc1.txt 
-2891 pvs/aauser_calc1.txt
-
+$ wc -l pvs/Archappl_10.0.4.22/2016-11-23T14\:33\:40.249434/aauser_calc1.txt 
+2891 pvs/Archappl_10.0.4.22/2016-11-23T14:33:40.249434/aauser_calc1.txt
 
 ```
 
-* Get pvs from 10.4.3.86
 ** Get All PVs from Archiver Appliance  (can be limited by -p "?limit=100") 
 ** Check whether PV has the pattern "*calc*" (?pv=*calc*)
 ** Return the matched PVs
@@ -120,118 +151,51 @@ $ wc -l pvs/aauser_calc1.txt
 ** the combined pattern should be "?pv=*calc*&limit=100"".
 
 ```
-$ python getData.py -i 10.4.3.86 -t ./pvs -d 7 -p "?pv=*calc*"
-$ ls pvs/
+aauser@ics-archappl01:~$ /usr/bin/python /home/aauser/epicsarchiverap-sites/aa_scripts/getData.py -i 10.0.4.22 -t ${HOME}/pvs -d 7 -p "?pv=*calc*"
+aauser@ics-archappl01:~$ /tree -L 2 pvs/
+pvs/
+└── [aauser   4.0K]  Archappl_10.0.4.22
+    ├── [aauser   8.0K]  2016-11-23T14:30:11.614285
+    ├── [aauser   4.0K]  2016-11-23T14:33:40.249434
+    ├── [aauser   4.0K]  2016-11-23T14:36:34.541761
+    └── [aauser   4.0K]  2016-11-23T14:38:45.123049
+
+5 directories, 0 files
+
+$ ls pvs/Archappl_10.0.4.22/2016-11-23T14\:38\:45.123049/
 aauser_calc1.txt  aauser_calc2.txt  aauser_calc3.txt  aauser_calcexample1.txt  aauser_calcexample2.txt  aauser_calcexample3.txt  aauser_calcexample.txt
-
-
-$ ls pvs/
-aauser_calc1.txt  aauser_calc2.txt  aauser_calc3.txt  aauser_calcexample1.txt  aauser_calcexample2.txt  aauser_calcexample3.txt  aauser_calcexample.txt
-
-$ head -n 20  pvs/aauser_calc1.txt 
-# 
-# Filename    : /tmp/aauser_calc1.txt
-# PV name     : aauser:calc1
-# From        : 2016-11-10T12:22:29.353747
-# To          : 2016-11-17T12:22:29.353747
-# queryString : ?pv=aauser:calc1&from=2016-11-10T12%3A22%3A29.353747%2B09%3A00&to=2016-11-17T12%3A22%3A29.353747%2B09%3A00
-# hostname    : archiver02
-# host IP     : 10.4.3.86
-# 
-# time, val, nanos, status, severity    
-2016-11-10T11:28:34, 1.0, 394066777, 5, 2 
-2016-11-10T11:28:35, 2.0, 394033344, 5, 2 
-2016-11-10T11:28:36, 3.0, 394061172, 6, 1 
-2016-11-10T11:28:37, 4.0, 394015823, 6, 1 
-2016-11-10T11:28:38, 5.0, 394030039, 0, 0 
-2016-11-10T11:28:39, 6.0, 394059135, 4, 1 
-2016-11-10T11:28:40, 7.0, 394049587, 4, 1 
-2016-11-10T11:28:41, 8.0, 394016341, 3, 2 
-2016-11-10T11:28:42, 9.0, 394051704, 3, 2 
-2016-11-10T11:28:43, 0.0, 394022244, 5, 2 
-
-$ wc -l pvs/aauser_calc1.txt 
-579024 pvs/aauser_calc1.txt
+aauser@ics-archappl01:~$ 
 
 ```
 
 
-* Get pvs from 10.4.3.86 with 1 days ago and verbose in pvs dir
-** Get All PVs defined in test_ioc_pv_list from Archiver Appliance 
-** Check whether PV has the pattern "*calc?"
-** Return the matched PVs
-** 1 day ago data from now
-** extracted ascii files are in pvs directory
-** verbose output
+
+
+* Get selected PVs defined in test_ioc_pv_list , and save them in ${HOME}, and create zip for the target directory.
 
 ```
-$ python getData.py -i 10.4.3.86 -t ./pvs -d 1 -f test_pv_list -p "?pv=*calc?" -v
+$ /usr/bin/python /home/aauser/epicsarchiverap-sites/aa_scripts/getData.py -i 10.0.4.22 -t ${HOME} -d 1  -z -f test_ioc_pv_list
 
->>>
->>> Default URL and Pattern are used as follows:
->>>  URL :http://10.4.3.86
->>>  Pattern : ?pv=*calc?
->>>  Source  : /tmp/
->>>  Target  : ./pvs
->>>
-getSelectedPVs function 
-url, args      : http://10.4.3.86:17665/mgmt/bpl/ Namespace(days=1.0, file='test_pv_list', ip='10.4.3.86', mean='', pattern='?pv=*calc?', src='/tmp/', target='./pvs', verbose=True)
-script_path    : /home/aauser/epicsarchiverap-sites/aa_scripts
-input_filename : /home/aauser/epicsarchiverap-sites/aa_scripts/test_pv_list
-type, lines    : <type 'list'> ['*']
-pattern        : ?pv=*calc?
-GetAllPV url :  http://10.4.3.86:17665/mgmt/bpl/getAllPVs?pv=*calc?
-[u'aauser:calc2', u'aauser:calc3', u'aauser:calc1']
-fromString :  from=2016-11-16T12%3A12%3A19.316284
-toString   :  to=2016-11-17T12%3A12%3A19.316284
+$ tree -L 2 Archappl_10.0.4.22/
+Archappl_10.0.4.22/
+├── [aauser   4.0K]  2016-11-23T14:53:10.212812
+│   ├── [aauser   3.5M]  aauser_ai1.txt
+│   ├── [aauser   1.8M]  aauser_ai2.txt
+│   ├── [aauser   726K]  aauser_ai3.txt
+│   ├── [aauser   3.5M]  aauser_aiexample1.txt
+│   ├── [aauser   1.8M]  aauser_aiexample2.txt
+│   ├── [aauser   726K]  aauser_aiexample3.txt
+│   ├── [aauser   3.5M]  aauser_aiexample.txt
+│   ├── [aauser    434]  aauser_asubexample.txt
+│   ├── [aauser   3.5M]  aauser_calc1.txt
+│   ├── [aauser   1.8M]  aauser_calc2.txt
+│   ├── [aauser   726K]  aauser_calc3.txt
+│   ├── [aauser   3.5M]  aauser_calcexample1.txt
+│   ├── [aauser   1.8M]  aauser_calcexample2.txt
+│   ├── [aauser   726K]  aauser_calcexample3.txt
+│   ├── [aauser   3.5M]  aauser_calcexample.txt
+│   └── [aauser    390]  aauser_subexample.txt
+└── [aauser   4.9M]  2016-11-23T14:53:10.212812.zip
 
-hostname :  archiver02
-hostip   :  10.4.3.86
-aauser:calc1
-queryString :  ?pv=aauser:calc1&from=2016-11-16T12%3A12%3A19.316284%2B09%3A00&to=2016-11-17T12%3A12%3A19.316284%2B09%3A00
-url :  http://10.4.3.86
-http://10.4.3.86:17668/retrieval/data/getData.json?pv=aauser:calc1&from=2016-11-16T12%3A12%3A19.316284%2B09%3A00&to=2016-11-17T12%3A12%3A19.316284%2B09%3A00
-Total Data Size  86401
-aauser:calc2
-queryString :  ?pv=aauser:calc2&from=2016-11-16T12%3A12%3A19.316284%2B09%3A00&to=2016-11-17T12%3A12%3A19.316284%2B09%3A00
-url :  http://10.4.3.86
-http://10.4.3.86:17668/retrieval/data/getData.json?pv=aauser:calc2&from=2016-11-16T12%3A12%3A19.316284%2B09%3A00&to=2016-11-17T12%3A12%3A19.316284%2B09%3A00
-Total Data Size  43201
-aauser:calc3
-queryString :  ?pv=aauser:calc3&from=2016-11-16T12%3A12%3A19.316284%2B09%3A00&to=2016-11-17T12%3A12%3A19.316284%2B09%3A00
-url :  http://10.4.3.86
-http://10.4.3.86:17668/retrieval/data/getData.json?pv=aauser:calc3&from=2016-11-16T12%3A12%3A19.316284%2B09%3A00&to=2016-11-17T12%3A12%3A19.316284%2B09%3A00
-Total Data Size  17281
-
-
-$ ls pvs/
-aauser_calc1.txt  aauser_calc2.txt  aauser_calc3.txt
-
-
-$ head -n 20  pvs/aauser_calc1.txt 
-# 
-# Filename    : /tmp/aauser_calc1.txt
-# PV name     : aauser:calc1
-# From        : 2016-11-16T12:24:38.112538
-# To          : 2016-11-17T12:24:38.112538
-# queryString : ?pv=aauser:calc1&from=2016-11-16T12%3A24%3A38.112538%2B09%3A00&to=2016-11-17T12%3A24%3A38.112538%2B09%3A00
-# hostname    : archiver02
-# host IP     : 10.4.3.86
-# 
-# time, val, nanos, status, severity    
-2016-11-16T04:24:37, 6.0, 750285652, 4, 1 
-2016-11-16T04:24:38, 7.0, 750294893, 4, 1 
-2016-11-16T04:24:39, 8.0, 750268976, 3, 2 
-2016-11-16T04:24:40, 9.0, 750273671, 3, 2 
-2016-11-16T04:24:41, 0.0, 750269828, 5, 2 
-2016-11-16T04:24:42, 1.0, 750279944, 5, 2 
-2016-11-16T04:24:43, 2.0, 750266095, 5, 2 
-2016-11-16T04:24:44, 3.0, 750282152, 6, 1 
-2016-11-16T04:24:45, 4.0, 750268139, 6, 1 
-2016-11-16T04:24:46, 5.0, 750275814, 0, 0
-
-$ wc -l pvs/aauser_calc1.txt 
-86411 pvs/aauser_calc1.txt
-
-
+1 directory, 17 files
 ```

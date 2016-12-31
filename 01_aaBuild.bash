@@ -28,7 +28,7 @@
 # 
 # PREFIX : SC_, so declare -p can show them in a place
 # 
-# Generic : Global vaiables - readonly
+# Generic : Global variables - read-only
 #
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
@@ -161,11 +161,11 @@ function git_selection() {
 }
 
 #
-# Specific only for this script : Global vairables - readonly
+# Specific only for this script : Global variables - read-only
 #
 declare -g ARCHAPPL_VERSION=""
 
-function set_archappl_verion() {
+function set_archappl_version() {
 
     # master > master
     # tags   > selected tag
@@ -180,7 +180,7 @@ function set_archappl_verion() {
     #
     local archappl_git_hashver=""
     
-    # Remove previx, v0.0.1_, because it will be added again due to build.xml 
+    # Remove prefix, v0.0.1_, because it will be added again due to build.xml 
     # 
     local prefix="v0.0.1_"
 
@@ -206,7 +206,7 @@ function archappl_setup() {
 
     git_selection
 
-    set_archappl_verion
+    set_archappl_version
     
     printf "\n>>>"
     printf "\n>>> Now, we are going to build the archappl with the following version name:\n"

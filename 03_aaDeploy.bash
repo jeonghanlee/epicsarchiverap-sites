@@ -45,18 +45,6 @@ function checkstr() {
 declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
 
-
-function sudo_start() {
-    ${SUDO_CMD} -v
-    ( while [ true ]; do
-	  ${SUDO_CMD} -n /bin/true;
-	  sleep 60;
-	  kill -0 "$$" || exit;
-      done 2>/dev/null
-    )&
-}
-
-
 declare -g  WARSRC_DIR=${SC_TOP};
 
 function deploy_war_release() {
@@ -78,7 +66,7 @@ function deploy_war_release() {
 }
 
 
-sudo_start;
+${SUDO_CMD} -v
 
 . ${SC_TOP}/setEnvAA.bash
 
@@ -139,6 +127,7 @@ fi
 echo "Done deploying a new release from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}"
 
 
+${SUDO_CMD} -k;
 
 exit
 

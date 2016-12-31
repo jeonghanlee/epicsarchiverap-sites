@@ -19,34 +19,97 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.2.1 
-#
-#  http://www.gnu.org/software/bash/manual/bashref.html#Bash-Builtins
-#
-
-# 
-# PREFIX : SC_, so declare -p can show them in a place
-# 
-# Generic : Global vaiables - readonly
+# version : 0.2.3-rc1
 #
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
-# Generic : Redefine pushd and popd to reduce their output messages
-# 
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
-function ini_func() { sleep 1; printf "\n>>>> You are entering in  : %s\n" "${1}"; }
-function end_func() { sleep 1; printf "\n<<<< You are leaving from : %s\n" "${1}"; }
+function __ini_func() { printf "\n>>>> You are entering in  : %s\n" "${1}"; }
+function __end_func() { printf "\n<<<< You are leaving from : %s\n" "${1}"; }
 
-function checkstr() {
+function __checkstr() {
     if [ -z "$1" ]; then
 	printf "%s : input variable is not defined \n" "${FUNCNAME[*]}"
 	exit 1;
     fi
+}
+
+declare -gr SUDO_CMD="sudo";
+
+
+# The following explaination doesn't work properly. So, I commented out
+#
+# No way to keep the sudo permission without injecting an user ALL permission
+# in /etc/sudoers.d/ in CentOS.
+# However, after all setup is done, I would like to delete the injected permission.
+# Unfornately, in CentOS, that directory permission is 750. So, it should be the
+# sudo permission again, which will prompt sudo password again after the whole
+# procedure is done.
+# In Debian 8 (Jessie), that directory permission is 755. So, in sudo_start
+# I changed it 755, and will use the permission 755 after that.
+# Saturday, December 31 00:21:44 CET 2016, jhlee
+
+# So, _USER_NAME sudo permission has -1 timestamp_timeout. Then the user's time stamp will
+# not expire until the system is rebooted. This can be used to allow users to create or
+# delete their own time stamps via “sudo -v” and “sudo -k” respectively.
+# Saturday, December 31 14:27:14 CET 2016, jhlee
+
+function sudo_start() {
+
+    # disable lock-screen
+    gsettings set org.gnome.desktop.lockdown disable-lock-screen true
+
+    #    local user_sudoer="${_USER_NAME} ALL=(ALL) NOPASSWD: ALL"
+    #    ${SUDO_CMD} chmod 755 /etc/sudoers.d;
+    #    /etc/sudoers.d/arch should not be replaced with a variable
+    #    echo "${user_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch'
+
+    local timeout_sudoer="Defaults:${_USER_NAME} timestamp_timeout=-1"
+    echo "${timeout_sudoer}" | ${SUDO_CMD} sh -c 'EDITOR="tee" visudo -f /etc/sudoers.d/arch'
+
+    
+    # create ${_USER_NANE}'s time stamps of sudo. 
+    ${SUDO_CMD} -v;
+
+    __cleanup&
+}
+
+
+function sudo_end () {
+    # enable lock-screen
+    gsettings set org.gnome.desktop.lockdown disable-lock-screen false;
+
+    # an user can delete that file
+    #rm -f /etc/sudoers.d/arch;
+
+    # delete ${_USER_NANE}'s time stamps of sudo.
+    ${SUDO_CMD} -K;
+    exit
+}
+
+# https://en.wikipedia.org/wiki/Unix_signal
+
+# 1  : SIGHUP
+# 2  : SIGINT
+# 9  : SIGKILL
+# 15 : SIGTERM
+#
+
+# If the following signals are, enable lock-screen and delete the injected sudo permission
+#
+trap sudo_end EXIT SIGINT SIGTERM
+
+
+function __cleanup() {
+    while [ true ]; do
+	sleep 30;
+	kill -0 "$$" || sudo_end;
+    done 2>/dev/null
 }
 
 
@@ -58,14 +121,14 @@ function checkstr() {
 
 function git_clone() {
     
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
     
     local git_src_dir=$1;
     local git_src_url=$2;
     local git_src_name=$3;
     local tag_name=$4;
     
-    checkstr ${SC_LOGDATE};
+    __checkstr ${SC_LOGDATE};
     
     if [[ ! -d ${git_src_dir} ]]; then
 	printf "No git source repository in the expected location %s\n" "${git_src_dir}";
@@ -75,7 +138,7 @@ function git_clone() {
 	mv  ${git_src_dir} ${git_src_dir}_${SC_LOGDATE}
     fi
     
-    # Alwasy fresh cloning ..... in order to workaround any local 
+    # Always fresh cloning ..... in order to workaround any local 
     # modification in the repository, which was cloned before. 
     #
     # we need the recursive option in order to build a web based viewer for Archappl
@@ -85,39 +148,24 @@ function git_clone() {
 	git clone --recursive -b "${tag_name}" --single-branch --depth 1 "${git_src_url}/${git_src_name}" "${git_src_dir}";
     fi
 
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
-
-
-declare -gr SUDO_CMD="sudo";
-declare -g SUDO_PID="";
-
-
-function sudo_start() {
-    ${SUDO_CMD} -v
-    ( while [ true ]; do
-	  ${SUDO_CMD} -n /bin/true;
-	  sleep 60;
-	  kill -0 "$$" || exit;
-      done 2>/dev/null
-    )&
-}
 
 
 # Specific : preparation
 #
 # 1.0.1 Wednesday, November  9 09:56:52 CET 2016
 #
-# Require Global vairable
+# Require Global variable
 # - SUDO_CMD :  input
 # - 
 # - allow this script to execute yum, and remove PakageKit
 #
 function preparation() {
     
-    local func_name=${FUNCNAME[*]};  ini_func ${func_name};
-    checkstr ${SUDO_CMD};
+    local func_name=${FUNCNAME[*]};  __ini_func ${func_name};
+    __checkstr ${SUDO_CMD};
 
     ${SUDO_CMD} systemctl stop packagekit
     ${SUDO_CMD} systemctl disable packagekit
@@ -133,47 +181,59 @@ function preparation() {
 	    ${SUDO_CMD} rm -rf ${yum_pid}
 	fi
     fi
-        
+    
     # Remove PackageKit
     #
     ${SUDO_CMD} yum -y remove PackageKit ;
-    
+
     # Install epel-release, git, and tree
     #
-    ${SUDO_CMD} yum -y install epel-release git tree;	
-	
-    end_func ${func_name};
+    declare -a package_list=();
+
+    # ntp
+    package_list+="epel-release git tree"
+    package_list+=" ";
+    package_list+="screen xterm xorg-x11-fonts-misc";
+    package_list+=" ";
+    
+    ${SUDO_CMD} yum -y install ${package_list};
+    
+    __end_func ${func_name};
 }
 
 
 #
 # Enable and Start an input Service
 # 
-function system_ctl_enable_start(){
+# Even if the service is active (running), it is OK to run "enable and start" again. 
+# systemctl can accept many services with one command
+
+function __system_ctl_enable_start(){
     
-    local func_name=${FUNCNAME[*]};  ini_func ${func_name};
-    checkstr ${SUDO_CMD}; checkstr ${1};
+    local func_name=${FUNCNAME[*]};  __ini_func ${func_name};
+    __checkstr ${SUDO_CMD}; __checkstr ${1};
 
     printf "Enable and Start the following service(s) : %s\n" "${1}";
     
     ${SUDO_CMD} systemctl enable ${1}.service;
     ${SUDO_CMD} systemctl start ${1}.service;
 
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
 
 
 function mariadb_setup() {
 
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
 
+    
     # MariaDB Secure Installation without MariaDB root password
     # the same as mysql_secure_installation, but skip to setup
-    # the root password in the script. The referece of the sql commands
+    # the root password in the script. The reference of the sql commands
     # is https://goo.gl/DnyijD
- 
- 
+    
+    
     printf "Setup mysql_secure_installation...\n";
     
     # UPDATE mysql.user SET Password=PASSWORD('$passwd') WHERE User='root';
@@ -186,14 +246,14 @@ DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 FLUSH PRIVILEGES;
 EOF
 
-    printf "Creat the Database %s if not exists...\n" "${DB_NAME}";
+    printf "Create the Database %s if not exists...\n" "${DB_NAME}";
 
     mysql -u root <<EOF
 CREATE DATABASE IF NOT EXISTS ${DB_NAME}; GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER_NAME}'@'localhost' IDENTIFIED BY '${DB_USER_PWD}';
 EOF
     
-    local jar_client_name="mariadb-java-client";
-    local mariadb_connectorj_jar="${jar_client_name}-${DB_JAVACLIENT_VER}.jar";
+    #    local jar_client_name="mariadb-java-client";
+    #    local mariadb_connectorj_jar="${jar_client_name}-${DB_JAVACLIENT_VER}.jar";
     
     # local maven_jar_url="http://central.maven.org/maven2/org/mariadb/jdbc";
     # # http://central.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/1.5.4/mariadb-java-client-1.5.4.jar
@@ -213,18 +273,24 @@ EOF
     # Skip javadoc and source jar files to save time...
     mvn -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true package;
 
-    printf "Moving the java client to %s/lib\n\n\n" "${TOMCAT_HOME}"
-    ${SUDO_CMD} -E cp -v  target/${mariadb_connectorj_jar} ${TOMCAT_HOME}/lib
+    printf "Moving the java client to %s/lib\n\n\n" "${TOMCAT_LIB}"
+    
+    ${SUDO_CMD} cp -v  target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}
+    
+    # Symbolic link should be created early
+    # ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
+    #"cp -v target/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_HOME}"
+    
     popd;
     
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
 
 
 function epics_setup(){
 
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
 
     local git_src_url="https://github.com/epics-base/";
     local git_src_name="epics-base";
@@ -237,86 +303,117 @@ function epics_setup(){
     nice make
     popd;
     
-    end_func ${func_name};
+    __end_func ${func_name};
 }
+
 
 function packages_preparation_for_archappl(){
     
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
-    checkstr ${SUDO_CMD};
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    __checkstr ${SUDO_CMD};
 
     declare -a package_list=();
 
-    # epel-release;
-    package_list+="epel-release";
-    package_list+=" ";
     # ntp
     package_list+="ntp"
     package_list+=" ";
 
     # Basic package list 
-    package_list+="git emacs tree screen xterm  xorg-x11-fonts-misc";
+    package_list+="emacs telnet";
     package_list+=" ";
 
     # JAVA
-    package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel";
+    package_list+="java-1.8.0-openjdk java-1.8.0-openjdk-devel ant";
     package_list+=" ";
-
     # MariaDB
     package_list+="mariadb-server mariadb-libs maven"
     package_list+=" ";
-
     # Tomcat
-    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc unzip"
+    package_list+="tomcat tomcat-webapps tomcat-admin-webapps apache-commons-daemon-jsvc tomcat-jsvc tomcat-lib unzip"
     package_list+=" ";
-
+    
     # EPICS Base
     package_list+="readline-devel libXt-devel libXp-devel libXmu-devel libXpm-devel lesstif-devel gcc-c++ ncurses-devel perl-devel";
     package_list+=" ";
     package_list+="net-snmp net-snmp-utils net-snmp-devel darcs libxml2-devel libpng12-devel netcdf-devel hdf5-devel lbzip2-utils libusb-devel python-devel";
     
     ${SUDO_CMD} yum -y install ${package_list};
-
+    
     # Even if the service is active (running), it is OK to run "enable and start" again. 
     # systemctl can accept many services with one command
 
-    system_ctl_enable_start "ntpd mariadb tomcat"
+    __system_ctl_enable_start "ntpd mariadb tomcat"
 
-    end_func ${func_name};
+    # ${SUDO_CMD} usermod -a -G ${tomcat_group} ${_USER_NAME};
+    # ${SUDO_CMD} ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
+    
+    __end_func ${func_name};
 }
-
-
 
 
 function replace_gnome_with_mate() {
 
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
-	
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    __checkstr ${SUDO_CMD};
+    
     ${SUDO_CMD} yum -y install lightdm
     ${SUDO_CMD} yum -y groupinstall "MATE Desktop"
 
     ${SUDO_CMD} systemctl disable gdm.service
     ${SUDO_CMD} systemctl enable lightdm.service
 
-    end_func ${func_name}
+    __end_func ${func_name}
 }
 
 function prepare_storage() {
 
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
-
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    __checkstr ${SUDO_CMD};
+    
     printf "Make STS/MTS/LTS dirs at ARCHAPPL_STORAGE_TOP as %s\n\n---\n" "${ARCHAPPL_STORAGE_TOP}";
 
     ${SUDO_CMD} mkdir -p {${ARCHAPPL_SHORT_TERM_FOLDER},${ARCHAPPL_MEDIUM_TERM_FOLDER},${ARCHAPPL_LONG_TERM_FOLDER}};
 
     tree  -L 2 ${ARCHAPPL_STORAGE_TOP};
 
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
-sudo_start;
+function disable_virbro0() {
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    __checkstr ${SUDO_CMD};
+    
+    # Do we need virbr0?
+    # Default I would like to remove it
+    # The virbr0, or "Virtual Bridge 0" interface is used for NAT (Network Address Translation). 
+    ${SUDO_CMD} ifconfig virbr0 down 
+    ${SUDO_CMD} brctl delbr virbr0
+
+    __end_func ${func_name};
+}
+
+# firewalld has the strange behaviours, which I don't understand how it works with EPICS IOC and Archappl,
+# Since ESS has a clear rule (no firewall) inside the control network, I turn off it completely and leave the
+# empty function for reference.
+
+function firewall_setup_for_ca() {
+
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+
+    __end_func ${func_name};
+}
+
+
+
+#
+#
+#
+
+declare EPICS_LOG=${SC_TOP}/epics.log;
 
 . ${SC_TOP}/setEnvAA.bash
+
+sudo_start
 
 # root
 preparation;
@@ -327,34 +424,45 @@ packages_preparation_for_archappl;
 
 # an user
 printf "EPICS Base installation is ongoing in background process\n";
-printf "The installation log is %s\n" "${SC_TOP}/epics.log";
-( epics_setup&>${SC_TOP}/epics.log )&
+printf "The installation log is %s\n" "${EPICS_LOG}";
+( epics_setup&>${EPICS_LOG})&
 epics_proc=$!
+nice xterm -title "EPICS Installation Status" -geometry 140x15+0+0  -e "nice watch -n 2 tail -n 10 ${EPICS_LOG}"&
 
-# root
-mariadb_setup;
 
-printf "MariaDB Setup is done, however, \n";
-printf "EPICS Base installation is ongoing in background process\n";
-printf "The installation log is %s\n" "${SC_TOP}/epics.log";
+mariadb_setup
+
+disable_virbro0
+
+if [ -z "$1" ]; then
+    printf "%s : No option is selected. Exiting ... \n"
+    exit;
+fi
+
+printf "\nMariaDB Setup is done. And the option %s is selected \n" "$1";
+printf "Before going further, we should wait for EPICS Base installation\n";
+printf "The log file is shown in %s\n" "${EPICS_LOG}" ;
 
 wait "$epics_proc"
 
 case "$1" in
     mate)
+	printf "Mate and lightdm are selected\n";
 	replace_gnome_with_mate;
 	;;
     update)
+	printf "yum update is selected\n";
 	${SUDO_CMD} yum -y update;
 	;;
     all)
+	printf "Mate,lightdm are yum update are selected.\n"; 
 	replace_gnome_with_mate;
 	${SUDO_CMD} yum -y update;
 	;;
     *)
+	printf "Not support yet.\n";
 	;;
 esac
-
 
 exit
 

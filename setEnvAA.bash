@@ -18,13 +18,13 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.1.1 
+# version : 0.1.2 
 
 export THIS_SCRIPT=$(realpath "$0")
 export THIS_TOP="$(dirname "$THIS_SCRIPT")"
 
 
-# Hostname is not reiable to use it in the appliances.xml, so force to get the running
+# Hostname is not reliable to use it in the appliances.xml, so force to get the running
 # IP, and use it into... need to change them by other demands
 
 declare hostname_cmd="$(hostname)"
@@ -37,6 +37,10 @@ export  _USER_NAME="$(whoami)"
 # preAA.bash, aaBuild.bash, aaService.bash
 #
 export TOMCAT_HOME=/usr/share/tomcat
+#
+# /usr/share/tomcat/lib is the symbolic link to /usr/share/java/tomcat
+#
+export TOMCAT_LIB=/usr/share/tomcat/lib
 
 # We assume that we inherit the EPICS environment variables 
 # This includes setting up the LD_LIBRARY_PATH to include the JCA .so file.
@@ -46,12 +50,25 @@ export EPICS_BASE_VER="R3.15.4";
 export EPICS_BASE=${HOME}/epics/${EPICS_BASE_VER}
 export EPICS_HOST_ARCH=linux-x86_64
 
-# LD_LIBRARY_PATH should have the EPICS and Tomcat libs 
-export LD_LIBRARY_PATH=${TOMCAT_HOME}/lib:${EPICS_BASE}/lib/${EPICS_HOST_ARCH}:${LD_LIBRARY_PATH}
+# LD_LIBRARY_PATH should have the EPICS 
+export LD_LIBRARY_PATH=${EPICS_BASE}/lib/${EPICS_HOST_ARCH}:${LD_LIBRARY_PATH}
 export PATH=${EPICS_BASE}/bin/${EPICS_HOST_ARCH}:${PATH}
 
 export EPICS_CA_ADDR_LIST="127.0.0.1 ${_HOST_IP}";
 export EPICS_CA_AUTO_ADDR_LIST=yes;
+export EPICS_CA_SERVER_PORT=5064
+export EPICS_CA_REPEATER_PORT=5065
+
+
+if [ -f ${HOME}/.bashrc_local ]; then
+# Overwrite EPICS_CA_ADDR_LIST and others...
+# 
+    . ${HOME}/.bashrc_local
+fi
+
+
+# Tomcat lib 
+export LD_LIBRARY_PATH=${TOMCAT_LIB}:${LD_LIBRARY_PATH}
 
 export AA_GIT_URL="https://github.com/slacmshankar";
 export AA_GIT_NAME="epicsarchiverap";
@@ -95,6 +112,9 @@ export DB_NAME="archappl";
 export DB_JAVACLIENT_VER="1.5.4";
 export DB_CLASSNAME="org.mariadb.jdbc.Driver"
 export DB_AA_URL="mariadb"
+    
+export JAR_CLIENT_NAME="mariadb-java-client";
+export MARIADB_CONNECTORJ_JAR="${JAR_CLIENT_NAME}-${DB_JAVACLIENT_VER}.jar";
 
 # For MySQL, 
 #export DB_CLASSNAME="com.mysql.jdbc.Driver"

@@ -22,7 +22,7 @@
 # version : 0.1.3
 #
 # 
-# Generic : Global vaiables - readonly
+# Generic : Global variables - read-only
 #
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
@@ -49,19 +49,6 @@ function checkstr() {
 declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
 
-
-function sudo_start() {
-    ${SUDO_CMD} -v
-    ( while [ true ]; do
-	  ${SUDO_CMD} -n /bin/true;
-	  sleep 60;
-	  kill -0 "$$" || exit;
-      done 2>/dev/null
-    )&
-}
-
-
-
 # Generic : git_clone
 # 1.0.2 Monday, Monday, November  7 15:53:13 CET 2016
 #
@@ -87,7 +74,7 @@ function git_clone() {
 	mv  ${git_src_dir} ${git_src_dir}_${SC_LOGDATE}
     fi
     
-    # Alwasy fresh cloning ..... in order to workaround any local 
+    # Always fresh cloning ..... in order to workaround any local 
     # modification in the repository, which was cloned before. 
     #
     if [ -z "$tag_name" ]; then
@@ -137,8 +124,7 @@ function preparation() {
     end_func ${func_name};
 }
 
-
-sudo_start;
+${SUDO_CMD} -v
 
 preparation; 
 
@@ -156,9 +142,6 @@ printf "# bash 02_aaSetup.bash\n";
 printf "# bash 03_aaDeploy.bash\n";
 printf "\n";
 printf "# bash aaService.bash start/stop/status\n";
-
-${SUDO_CMD} -k;
-
 
 # Remove some directories in ${HOME}
 printf "Remove Music, Pictures, Public, Templates, and Videos directories in ${HOME}.... \n";
