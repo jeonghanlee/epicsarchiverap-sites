@@ -60,8 +60,15 @@ function deploy_war_release() {
     ${SUDO_CMD} rm -rf ${target}*;
     ${SUDO_CMD} mkdir ${target};
     ${SUDO_CMD} unzip -q ${warsrc_dir}/${target}.war -d ${target};
+
     popd;
-    
+    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${deploy_dir}/${target}
+    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${deploy_dir}/${target}/logs;
+    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${deploy_dir}/${target}/temp;
+    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${deploy_dir}/${target}/webapps;
+    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${deploy_dir}/${target}/work;
+    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${deploy_dir}/${target}/conf;
+
     end_func ${func_name};
 }
 

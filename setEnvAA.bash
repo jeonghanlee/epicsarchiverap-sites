@@ -42,6 +42,8 @@ export TOMCAT_HOME=/usr/share/tomcat
 #
 export TOMCAT_LIB=/usr/share/tomcat/lib
 
+
+
 # We assume that we inherit the EPICS environment variables 
 # This includes setting up the LD_LIBRARY_PATH to include the JCA .so file.
 # EPICS BASE is installed in the local directory
@@ -81,12 +83,16 @@ export ARCHAPPL_TOP=${AA_TARGET_TOP}/archappl
 export LD_LIBRARY_PATH=${ARCHAPPL_TOP}/engine/webapps/engine/WEB-INF/lib/native/${EPICS_HOST_ARCH}:${ARCHAPPL_TOP}/engine/webapps/engine/WEB-INF/lib:${LD_LIBRARY_PATH}
 
 
+# Tomcat user
+TOMCAT_USER="tomcat"
+TOMCAT_USER_HOME=${ARCHAPPL_TOP}/temp
+
 # # Use an in memory persistence layer
 # export ARCHAPPL_PERSISTENCE_LAYER=org.epics.archiverappliance.config.persistence.InMemoryPersistence
 
 # # Tell the appliance that we are deploying all the components in one VM.
 # # This reduces the thread count and other parameters in an effort to optimize memory.
-# export ARCHAPPL_ALL_APPS_ON_ONE_JVM="true"
+export ARCHAPPL_ALL_APPS_ON_ONE_JVM="true"
 
 #
 # This approach is only valid for the single appliance installation.
@@ -145,7 +151,7 @@ export CLASS_PATH=/usr/share/java
 # The physical memory  :  64G, so I use 8G instead of 4G, since we don't have any other application on the server.
 # Set MaxMetaspaceSize : 256M, so it reduces the GC execution to compare with the original option.
 # 
-export JAVA_HEAPSIZE="4G"
+export JAVA_HEAPSIZE="512M"
 export JAVA_MAXMETASPACE="256M"
 export JAVA_OPTS="-XX:MaxMetaspaceSize=${JAVA_MAXMETASPACE} -XX:+UseG1GC -Xms${JAVA_HEAPSIZE} -Xmx${JAVA_HEAPSIZE} -ea"
 

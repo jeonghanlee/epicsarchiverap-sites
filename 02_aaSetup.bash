@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.5
+# version : 0.9.6
 #
 #
 # Generic : Global variables - read-only
@@ -34,12 +34,25 @@ declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
 
-
-
+function __ini_func() { printf "\n>>>> You are entering in  : %s\n" "${1}"; }
+function __end_func() { printf "\n<<<< You are leaving from : %s\n" "${1}"; }
 
 
 declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
+
+
+function tomcat_user_conf() {
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    
+    ${SUDO_CMD} useradd -g nobody -s /sbin/nologin -d ${TOMCAT_USER_HOME} ${TOMCAT_USER}
+    ${SUDO_CMD} mkdir -p ${TOMCAT_USER_HOME}
+    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${TOMCAT_USER_HOME}
+    __end_func ${func_name};
+}
+
+
+
 
 ${SUDO_CMD} -v
 
@@ -66,9 +79,14 @@ fi
 declare -r SC_DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE};
 
 ${SUDO_CMD} mkdir -p ${SC_DEPLOY_DIR}
+
 ${SUDO_CMD} ln -s ${SC_DEPLOY_DIR} ${ARCHAPPL_TOP}
 
 popd
+
+
+tomcat_user_conf
+
 
 
 printf "\n%s\n" "--->"

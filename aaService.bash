@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.1 
+# version : 0.9.3
 #
 # 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -70,6 +70,7 @@ function startTomcatAtLocation() {
     # JSVC re-exec requires execution with an absolute or relative path
     /bin/jsvc \
         -server \
+	-user ${TOMCAT_USER} \
         -cp ${CLASS_PATH}/apache-commons-daemon.jar:${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
         ${JAVA_OPTS} \
         -Dcatalina.base=${CATALINA_BASE} \
@@ -97,20 +98,10 @@ function stopTomcatAtLocation() {
     export CATALINA_BASE=${SERVICE_TOP}/${SERVICE_NAME};
     
     echo "<< Stopping Tomcat at ${CATALINA_BASE}"
-    
     pushd ${CATALINA_BASE}/logs
-    #   ${CATALINA_HOME}/bin/jsvc \
     /bin/jsvc \
-	-server \
-        -cp ${CLASS_PATH}/apache-commons-daemon.jar:${CATALINA_HOME}/bin/bootstrap.jar:${CATALINA_HOME}/bin/tomcat-juli.jar \
-	${JAVA_OPTS} \
-	-Dcatalina.base=${CATALINA_BASE} \
-	-Dcatalina.home=${CATALINA_HOME} \
-	-cwd ${CATALINA_BASE}/logs \
-	-outfile ${CATALINA_BASE}/logs/${SERVICE_NAME}_catalina.out \
-	-errfile ${CATALINA_BASE}/logs/${SERVICE_NAME}_catalina.err \
-	-pidfile ${CATALINA_BASE}/pid \
 	-stop \
+	-pidfile ${CATALINA_BASE}/pid \
 	org.apache.catalina.startup.Bootstrap 
     popd
     echo ""
