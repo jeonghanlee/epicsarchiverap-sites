@@ -2,8 +2,6 @@ language: bash
 
 sudo: required
 
-os:
-	- linux
-
 script:
-	- bash 00_preAA.bash all
+    - bash 00_preAA.bash all
+    
