@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.3
+# version : 0.9.4
 #
 # 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -116,18 +116,21 @@ function status() {
     printf "     EPICS_BASE %s\n" "${EPICS_BASE}";
     printf "     LD_LIBRARY_PATH %s\n" "${LD_LIBRARY_PATH}";
     printf "     EPICS_CA_ADDR_LIST %s\n" "${EPICS_CA_ADDR_LIST}";
+    printf "\n";
+    printf ">>>> Status outputs \n" ;
+    printf "   > Web url \n";
+    printf "     http://%s:17665/mgmt/ui/index.html\n" "${_HOST_NAME}";
+    printf "                         OR\n";
+    printf "     http://%s:17665/mgmt/ui/index.html\n" "${_HOST_IP}";
+    printf "\n";
+    printf "   > Log \n";
+    printf "     %s/mgmt/logs/mgmt_catalina.err may help you.\n" "${ARCHAPPL_TOP}";
+    printf "     tail -f %s/mgmt/logs/mgmt_catalina.err\n" "${ARCHAPPL_TOP}";
+    printf "\n";
+    printf "   > jsvc pid :If eight numbers are printed below, the jsvc processes are running\n";
+    /sbin/pidof jsvc.exec;
+    printf "\n";
 
-    printf ">>>> Status outputs \n" 
-    echo "-- http://${_HOST_NAME}:17665/mgmt/ui/index.html is the web address.";
-    echo "-- OR";
-    echo "-- http://${_HOST_IP}:17665/mgmt/ui/index.html is the web address.";
-    echo "";
-    echo "-- ${ARCHAPPL_TOP}/mgmt/logs/mgmt_catalina.err may help you.";
-    echo "-- tail -f ${ARCHAPPL_TOP}/mgmt/logs/mgmt_catalina.err";
-    echo ""
-    echo "-- If eight numbers are printed below, the jsvc processes are running";
-    pidof jsvc.exec;
-    echo "--";
 
 }
 
@@ -151,7 +154,6 @@ function start() {
     status;
 }
 
-
 case "$1" in
     start)
 	start
@@ -163,8 +165,11 @@ case "$1" in
 	stop
 	start
 	;;
+    show)
+	status
+	;;
     *)
-	echo "Usage: $0 {start|stop|restart}"
+	echo "Usage: $0 {start|stop|restart|show}"
 	exit 2
 esac
 
