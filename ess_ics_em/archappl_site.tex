@@ -71,64 +71,18 @@
 
 %%% Actual Document Start at below
 \chapter{Overview}
-At European Spallation Source (ESS) ERIC, Integrated Control System (ICS) does use the EPICS Archiver Appliance {\footnote{\url{http://slacmshankar.github.io/epicsarchiver_docs/index.html}}} as its archiver for ESS EPICS control systems. The consistent and up-to-date engineering manual is essential for the ESS Archiver Appliance deployment.
+At European Spallation Source (ESS), the Integrated Control System (ICS) is a distributed, network-based control system that allows the facility to be operated as an integrated unit. This control system is based on EPICS for the accelerator, conventional facilities, Neutron Scattering Systems (NSS), and target subsystems. The signals from all subsystems should be collected by the EPICS framework. The EPICS Archiver Appliance {\footnote{\url{http://slacmshankar.github.io/epicsarchiver_docs/index.html}}} is selected as its signal archiver for the ESS ICS. 
 
 \section{Scope}
 \begin{itemize}
-%% \item This document identifies one of the MRF Timing Event Receivers (EVR) that needs to be configured for an ESS subsystem that needs synchronous frequencies, trigger signals and sequences of events \cite{MRFEVENTSYSTEMDC}.
-%% \item This document provides the generic description of the MRF PCIe-EVR-300 and its interface board (IFB-300). In addition, it affords the minimal, essential, and generic information for the system configuration.  
-\item The purpose of this document is to describe the engineering procedure and troubleshooting about how the EPICS Archiver Appliance can be deployed quickly and easily within CentOS Linux environment.
-%% \item This document attempts to maintain consistency with existing ESS Timing system hardware as far as possible. 
+\item The purpose of this document is to describe the engineering procedure and possibly troubleshooting about how the EPICS Archiver Appliance can be deployed within the CentOS Linux environment. 
+\item This document attempts to maintain consistency with existing the ICS handbook~\cite{ESS006763} as much as possible.
 \end{itemize}
-%% \textbf{Note that this is a very early draft document and should be updated as development progresses.}
 
 \section{Target Audience}
-This document is targeted to ICS engineers and technical stakeholders of the ESS Archiver Appliance. It is assumed that the target audience has a technical background in the Archiver Appliance, the EPICS development, and a Linux environment.
+This document is targeted to ICS engineers and technical stakeholders of the ESS Archiver Appliance. It is assumed that the target audience has a technical background in the EPICS Archiver Appliance, the EPICS development, and a Linux environment.
 
-%% \chapter{System Description}
-%% MRF Technical Reference \citep[see][p45]{MRFEVENTSYSTEMDC} explained Event Receivers and wrote :
-%% \blockquote{\textit{Event Receivers decode timing events and signals from an optical event stream transmitted by an Event Generator. Events and signals are received at predefined rate the event clock that is usually divided down from an accelerators main RF reference. The event receivers lock to the phase event clock of the Event Generator and are thus phase locked to the RF reference. Event Receivers convert event codes transmitted by an Event Generator to hardware outputs. They can also generate software interrupts and store the event codes with globally distributed timestamps into FIFO memory to be read by a CPU.}}
-
-%% ICS uses and will use the following different types of EVR :
-%% \begin{itemize}
-%% \item VME-EVR-230 / 230RF
-%% \item PMC-EVR-230
-%% \item mTCA-EVR-300 / 300DC
-%% \item PCIe-EVR-300 / 300DC
-%% \item VME-EVR-300 / 300DC
-%% \end{itemize}
-
-%% And the scope of this document is to cover PCIe-EVR-300 board, PCIe-EVR-300DC\footnote{Delay Compensation (DC) Unit. Currently we only use the EVR-300 board in this document.} board, or both boards.
-
-
-%% \section{PCIe-EVR-300DC}
-%% Figure~\ref{fig:pcie-evr300dc} shows the rough physical dimensions $104\times 79~\mathrm{mm}{}^2$ of the PCIe-EVR-300DC card, which  will replace the former PCIe-EVR-300. And its power dissipation is almost 10W, so one should check the maximum power of each PCIe slot where the card will be. And it is advisable to have some forced cooling method to keep the temperature of the card reasonable \citetext{priv. comm.}.
-
-%% \begin{figure}[!htb]
-%%   \centering
-%%   \includegraphics[width=0.99\textwidth]{./pictures/pcie_evr_300dc.eps}
-%%   \caption{
-%%     MRF PCIe-EVR-300 with Delay Compensation Unit.
-%%   }
-%%   \label{fig:pcie-evr300dc}   
-%% \end{figure}
-
-
-%% The PCIe-EVR-300  has a SFP transceiver as an input from EVG and a micro-SCSI type connector as an output to subsystem, because of its small form factor \cite{MRFEVENTSYSTEMDC}. Thus, in order to send supported type of signals to a subsystem, the interface board IFB-300 is needed. The IFB-300 has eight Universal I/O slots, shown in Figure~\ref{fig:ifb-300}. With different type of MRF Universal I/O modules, each slot can be used as an unique trigger or event signal source.
-
-%% \begin{figure}[!htb]
-%%   \centering
-%%   \includegraphics{./pictures/ifb-300.eps}
-%%   \caption{
-%%     MRF Interface Board IFB 300 Front Panel \cite{MRFEVENTSYSTEMDC}.
-%%   }
-%%   \label{fig:ifb-300}   
-%% \end{figure}
-
-
-%% \clearpage
-
-%% \chapter{System Environment}
+\chapter{System Environment}
 %% Before describing the engineering procedure for an EEE integration of the MRF PCIe-EVR-300 board, it is mandatory to have proper system environment that consists of specific hardware and software lists. Here we will show the hardware and software lists, their block diagrams, and their setup in the ICS lab at ESS. The information shown in this chapter is used in the ICS Lab at ESS.
 
 
@@ -210,7 +164,7 @@ This document is targeted to ICS engineers and technical stakeholders of the ESS
 
 
 %% \clearpage
-%% \chapter{Engineering Procedure}
+\chapter{Engineering Procedure}
 %% This chapter provides the minimal information to configure the EVR board properly. 
 
 %% \section{System Installation}
