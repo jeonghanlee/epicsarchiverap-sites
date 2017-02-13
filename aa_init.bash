@@ -57,7 +57,7 @@ declare -g SUDO_PID="";
 
 function git_clone() {
     
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
     
     local git_src_dir=$1;
     local git_src_url=$2;
