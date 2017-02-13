@@ -3,7 +3,7 @@ A Site-Specific (ESS) EPICS Archiver Appliance Deployment
 
 # Requirements
 
-* CentOS 7 (Tested with 7.3 1611) 
+* CentOS 7 (Tested with 7.2 1511 & 7.3 1611) 
 
 # License
 
@@ -14,8 +14,7 @@ https://github.com/slacmshankar/epicsarchiverap/blob/master/NOTICE
 
 # Archiver Appliance Setup on CentOS 7
 
-With the following commands, one can setup an Archiver Appliance quite easily on CentOS 7.2
-
+With the following commands, one can setup an Archiver Appliance quite easily on CentOS 7
 ```
 $ curl -L https://git.io/vXSN6 -o aa_init.bash
 $ bash aa_init.bash 
