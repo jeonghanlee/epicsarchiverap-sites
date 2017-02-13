@@ -92,7 +92,7 @@ TOMCAT_USER_HOME=${ARCHAPPL_TOP}/temp
 
 # # Tell the appliance that we are deploying all the components in one VM.
 # # This reduces the thread count and other parameters in an effort to optimize memory.
-export ARCHAPPL_ALL_APPS_ON_ONE_JVM="true"
+#export ARCHAPPL_ALL_APPS_ON_ONE_JVM="true"
 
 #
 # This approach is only valid for the single appliance installation.
@@ -106,7 +106,8 @@ export APPLIANCES_XML="appliances.xml";
 export ARCHAPPL_APPLIANCES=${ARCHAPPL_TOP}/${APPLIANCES_XML};
 export ARCHAPPL_MYIDENTITY=${AACHAPPL_SINGLE_IDENTITY};
 
-
+export SITE_POLICIES_FILE="ess_default_policies.py"
+export ARCHAPPL_POLICIES=${ARCHAPPL_TOP}/${SITE_POLICIES_FILE}
 
 
 # Archiever Appliance User and Password for DB
@@ -171,4 +172,3 @@ declare ARCHAPPL_STORAGE_TOP=/home/arch
 export ARCHAPPL_SHORT_TERM_FOLDER=${ARCHAPPL_STORAGE_TOP}/sts/ArchiverStore
 export ARCHAPPL_MEDIUM_TERM_FOLDER=${ARCHAPPL_STORAGE_TOP}/mts/ArchiverStore
 export ARCHAPPL_LONG_TERM_FOLDER=${ARCHAPPL_STORAGE_TOP}/lts/ArchiverStore
-
