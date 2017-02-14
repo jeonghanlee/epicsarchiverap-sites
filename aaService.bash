@@ -19,11 +19,12 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.4
+# version : 0.9.5
 #
 # 
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
+declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
 # Enable core dumps in case the JVM fails
 ulimit -c unlimited
@@ -35,9 +36,6 @@ function popd()  { builtin popd  "$@" > /dev/null; }
 
 . ${SC_TOP}/setEnvAA.bash
 
-# If you have your own policies file, please change this line.
-# export ARCHAPPL_POLICIES=/nfs/epics/archiver/production_policies.py
-
 if [[ ! -d ${TOMCAT_HOME} ]]; then
     echo "Unable to determine the source of the tomcat distribution"
     exit 1
@@ -47,6 +45,21 @@ if [[ ! -f ${ARCHAPPL_APPLIANCES} ]]; then
     echo "Unable to find appliances.xml at ${ARCHAPPL_APPLIANCES}"
     exit 1
 fi
+
+if [[ ! -f ${ARCHAPPL_POLICIES} ]]; then
+    echo "Unable to find policies.py at ${ARCHAPPL_APPLIANCES}"
+    exit 1
+fi
+
+
+function isRoot() {
+
+    if [[ $(id -u) -ne 0 ]] ; then 
+	echo "Please run it as root or with sudo" ; 
+	exit 1 ;
+    fi
+
+}
 
 
 function startTomcatAtLocation() {
@@ -84,6 +97,7 @@ function startTomcatAtLocation() {
     echo ""
 }
 
+
 function stopTomcatAtLocation() {
     
     if [ $# -eq 0 ]; then
@@ -110,9 +124,10 @@ function stopTomcatAtLocation() {
 # Service order is matter, don't change them
 tomcat_services=("mgmt" "engine" "etl" "retrieval")
 
+
 function status() {
 
-    printf ">>>> EPICS Env outputs\n";
+    printf "\n>>>> EPICS Env outputs\n";
     printf "     EPICS_BASE %s\n" "${EPICS_BASE}";
     printf "     LD_LIBRARY_PATH %s\n" "${LD_LIBRARY_PATH}";
     printf "     EPICS_CA_ADDR_LIST %s\n" "${EPICS_CA_ADDR_LIST}";
@@ -130,22 +145,36 @@ function status() {
     printf "   > jsvc pid :If eight numbers are printed below, the jsvc processes are running\n";
     /sbin/pidof jsvc.exec;
     printf "\n";
+ 
+}
 
+
+function stroage_status() {
+
+    printf "\n>>>> Stroage Status at %s\n\n" "${SC_LOGDATE}";
+    du -ck --time ${ARCHAPPL_STORAGE_TOP};
+    printf "\n";
 
 }
 
+
 function stop() {
+
+    isRoot;
 
     # Stopping order is matter! 
     stopTomcatAtLocation "${ARCHAPPL_TOP}" "engine";
     stopTomcatAtLocation "${ARCHAPPL_TOP}" "retrieval";
     stopTomcatAtLocation "${ARCHAPPL_TOP}" "etl";
     stopTomcatAtLocation "${ARCHAPPL_TOP}" "mgmt";
-  
+
     status;
+
 }
 
 function start() { 
+
+    isRoot;
 
     for service in ${tomcat_services[@]}; do
 	startTomcatAtLocation "${ARCHAPPL_TOP}" "${service}";
@@ -153,6 +182,8 @@ function start() {
 
     status;
 }
+
+
 
 case "$1" in
     start)
@@ -165,11 +196,14 @@ case "$1" in
 	stop
 	start
 	;;
-    show)
+    status)
 	status
 	;;
+    stroage)
+	stroage_status
+	;;
     *)
-	echo "Usage: $0 {start|stop|restart|show}"
+	echo "Usage: $0 {start|stop|restart|status|stroage}"
 	exit 2
 esac
 
