@@ -48,6 +48,9 @@ function tomcat_user_conf() {
     ${SUDO_CMD} useradd -g nobody -s /sbin/nologin -d ${TOMCAT_USER_HOME} ${TOMCAT_USER}
     ${SUDO_CMD} mkdir -p ${TOMCAT_USER_HOME}
     ${SUDO_CMD} chown -R ${TOMCAT_USER} ${TOMCAT_USER_HOME}
+
+    # add the user to tomcat group
+    ${SUDO_CMD} usermod -a -G ${TOMCAT_GROUP} ${_USER_NAME};
     __end_func ${func_name};
 }
 

@@ -85,6 +85,7 @@ export LD_LIBRARY_PATH=${ARCHAPPL_TOP}/engine/webapps/engine/WEB-INF/lib/native/
 
 # Tomcat user
 TOMCAT_USER="tomcat"
+TOMCAT_GROUP=${TOMCAT_USER}
 TOMCAT_USER_HOME=${ARCHAPPL_TOP}/temp
 
 # # Use an in memory persistence layer
