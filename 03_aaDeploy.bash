@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : Monday, February 13 15:58:27 CET 2017
-# version : 0.9.5
+# version : 0.9.6
 #
 # 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -62,13 +62,7 @@ function deploy_war_release() {
     ${SUDO_CMD} unzip -q ${warsrc_dir}/${target}.war -d ${target};
 
     popd;
-    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${deploy_dir}/${target}
-    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${deploy_dir}/${target}/logs;
-    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${deploy_dir}/${target}/temp;
-    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${deploy_dir}/${target}/webapps;
-    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${deploy_dir}/${target}/work;
-    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${deploy_dir}/${target}/conf;
-
+ 
     end_func ${func_name};
 }
 
@@ -143,6 +137,14 @@ fi
 
 
 echo "Done deploying a new release from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}"
+
+
+##
+##
+## Change owner and its group recursively in the archappl directory
+## The symbolic link stays as root.root
+##
+${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_TOP}/
 
 
 ${SUDO_CMD} -k;

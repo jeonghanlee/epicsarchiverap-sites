@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.6
+# version : 0.9.7
 #
 #
 # Generic : Global variables - read-only
@@ -47,9 +47,8 @@ function tomcat_user_conf() {
     
     ${SUDO_CMD} useradd -g nobody -s /sbin/nologin -d ${TOMCAT_USER_HOME} ${TOMCAT_USER}
     ${SUDO_CMD} mkdir -p ${TOMCAT_USER_HOME}
-    ${SUDO_CMD} chown -R ${TOMCAT_USER} ${TOMCAT_USER_HOME}
 
-    # add the user to tomcat group
+    # add the user to tomcat group 
     ${SUDO_CMD} usermod -a -G ${TOMCAT_GROUP} ${_USER_NAME};
     __end_func ${func_name};
 }
@@ -278,7 +277,8 @@ cat > ${tomcat_context_container} <<EOF
 </Context>
 EOF
 
-# Permission and ownership should be considered later
+# Permission and ownership should be considered in aaDeploy.bash
+#
 ${SUDO_CMD} mv ${tomcat_context_container} ${ARCHAPPL_TOP}/mgmt/conf/ ; 
 popd
 
@@ -300,10 +300,10 @@ printf "%s\n" "------|"
 declare -r aa_deploy_db_tables=${AA_GIT_DIR}/src/main/org/epics/archiverappliance/config/persistence/archappl_mysql.sql
 declare -r aa_deploy_db_tables_new=${aa_deploy_db_tables}_new.sql
 
-# In the case, to run this script again, keep the original file, and create new file with "IF NOT EXITS", 
-# and use the new file to query to DB.
-# Thus, if the tables exist in DB, it will skip to create these tables
-#
+# DB setup is done when we execute it at the very first time, after this, if we run this script again,
+# I would like to add the logic to check whether DB exists or not. So create a new db sql file with 
+# CREATE TABLE IF NOT EXISTS. 
+
 sed "s/CREATE TABLE /CREATE TABLE IF NOT EXISTS /g" ${aa_deploy_db_tables} > ${aa_deploy_db_tables_new};
 mysql --user=${DB_USER_NAME} --password=${DB_USER_PWD} --database=${DB_NAME} < ${aa_deploy_db_tables_new};
 

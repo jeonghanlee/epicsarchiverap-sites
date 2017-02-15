@@ -75,6 +75,7 @@ function startTomcatAtLocation() {
     export CATALINA_HOME=$TOMCAT_HOME
     export CATALINA_BASE=${SERVICE_TOP}/${SERVICE_NAME};
 
+    echo ""
     echo ">> Starting TOMCAT at ${CATALINA_BASE}"
 
     pushd ${CATALINA_BASE}/logs
@@ -111,6 +112,7 @@ function stopTomcatAtLocation() {
     export CATALINA_HOME=$TOMCAT_HOME
     export CATALINA_BASE=${SERVICE_TOP}/${SERVICE_NAME};
     
+    echo ""
     echo "<< Stopping Tomcat at ${CATALINA_BASE}"
     pushd ${CATALINA_BASE}/logs
     /bin/jsvc \
