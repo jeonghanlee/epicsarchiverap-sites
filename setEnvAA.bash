@@ -18,7 +18,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.1.2 
+# version : 0.1.3
 
 export THIS_SCRIPT=$(realpath "$0")
 export THIS_TOP="$(dirname "$THIS_SCRIPT")"
@@ -110,6 +110,8 @@ export ARCHAPPL_MYIDENTITY=${AACHAPPL_SINGLE_IDENTITY};
 export SITE_POLICIES_FILE="ess_default_policies.py"
 export ARCHAPPL_POLICIES=${ARCHAPPL_TOP}/${SITE_POLICIES_FILE}
 
+export SITE_PROPERTIES_FILE="ess-archappl.properties";
+export ARCHAPPL_PROPERTIES_FILENAME=${ARCHAPPL_TOP}/${SITE_PROPERTIES_FILE}
 
 # Archiever Appliance User and Password for DB
 # One should change the the default AA user password properly. 

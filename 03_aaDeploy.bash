@@ -18,8 +18,8 @@
 #
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
-# Date   : Monday, February 13 15:58:27 CET 2017
-# version : 0.9.6
+# Date   : Thursday, February 16 15:03:29 CET 2017
+# version : 0.9.7
 #
 # 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -126,7 +126,7 @@ if [[ -d ${site_specific_dir}/css ]]; then
 fi
 
 ##
-## Copy site specific ess_default_policies.py file
+## Copy site specific default_policies.py file
 if [[ -f ${site_specific_dir}/default_policies.py  ]]; then
     echo ""
     echo "Copying the default site specific polices file onto ${ARCHAPPL_TOP}";
@@ -134,6 +134,17 @@ if [[ -f ${site_specific_dir}/default_policies.py  ]]; then
     echo ""
     
 fi
+
+##
+## Copy site specific default archappl.properties file
+if [[ -f ${site_specific_dir}/default_archappl.properties  ]]; then
+    echo ""
+    echo "Copying the default site specific default archappl.properties file onto ${ARCHAPPL_TOP}";
+    ${SUDO_CMD} cp -R ${site_specific_dir}/default_archappl.properties ${ARCHAPPL_PROPERTIES_FILENAME} ;
+    echo ""
+    
+fi
+
 
 
 echo "Done deploying a new release from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}"
