@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.5
+# version : 0.9.6
 #
 # 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -36,6 +36,7 @@ function popd()  { builtin popd  "$@" > /dev/null; }
 
 . ${SC_TOP}/setEnvAA.bash
 
+
 if [[ ! -d ${TOMCAT_HOME} ]]; then
     echo "Unable to determine the source of the tomcat distribution"
     exit 1
@@ -43,11 +44,6 @@ fi
 
 if [[ ! -f ${ARCHAPPL_APPLIANCES} ]]; then
     echo "Unable to find appliances.xml at ${ARCHAPPL_APPLIANCES}"
-    exit 1
-fi
-
-if [[ ! -f ${ARCHAPPL_POLICIES} ]]; then
-    echo "Unable to find policies.py at ${ARCHAPPL_APPLIANCES}"
     exit 1
 fi
 
@@ -95,6 +91,12 @@ function startTomcatAtLocation() {
         -pidfile ${CATALINA_BASE}/pid \
         org.apache.catalina.startup.Bootstrap start
     popd
+    chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${CATALINA_BASE}/logs
+    # An user with ${TOMCAT_CROUP} can stop the service in the following 
+    # chown ${TOMCAT_USER}.${TOMCAT_GROUP} ${CATALINA_BASE}/pid
+    chmod 640 ${CATALINA_BASE}/logs/${SERVICE_NAME}_catalina.out
+    chmod 640 ${CATALINA_BASE}/logs/${SERVICE_NAME}_catalina.err
+
     echo ""
 }
 
@@ -186,7 +188,10 @@ function start() {
 }
 
 
+# export ARCHAPPL_POLICIES="/opt/archappl/policies.py"
 
+# printf "%s\n" "$ARCHAPPL_POLICIES"
+    
 case "$1" in
     start)
 	start

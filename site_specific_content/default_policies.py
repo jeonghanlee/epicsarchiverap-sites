@@ -1,5 +1,7 @@
 #!/usr/bin/python
-
+#
+# coding=utf-8 
+#
 # policies.py
 #
 # Author:  M. Shankar, Jan 31, 2012

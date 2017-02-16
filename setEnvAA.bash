@@ -107,10 +107,12 @@ export APPLIANCES_XML="appliances.xml";
 export ARCHAPPL_APPLIANCES=${ARCHAPPL_TOP}/${APPLIANCES_XML};
 export ARCHAPPL_MYIDENTITY=${AACHAPPL_SINGLE_IDENTITY};
 
-export SITE_POLICIES_FILE="ess_default_policies.py"
+
+export SITE_POLICIES_FILE="ess_policies.py";
 export ARCHAPPL_POLICIES=${ARCHAPPL_TOP}/${SITE_POLICIES_FILE}
 
-export SITE_PROPERTIES_FILE="ess-archappl.properties";
+
+export SITE_PROPERTIES_FILE="archappl.properties";
 export ARCHAPPL_PROPERTIES_FILENAME=${ARCHAPPL_TOP}/${SITE_PROPERTIES_FILE}
 
 # Archiever Appliance User and Password for DB

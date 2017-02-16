@@ -52,4 +52,38 @@ function ls_archappl() {
 }
 
 
-ls_archappl
+function find_properties() {
+    for service in ${tomcat_services[@]}; do
+	echo "In ${ARCHAPPL_TOP}/${service}"
+	grep -r archappl.properties "${ARCHAPPL_TOP}/${service}/logs/arch.log"
+	echo ""
+    done
+}
+
+
+function find_policies() {
+    for service in ${tomcat_services[@]}; do
+	echo "In ${ARCHAPPL_TOP}/${service}"
+	grep -r $SITE_POLICIES_FILE "${ARCHAPPL_TOP}/${service}/logs/arch.log"
+#	grep -r "policies" "${ARCHAPPL_TOP}/${service}/logs"
+	echo ""
+    done
+}
+
+
+
+case "$1" in
+    ls)
+	ls_archappl
+	;;
+    properties)
+	find_properties
+	;;
+    policies)
+	find_policies
+	;;
+    *)
+	echo "Usage: $0 {ls|properties|policies}"
+	exit 2
+esac
+
