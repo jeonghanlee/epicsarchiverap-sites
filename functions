@@ -22,6 +22,9 @@
 #  Version : 0.0.1
 
 
+ROOT_UID=0 
+E_NOTROOT=101
+
 
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
@@ -36,7 +39,11 @@ function __checkstr() {
     fi
 }
 
+function getHostname() {
 
+    local hostname_cmd="$(hostname)";
+    
+}
 
 # Generic : git_clone
 # 1.0.3 Tuesday, November  8 18:13:44 CET 2016
@@ -174,11 +181,29 @@ function git_selection() {
 
 
 
-function isRoot() {
+function checkIfRoot() {
 
-    if [[ $(id -u) -ne 0 ]] ; then 
+    if [[ $(id -u) -ne "$ROOT_UID" ]] ; then 
 	echo "Please run it as root or with sudo" ; 
-	exit 1 ;
+	exit $E_NOTROOT ;
+    fi
+
+}
+
+
+function checkIfArchappl() {
+
+    local pid_list=()
+    local no_archappl_running=0
+
+    IFS=' ' read -r -a pid_list <<< $(/sbin/pidof jsvc.exec);
+    #    echo "${pid_list[@]}"
+    #    echo "${#pid_list[@]}"
+
+    if [[ "${#pid_list[@]}" -ne "$no_archappl_running" ]] ; then 
+	printf "Total %d processes are founded now.\n" "${#pid_list[@]}"
+	printf "Please stop the running archiver appliance first!\n"
+	exit;
     fi
 
 }

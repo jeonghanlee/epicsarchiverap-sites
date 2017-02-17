@@ -29,14 +29,7 @@ declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
-# Generic : Redefine pushd and popd to reduce their output messages
-# 
-function pushd() { builtin pushd "$@" > /dev/null; }
-function popd()  { builtin popd  "$@" > /dev/null; }
-
-function __ini_func() { printf "\n>>>> You are entering in  : %s\n" "${1}"; }
-function __end_func() { printf "\n<<<< You are leaving from : %s\n" "${1}"; }
-
+. ${SC_TOP}/functions
 
 declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
@@ -54,11 +47,12 @@ function tomcat_user_conf() {
 }
 
 
-
+checkIfArchappl
 
 ${SUDO_CMD} -v
 
 . ${SC_TOP}/setEnvAA.bash
+
 
 printf "\n%s\n" "->"
 

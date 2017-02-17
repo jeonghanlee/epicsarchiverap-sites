@@ -25,22 +25,7 @@
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 
-
-# Generic : Redefine pushd and popd to reduce their output messages
-# 
-function pushd() { builtin pushd "$@" > /dev/null; }
-function popd()  { builtin popd  "$@" > /dev/null; }
-
-function ini_func() { sleep 1; printf "\n>>>> You are entering in  : %s\n" "${1}"; }
-function end_func() { sleep 1; printf "\n<<<< You are leaving from : %s\n" "${1}"; }
-
-function checkstr() {
-    if [ -z "$1" ]; then
-	printf "%s : input variable is not defined \n" "${FUNCNAME[*]}"
-	exit 1;
-    fi
-}
-
+. ${SC_TOP}/functions
 
 declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
@@ -49,7 +34,7 @@ declare -g  WARSRC_DIR=${SC_TOP};
 
 function deploy_war_release() {
 
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
     local target=${1};
     local deploy_dir=${2};
     local warsrc_dir=${3};
@@ -63,13 +48,16 @@ function deploy_war_release() {
 
     popd;
  
-    end_func ${func_name};
+    __end_func ${func_name};
 }
 
 
 ${SUDO_CMD} -v
 
 . ${SC_TOP}/setEnvAA.bash
+
+
+checkIfArchappl
 
 if [[ ! -f ${WARSRC_DIR}/mgmt.war ]]; then
     printf "The folder ${WARSRC_DIR} does not seem to have a mgmt.war.\n"

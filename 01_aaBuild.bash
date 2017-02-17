@@ -36,158 +36,12 @@ declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 
 
+set -a
+. ${SC_TOP}/env.conf
+set +a
+
+
 . ${SC_TOP}/functions
-
-
- 
-# # Generic : Redefine pushd and popd to reduce their output messages
-# # 
-# function pushd() { builtin pushd "$@" > /dev/null; }
-# function popd()  { builtin popd  "$@" > /dev/null; }
-
-# function ini_func() { sleep 1; printf "\n>>>> You are entering in : %s\n" "${1}"; }
-# function end_func() { sleep 1; printf "\n<<<< You are leaving from %s\n"  "${1}"; }
-
-# function checkstr() {
-#     if [ -z "$1" ]; then
-# 	printf "%s : input variable is not defined \n" "${FUNCNAME[*]}"
-# 	exit 1;
-#     fi
-# }
-
-# # Generic : git_clone
-# # 1.0.3 Tuesday, November  8 18:13:44 CET 2016
-# #
-# # Required Global Variable
-# # - SC_LOGDATE      : Input
-
-# function git_clone() {
-    
-#     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
-    
-#     local git_src_dir=$1;
-#     local git_src_url=$2;
-#     local git_src_name=$3;
-#     local tag_name=$4;
-    
-#     checkstr ${SC_LOGDATE};
-    
-#     if [[ ! -d ${git_src_dir} ]]; then
-# 	printf "No git source repository in the expected location %s\n" "${git_src_dir}";
-#     else
-# 	printf "Old git source repository in the expected location %s\n" "${git_src_dir}";
-# 	printf "The old one is renamed to %s_%s\n" "${git_src_dir}" "${SC_LOGDATE}";
-# 	mv  ${git_src_dir} ${git_src_dir}_${SC_LOGDATE}
-#     fi
-    
-#     # Alwasy fresh cloning ..... in order to workaround any local 
-#     # modification in the repository, which was cloned before. 
-#     #
-#     # we need the recursive option in order to build a web based viewer for Archappl
-#     if [ -z "$tag_name" ]; then
-# 	git clone --recursive "${git_src_url}/${git_src_name}" "${git_src_dir}";
-#     else
-# 	git clone --recursive -b "${tag_name}" --single-branch --depth 1 "${git_src_url}/${git_src_name}" "${git_src_dir}";
-#     fi
-
-#     end_func ${func_name};
-# }
-
-
-# # Generic : git_selection
-# #
-# # 1.0.4 : Saturday, December 31 17:14:42 CET 2016
-# #         only for archappl
-# #
-# # Require Global vairable
-# # - SC_SELECTED_GIT_SRC  : Output
-# #
-# function git_selection() {
-
-#     local func_name=${FUNCNAME[*]}; ini_func ${func_name};
-
-#     local git_ckoutcmd=""
-#     local checked_git_src=""
-
-    
-#     declare -i index=0
-#     declare -i master_index=0
-#     declare -i list_size=0
-#     declare -i selected_one=0
-#     declare -a git_src_list=()
-
-    
-#     local n_tags=${1};
-
-#     # no set n_tags, set default 10
-    
-#     if [[ ${n_tags} -eq 0 ]]; then
-# 	n_tags=20;
-#     fi
-
-#     git_src_list+=("master")
-
-#     git_src_list+=($(git tag -l | xargs -I@ git log --format=format:"%ai @%n" -1 @ | sort -r | head -n${n_tags} | awk '{print $4}'))
-    
-#     for tag in "${git_src_list[@]}"
-#     do
-# 	printf "%2s: git src %34s\n" "$index" "$tag"
-# 	let "index = $index + 1"
-#     done
-    
-#     echo -n "Select master or one of tags which can be built, followed by [ENTER]:"
-
-#     # don't wait for 3 characters 
-#     # read -e -n 2 line
-#     read -e line
-   
-#     # convert a string to an integer?
-#     # do I need this? 
-#     # selected_one=${line/.*}
-
-#     # Without selection number, type [ENTER], 0 is selected as default.
-#     #
-#     selected_one=${line}
-    
-#     let "list_size = ${#git_src_list[@]} - 1"
-    
-#     if [[ "$selected_one" -gt "$list_size" ]]; then
-# 	printf "\n>>> Please select one number smaller than %s\n" "${list_size}"
-# 	exit 1;
-#     fi
-#     if [[ "$selected_one" -lt 0 ]]; then
-# 	printf "\n>>> Please select one number larger than 0\n" 
-# 	exit 1;
-#     fi
-
-#     SC_SELECTED_GIT_SRC="$(tr -d ' ' <<< ${git_src_list[line]})"
-    
-#     printf "\n>>> Selected %34s --- \n" "${SC_SELECTED_GIT_SRC}"
- 
-#     echo ""
-#     if [ "$selected_one" -ne "$master_index" ]; then
-# 	git_ckoutcmd="git checkout tags/${SC_SELECTED_GIT_SRC}"
-# 	$git_ckoutcmd
-# 	checked_git_src="$(git describe --exact-match --tags)"
-# 	checked_git_src="$(tr -d ' ' <<< ${checked_git_src})"
-	
-# 	printf "\n>>> Selected : %s --- \n>>> Checkout : %s --- \n" "${SC_SELECTED_GIT_SRC}" "${checked_git_src}"
-	
-# 	if [ "${SC_SELECTED_GIT_SRC}" != "${checked_git_src}" ]; then
-# 	    echo "Something is not right, please check your git reposiotry"
-# 	    exit 1
-# 	fi
-#     else
-# 	git_ckoutcmd="git checkout ${SC_SELECTED_GIT_SRC}"
-# 	$git_ckoutcmd
-#     fi
-
-#     git submodule update --init --recursive
-    
-#     end_func ${func_name}
- 
-# }
-
 
 
 
@@ -281,24 +135,24 @@ function archappl_build() {
 }
 
 
-. ${SC_TOP}/setEnvAA.bash
+# Nothing defined, the normal procedure is started
+if [ -z "$1" ]; then
 
-  
-case "$1" in
-    develop)
-	set_archappl_version "$1"
-	archappl_build
-	;;
-    main)
-	archappl_setup
-	set_archappl_version
-	archappl_build
-	;;
-    *)
-	echo "Usage: $0 {main|develop}"
-	exit 2	
+    archappl_setup
+    set_archappl_version
+    archappl_build
 
-esac
+else
+# Something else...
+    case "$1" in
+	loc)
+	    set_archappl_version "$1"
+	    archappl_build
+	    ;;
+	*)
+	    printf "Not support yet.\n";
+    esac
+fi
 
 exit;
 

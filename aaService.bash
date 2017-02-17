@@ -22,6 +22,9 @@
 # version : 0.9.6
 #
 # 
+ROOT_UID=0  
+E_NOTROOT=101
+
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
 declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
@@ -29,33 +32,6 @@ declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
 # Enable core dumps in case the JVM fails
 ulimit -c unlimited
 
-# Generic : Redefine pushd and popd to reduce their output messages
-# 
-function pushd() { builtin pushd "$@" > /dev/null; }
-function popd()  { builtin popd  "$@" > /dev/null; }
-
-. ${SC_TOP}/setEnvAA.bash
-
-
-if [[ ! -d ${TOMCAT_HOME} ]]; then
-    echo "Unable to determine the source of the tomcat distribution"
-    exit 1
-fi
-
-if [[ ! -f ${ARCHAPPL_APPLIANCES} ]]; then
-    echo "Unable to find appliances.xml at ${ARCHAPPL_APPLIANCES}"
-    exit 1
-fi
-
-
-function isRoot() {
-
-    if [[ $(id -u) -ne 0 ]] ; then 
-	echo "Please run it as root or with sudo" ; 
-	exit 1 ;
-    fi
-
-}
 
 
 function startTomcatAtLocation() {
@@ -164,7 +140,7 @@ function stroage_status() {
 
 function stop() {
 
-    isRoot;
+    checkIfRoot;
 
     # Stopping order is matter! 
     stopTomcatAtLocation "${ARCHAPPL_TOP}" "engine";
@@ -178,7 +154,8 @@ function stop() {
 
 function start() { 
 
-    isRoot;
+    checkIfArchappl
+    checkIfRoot;
 
     for service in ${tomcat_services[@]}; do
 	startTomcatAtLocation "${ARCHAPPL_TOP}" "${service}";
@@ -188,10 +165,22 @@ function start() {
 }
 
 
-# export ARCHAPPL_POLICIES="/opt/archappl/policies.py"
 
-# printf "%s\n" "$ARCHAPPL_POLICIES"
-    
+. ${SC_TOP}/functions
+. ${SC_TOP}/setEnvAA.bash
+
+
+if [[ ! -d ${TOMCAT_HOME} ]]; then
+    echo "Unable to determine the source of the tomcat distribution"
+    exit 1
+fi
+
+if [[ ! -f ${ARCHAPPL_APPLIANCES} ]]; then
+    echo "Unable to find appliances.xml at ${ARCHAPPL_APPLIANCES}"
+    exit 1
+fi
+
+
 case "$1" in
     start)
 	start

@@ -62,10 +62,12 @@ function find_properties() {
 
 
 function find_policies() {
+    local rt_status;
+
     for service in ${tomcat_services[@]}; do
 	echo "In ${ARCHAPPL_TOP}/${service}"
 	grep -r $SITE_POLICIES_FILE "${ARCHAPPL_TOP}/${service}/logs/arch.log"
-#	grep -r "policies" "${ARCHAPPL_TOP}/${service}/logs"
+
 	echo ""
     done
 }
