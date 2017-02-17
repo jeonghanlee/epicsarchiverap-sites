@@ -18,8 +18,9 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Thursday, February 16 15:43:27 CET 2017
+#   date    : Friday, February 17 15:12:30 CET 2017
 #   version : 0.0.1
+
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
@@ -37,9 +38,6 @@ set +a
 
 
 
-# Service order is matter, don't change them
-tomcat_services=("mgmt" "engine" "etl" "retrieval")
-
 function ls_archappl() { 
 
 
@@ -51,41 +49,57 @@ function ls_archappl() {
 
 }
 
+function find_in_logs() {
 
-function find_properties() {
+    local object=$1;
+
     for service in ${tomcat_services[@]}; do
 	echo "In ${ARCHAPPL_TOP}/${service}"
-	grep -r archappl.properties "${ARCHAPPL_TOP}/${service}/logs/arch.log"
+	grep -r ${object} "${ARCHAPPL_TOP}/${service}/logs/arch.log"
 	echo ""
     done
 }
 
 
-function find_policies() {
-    local rt_status;
+function clear_stroage() {
+    
+    rm -rf ${ARCHAPPL_STORAGE_TOP}/{sts,mts,lts}/ArchiverStore/* ;
 
-    for service in ${tomcat_services[@]}; do
-	echo "In ${ARCHAPPL_TOP}/${service}"
-	grep -r $SITE_POLICIES_FILE "${ARCHAPPL_TOP}/${service}/logs/arch.log"
-
-	echo ""
-    done
 }
 
 
+function clear_log() {
+    for service in ${tomcat_services[@]}; do
+	rm -rf ${ARCHAPPL_TOP}/${service}/logs/arch.log
+    done
+}
 
 case "$1" in
     ls)
 	ls_archappl
 	;;
     properties)
-	find_properties
+	find_in_logs "${SITE_PROPERTIES_FILE}"
 	;;
     policies)
-	find_policies
+	find_in_logs "${SITE_POLICIES_FILE}"
+	;;
+    error)
+	find_in_logs "ERROR"
+	;;
+    info)
+	find_in_logs "INFO"
+	;;
+    debug)
+	fine_in_logs "DEBUG"
+	;;
+    clean)
+	checkIfRoot
+	clear_stroage
+	clear_log
 	;;
     *)
-	echo "Usage: $0 {ls|properties|policies}"
+	echo "Usage: $0 {properties|policies|error|info}"
 	exit 2
 esac
 
