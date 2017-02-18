@@ -91,7 +91,7 @@ case "$1" in
 	find_in_logs "INFO"
 	;;
     debug)
-	fine_in_logs "DEBUG"
+	find_in_logs "DEBUG"
 	;;
     clean)
 	checkIfRoot
@@ -99,7 +99,7 @@ case "$1" in
 	clear_log
 	;;
     *)
-	echo "Usage: $0 {properties|policies|error|info}"
+	echo "Usage: $0 {properties|policies|info|debug|error}"
 	exit 2
 esac
 
