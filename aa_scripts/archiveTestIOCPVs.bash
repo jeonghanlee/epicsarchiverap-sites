@@ -22,9 +22,8 @@
 # version : 0.0.1
 
 declare -r json_file_name="archiveTestIOCPVs.json";
-declare -r archappl_url="http://localhost:17665/mgmt/bpl";
+declare -r archappl_url="http://10.0.4.22:17665/mgmt/bpl";
 
-curl -H "Content-Type: application/json" --data @${json_file_name} ${archappl_url}/archivePV
+#curl -H "Content-Type: application/json" --data @${json_file_name} ${archappl_url}/archivePV
 
-
-#GET "${archappl_url}/getPVStatus?pv=aauser:*" 
+curl -X GET "${archappl_url}/getPVStatus?pv=TR3:ASUB1_WF*" 
