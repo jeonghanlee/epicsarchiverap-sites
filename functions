@@ -19,12 +19,13 @@
 #  Author  : Jeong Han Lee
 #  Email   : han.lee@esss.se
 #  Date    : Monday, January 30 11:19:13 CET 2017
-#  Version : 0.0.1
+#  Version : 0.0.2
 
 
 ROOT_UID=0 
 E_NOTROOT=101
-
+EXIST=1
+NON_EXIST=0
 
 function pushd() { builtin pushd "$@" > /dev/null; }
 function popd()  { builtin popd  "$@" > /dev/null; }
@@ -208,3 +209,17 @@ function checkIfArchappl() {
 
 }
 
+function checkIfDir() {
+
+    local dir=$1
+    local result=""
+    if [ ! -d "$dir" ]; then
+	result=$NON_EXIST
+	# doesn't exist
+    else
+	result=$EXIST
+	# exist
+    fi
+    echo "${result}"
+
+}

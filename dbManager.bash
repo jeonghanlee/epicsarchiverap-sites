@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 #  Copyright (c) 2016 Jeong Han Lee
+#  Copyright (c) 2016 European Spallation Source ERIC
 #
 #  The program is free software: you can redistribute
 #  it and/or modify it under the terms of the GNU General Public License
@@ -18,14 +19,15 @@
 # Author : Jeong Han Lee
 # email  : jeonghan.lee@gmail.com
 # Date   : 
-# version : 0.0.1
+# version : 0.0.2
 #
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
 #declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
-#declare -gr SC_LOGDATE="$(date +%Y%b%d-%H%M-%S%Z)"
+
+declare -gr SC_DATE="$(date +%Y%m%d-%H%M)"
 
 
 set -a
@@ -40,7 +42,9 @@ set +a
 #
 declare -g root_pwd=""
 declare -g SQL_ROOT_CMD="mysql --user=root --password=${root_pwd}"
-declare -g SQL_DBUSER_CMD="mysql --user=${DB_USER_NAME} --password=${DB_USER_PWD} --database=${DB_NAME}"
+declare -g SQL_DBUSER_CMD="mysql --user=${DB_USER_NAME} --password=${DB_USER_PWD} ${DB_NAME}"
+declare -g SQL_BACKUP_CMD="mysqldump --user=${DB_USER_NAME} --password=${DB_USER_PWD} ${DB_NAME}"
+declare -g SQL_CMD_OPTIONS="--skip-column-names --execute"
 
 function db_secure_setup() {
 
@@ -105,7 +109,7 @@ function show_dbs() {
 
     local dbs=""
     
-    dbs=$(${SQL_ROOT_CMD} -e 'SHOW DATABASES' | awk '{print $1}' | grep -v '^Database')
+    dbs=$(${SQL_ROOT_CMD} ${SQL_CMD_OPTIONS} 'SHOW DATABASES' | awk '{print $1}')
 
     printf "\n";
     
@@ -124,7 +128,7 @@ function show_tables () {
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
 
     local tables=""
-    tables=$(${SQL_DBUSER_CMD} -e "SHOW TABLES" | awk '{print $1}' | grep -v '^Tables' )
+    tables=$(${SQL_DBUSER_CMD} ${SQL_CMD_OPTIONS} "SHOW TABLES" | awk '{print $1}' )
     printf "\n";
     for table in $tables
     do
@@ -142,7 +146,9 @@ function drop_tables () {
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
 
     local tables=""
-    tables=$(${SQL_DBUSER_CMD} -e 'SHOW TABLES' | awk '{print $1}' | grep -v '^Tables' )
+
+
+    tables=$(${SQL_DBUSER_CMD} ${SQL_CMD_OPTIONS} 'SHOW TABLES' | awk '{print $1}' )
     printf "\n";
     for table in $tables
     do
@@ -150,7 +156,7 @@ function drop_tables () {
 	${SQL_DBUSER_CMD} -e "DROP TABLE ${table}"
     done
 
-       __end_func ${func_name};
+    __end_func ${func_name};
 
 }
 			  
@@ -166,9 +172,14 @@ function fill_db() {
     # I would like to add the logic to check whether DB exists or not. So create a new db sql file with 
     # CREATE TABLE IF NOT EXISTS.
     
-    sed "s/CREATE TABLE /CREATE TABLE IF NOT EXISTS /g" ${aa_deploy_db_tables} > ${aa_deploy_db_tables_new};
-    
-    ${SQL_DBUSER_CMD} < ${aa_deploy_db_tables_new};
+    local db_exist=$(isDb)
+    if [[ $db_exist -ne "$EXIST" ]]; then
+	printf "There is no %s in the dababase, please check your enviornment\n" "${DB_NAME}"
+	exit;
+    else
+	sed "s/CREATE TABLE /CREATE TABLE IF NOT EXISTS /g" ${aa_deploy_db_tables} > ${aa_deploy_db_tables_new};
+	${SQL_DBUSER_CMD} < ${aa_deploy_db_tables_new};
+    fi
 
     __end_func ${func_name};
     
@@ -180,7 +191,7 @@ function select_all_from_table_in_db() {
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
 
     local tables=""
-    tables=$(${SQL_DBUSER_CMD} -e 'SHOW TABLES' | awk '{print $1}' | grep -v '^Tables' )
+    tables=$(${SQL_DBUSER_CMD} ${SQL_CMD_OPTIONS} 'SHOW TABLES' | awk '{print $1}' )
     printf "\n";
     for table in $tables
     do
@@ -194,6 +205,68 @@ function select_all_from_table_in_db() {
 }
 
 
+function backup_db() {
+
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    local dbDir=$(checkIfDir ${DB_BACKUP_PATH})
+
+    if [[ $dbDir -ne "$EXIST" ]]; then
+	mkdir -p ${SC_TOP}/${DB_BACKUP_PATH}
+    fi
+
+    ${SQL_BACKUP_CMD} | gzip -9 > "${DB_BACKUP_PATH}/${DB_NAME}_${SC_DATE}.sql.gz"
+    __end_func ${func_name};
+
+}
+
+
+function backup_db_list() {
+
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    local dbDir=$(checkIfDir ${DB_BACKUP_PATH})
+
+    if [[ $dbDir -ne "$EXIST" ]]; then
+	printf "There is no %s, please check your enviornment\n" "${SC_TOP}/${DB_BACKUP_PATH}"
+	exit;
+    fi
+
+    ls -lta ${SC_TOP}/${DB_BACKUP_PATH}
+
+    __end_func ${func_name};
+
+}
+
+
+
+function restore_db() {
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+
+    local date=$1
+
+    gunzip < "${DB_BACKUP_PATH}/${DB_NAME}_${date}.sql.gz" | ${SQL_DBUSER_CMD}
+
+    __end_func ${func_name};
+
+}  
+
+function isDb {
+
+  local dbname=$1
+  local output=$(${SQL_ROOT_CMD}  ${SQL_CMD_OPTIONS} "SELECT schema_name FROM information_schema.schemata WHERE schema_name=\"${dbname}\"")
+
+  local result=""
+  if [[ -z "${output}" ]]; then
+      result=${NON_EXIST} # does not exist
+  else
+      result=${EXIST} # exists
+  fi
+
+  echo "${result}"
+
+}   
+
+
+db_date=$2
 
 case "$1" in
     ssetup_db)
@@ -227,6 +300,18 @@ case "$1" in
     select_all_from_tables)
 	select_all_from_table_in_db
 	;;
+    backup_db)
+	backup_db
+	;;
+    backup_db_list)
+	backup_db_list
+	;;
+    restore_db)
+	restore_db ${db_date}
+	;;
+    isDb)
+	isDb ${DB_NAME}
+	;;
     *)
 
 	echo "">&2
@@ -234,14 +319,17 @@ case "$1" in
 	echo ""
 	echo " Usage: $0 <arg>">&2 
 	echo ""
-        echo "          <arg>       : info">&2 
+        echo "          <arg>             : info">&2 
 	echo ""
-	echo "          show_dbs    : show DBs in    >> ${HOSTNAME} << ">&2
-	echo "          create_db   : create         >> ${DB_NAME} << ">&2
-	echo "          drop_db     : drop           >> ${DB_NAME} << ">&2
-	echo "          fill_db     : fill tables in >> ${DB_NAME} << ">&2
-	echo "          show_tables : show tables in >> ${DB_NAME} << ">&2
-	echo "          drop_tables : drop tables in >> ${DB_NAME} << ">&2
+	echo "          show_dbs          : show DBs in    >> ${HOSTNAME} << ">&2
+	echo "          create_db         : create         >> ${DB_NAME}  << ">&2
+	echo "          drop_db           : drop           >> ${DB_NAME}  << ">&2
+	echo "          fill_db           : fill tables in >> ${DB_NAME}  << ">&2
+	echo "          show_tables       : show tables in >> ${DB_NAME}  << ">&2
+	echo "          drop_tables       : drop tables in >> ${DB_NAME}  << ">&2
+	echo "          backup_db         : backup         >> ${DB_NAME}  << in ${DB_BACKUP_PATH}">&2
+	echo "          backup_db_list    : backup db list >> ${DB_NAME}  << in ${DB_BACKUP_PATH}">&2
+	echo "          restore_db <date> : restore  >> ${DB_NAME}  << ">&2
 	echo "">&2 	
 	exit 0
 esac
