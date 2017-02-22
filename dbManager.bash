@@ -19,14 +19,12 @@
 # Author : Jeong Han Lee
 # email  : jeonghan.lee@gmail.com
 # Date   : 
-# version : 0.0.2
+# version : 0.0.3
 #
 
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
-#declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
-
 declare -gr SC_DATE="$(date +%Y%m%d-%H%M)"
 
 
@@ -45,6 +43,13 @@ declare -g SQL_ROOT_CMD="mysql --user=root --password=${root_pwd}"
 declare -g SQL_DBUSER_CMD="mysql --user=${DB_USER_NAME} --password=${DB_USER_PWD} ${DB_NAME}"
 declare -g SQL_BACKUP_CMD="mysqldump --user=${DB_USER_NAME} --password=${DB_USER_PWD} ${DB_NAME}"
 declare -g SQL_CMD_OPTIONS="--skip-column-names --execute"
+
+
+function no_db_msg() {
+
+    printf "\nThere is no >> %s << in the dababase, please check your SQL enviornment.\n\n" "${DB_NAME}"
+}
+
 
 function db_secure_setup() {
 
@@ -75,11 +80,11 @@ function db_create() {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
 
-    local db_name=$1
-    local db_user_name=$2
-    local db_user_pwd=$3
+    local db_name=${DB_NAME}
+    local db_user_name= ${DB_USER_NAME}
+    local db_user_pwd=${DB_USER_PWD}
     
-    printf "Create the Database %s if not exists...\n" "${DB_NAME}";
+    printf "Create the Database %s if not exists...\n" "${db_name}";
 
     ${SQL_ROOT_CMD} <<EOF
 CREATE DATABASE IF NOT EXISTS ${db_name}; GRANT ALL PRIVILEGES ON ${db_name}.* TO '${db_user_name}'@'localhost' IDENTIFIED BY '${db_user_pwd}';
@@ -92,7 +97,7 @@ EOF
 function db_drop() {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-    local db_name=$1
+    local db_name=${DB_NAME}
     
     printf "Drop the Database %s if not exists...\n" "${db_name}";
 
@@ -106,14 +111,11 @@ EOF
 function show_dbs() {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-
-    local dbs=""
-    
-    dbs=$(${SQL_ROOT_CMD} ${SQL_CMD_OPTIONS} 'SHOW DATABASES' | awk '{print $1}')
+    local dBs=$(${SQL_ROOT_CMD} ${SQL_CMD_OPTIONS} 'SHOW DATABASES' | awk '{print $1}')
 
     printf "\n";
-    
-    for db in $dbs
+
+    for db in $dBs
     do
 	printf ">>>>> %24s was found.\n" "${db}"
     done
@@ -126,14 +128,20 @@ function show_dbs() {
 function show_tables () {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-
     local tables=""
-    tables=$(${SQL_DBUSER_CMD} ${SQL_CMD_OPTIONS} "SHOW TABLES" | awk '{print $1}' )
-    printf "\n";
-    for table in $tables
-    do
-	printf ">>>>> %24s was found.\n" "${table}"
-    done
+    local db_exist=$(isDb);
+    
+    if [[ $db_exist -ne "$EXIST" ]]; then
+	no_db_msg;
+	exit;
+    else
+	tables=$(${SQL_DBUSER_CMD} ${SQL_CMD_OPTIONS} "SHOW TABLES" | awk '{print $1}' )
+	printf "\n";
+	for table in $tables
+	do
+	    printf ">>>>> %24s was found.\n" "${table}"
+	done
+    fi
 
     __end_func ${func_name};
 
@@ -144,18 +152,21 @@ function show_tables () {
 function drop_tables () {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-
-    local tables=""
-
-
-    tables=$(${SQL_DBUSER_CMD} ${SQL_CMD_OPTIONS} 'SHOW TABLES' | awk '{print $1}' )
-    printf "\n";
-    for table in $tables
-    do
-	printf ". %24s was found. Dropping .... \n" "${table}"
-	${SQL_DBUSER_CMD} -e "DROP TABLE ${table}"
-    done
-
+    local tables="";
+    local db_exist=$(isDb);
+    
+    if [[ $db_exist -ne "$EXIST" ]]; then
+	no_db_msg;
+	exit;
+    else
+	tables=$(${SQL_DBUSER_CMD} ${SQL_CMD_OPTIONS} 'SHOW TABLES' | awk '{print $1}' )
+	printf "\n";
+	for table in $tables
+	do
+	    printf ". %24s was found. Dropping .... \n" "${table}"
+	    ${SQL_DBUSER_CMD} -e "DROP TABLE ${table}"
+	done
+    fi
     __end_func ${func_name};
 
 }
@@ -171,10 +182,10 @@ function fill_db() {
     # DB setup is done when we execute it at the very first time, after this, if we run this script again,
     # I would like to add the logic to check whether DB exists or not. So create a new db sql file with 
     # CREATE TABLE IF NOT EXISTS.
+    local db_exist=$(isDb);
     
-    local db_exist=$(isDb)
     if [[ $db_exist -ne "$EXIST" ]]; then
-	printf "There is no %s in the dababase, please check your enviornment\n" "${DB_NAME}"
+	no_db_msg;
 	exit;
     else
 	sed "s/CREATE TABLE /CREATE TABLE IF NOT EXISTS /g" ${aa_deploy_db_tables} > ${aa_deploy_db_tables_new};
@@ -186,19 +197,24 @@ function fill_db() {
 }
 
 
-function select_all_from_table_in_db() {
+function select_all_from_tables_in_db() {
     
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-
-    local tables=""
-    tables=$(${SQL_DBUSER_CMD} ${SQL_CMD_OPTIONS} 'SHOW TABLES' | awk '{print $1}' )
-    printf "\n";
-    for table in $tables
-    do
-	printf ". %24s was found. Selecting all .... \n" "${table}"
-	${SQL_DBUSER_CMD} -e "SELECT * from ${table}"
-    done
-
+    local tables="";
+    local db_exist=$(isDb);
+    
+    if [[ $db_exist -ne "$EXIST" ]]; then
+	no_db_msg;
+	exit;
+    else
+	tables=$(${SQL_DBUSER_CMD} ${SQL_CMD_OPTIONS} 'SHOW TABLES' | awk '{print $1}' )
+	printf "\n";
+	for table in $tables
+	do
+	    printf ". %24s was found. Selecting all .... \n" "${table}"
+	    ${SQL_DBUSER_CMD} --execute "SELECT * from ${table}"
+	done
+    fi
 
     __end_func ${func_name};
     
@@ -208,15 +224,20 @@ function select_all_from_table_in_db() {
 function backup_db() {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-    local dbDir=$(checkIfDir ${DB_BACKUP_PATH})
-
-    if [[ $dbDir -ne "$EXIST" ]]; then
-	mkdir -p ${SC_TOP}/${DB_BACKUP_PATH}
+    local dbDir="";
+    local db_exist=$(isDb);
+    
+    if [[ $db_exist -ne "$EXIST" ]]; then
+	no_db_msg;
+	exit;
+    else
+	dbDir=$(checkIfDir ${DB_BACKUP_PATH})
+	if [[ $dbDir -ne "$EXIST" ]]; then
+	    mkdir -p ${SC_TOP}/${DB_BACKUP_PATH}
+	fi
+	${SQL_BACKUP_CMD} | gzip -9 > "${DB_BACKUP_PATH}/${DB_NAME}_${SC_DATE}.sql.gz"
     fi
-
-    ${SQL_BACKUP_CMD} | gzip -9 > "${DB_BACKUP_PATH}/${DB_NAME}_${SC_DATE}.sql.gz"
     __end_func ${func_name};
-
 }
 
 
@@ -224,9 +245,8 @@ function backup_db_list() {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
     local dbDir=$(checkIfDir ${DB_BACKUP_PATH})
-
     if [[ $dbDir -ne "$EXIST" ]]; then
-	printf "There is no %s, please check your enviornment\n" "${SC_TOP}/${DB_BACKUP_PATH}"
+	printf "\nThere is no >> %s << directory, please check your enviornment.\n\n" "${DB_BACKUP_PATH}"
 	exit;
     fi
 
@@ -239,11 +259,11 @@ function backup_db_list() {
 
 
 function restore_db() {
+    
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    local date=$1;
 
-    local date=$1
-
-    gunzip < "${DB_BACKUP_PATH}/${DB_NAME}_${date}.sql.gz" | ${SQL_DBUSER_CMD}
+    gunzip < "${DB_BACKUP_PATH}/${DB_NAME}_${date}.sql.gz" | ${SQL_DBUSER_CMD} ;
 
     __end_func ${func_name};
 
@@ -251,14 +271,14 @@ function restore_db() {
 
 function isDb {
 
-  local dbname=$1
-  local output=$(${SQL_ROOT_CMD}  ${SQL_CMD_OPTIONS} "SELECT schema_name FROM information_schema.schemata WHERE schema_name=\"${dbname}\"")
+  local dbname=${DB_NAME};
+  local output=$(${SQL_ROOT_CMD} ${SQL_CMD_OPTIONS} "SELECT schema_name FROM information_schema.schemata WHERE schema_name=\"${dbname}\"")
 
   local result=""
   if [[ -z "${output}" ]]; then
       result=${NON_EXIST} # does not exist
   else
-      result=${EXIST} # exists
+      result=${EXIST}     # exists
   fi
 
   echo "${result}"
@@ -273,32 +293,29 @@ case "$1" in
 	db_secure_setup
 	;;
     create_db)
-	db_create ${DB_NAME} ${DB_USER_NAME} ${DB_USER_PWD}
+	db_create 
 	show_dbs
 	;;
     show_dbs)
 	show_dbs
 	;;
     drop_db)
-	db_drop ${DB_NAME}
+	db_drop 
 	show_dbs
 	;;
     fill_db)
-	# Should be ${DB_NAME} already in DB
 	fill_db
 	show_tables
 	;;
     show_tables)
-	# Should be ${DB_NAME} already in DB
 	show_tables
 	;;
     drop_tables)
-	# Should be ${DB_NAME} already in DB
 	drop_tables
 	show_tables
 	;;
     select_all_from_tables)
-	select_all_from_table_in_db
+	select_all_from_tables_in_db
 	;;
     backup_db)
 	backup_db
@@ -310,12 +327,12 @@ case "$1" in
 	restore_db ${db_date}
 	;;
     isDb)
-	isDb ${DB_NAME}
+	isDb
 	;;
     *)
 
 	echo "">&2
-        echo " DB >> ${DB_NAME} << Manager for EPICS Archiver Applance ">&2
+        echo " DB >> ${DB_NAME} << Manager for the EPICS Archiver Applance ">&2
 	echo ""
 	echo " Usage: $0 <arg>">&2 
 	echo ""
@@ -329,7 +346,8 @@ case "$1" in
 	echo "          drop_tables       : drop tables in >> ${DB_NAME}  << ">&2
 	echo "          backup_db         : backup         >> ${DB_NAME}  << in ${DB_BACKUP_PATH}">&2
 	echo "          backup_db_list    : backup db list >> ${DB_NAME}  << in ${DB_BACKUP_PATH}">&2
-	echo "          restore_db <date> : restore  >> ${DB_NAME}  << ">&2
+	echo "          restore_db <date> : restore db     >> ${DB_NAME}  << ">&2
+	echo "          select_all_from_tables_in_db       >> ${DB_NAME}  << ">&2
 	echo "">&2 	
 	exit 0
 esac
