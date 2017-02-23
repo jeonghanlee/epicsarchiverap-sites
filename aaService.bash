@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.6
+# version : 0.9.7
 #
 # 
 ROOT_UID=0  
@@ -131,8 +131,9 @@ function status() {
 
 function stroage_status() {
 
+    local all=$1
     printf "\n>>>> Stroage Status at %s\n\n" "${SC_LOGDATE}";
-    du -ck --time ${ARCHAPPL_STORAGE_TOP};
+    du --total --human-readable --time --${all} ${ARCHAPPL_STORAGE_TOP};
     printf "\n";
 
 }
@@ -196,7 +197,14 @@ case "$1" in
 	status
 	;;
     stroage)
-	stroage_status
+	case "$2" in
+	    all) 
+		stroage_status "$2"
+		;;
+	    *)
+		stroage_status 
+		;;
+	esac
 	;;
     *)
 	echo "Usage: $0 {start|stop|restart|status|stroage}"

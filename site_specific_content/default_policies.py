@@ -50,7 +50,7 @@ def getFieldsArchivedAsPartOfStream():
 shorttermstore_plugin_url  = 'pb://localhost?name=STS&rootFolder=${ARCHAPPL_SHORT_TERM_FOLDER}&partitionGranularity=PARTITION_HOUR&consolidateOnShutdown=true'
 mediumtermstore_plugin_url = 'pb://localhost?name=MTS&rootFolder=${ARCHAPPL_MEDIUM_TERM_FOLDER}&partitionGranularity=PARTITION_DAY&hold=2&gather=1'
 longtermstore_plugin_url   = 'pb://localhost?name=LTS&rootFolder=${ARCHAPPL_LONG_TERM_FOLDER}&partitionGranularity=PARTITION_YEAR'
-#longtermstore_plugin_url = 'blackhole://localhost'
+longtermstore_blackhole_plugin_url = 'blackhole://localhost?name=LTS'
 
 def determinePolicy(pvInfoDict):
 	pvPolicyDict = {}
@@ -95,7 +95,7 @@ def determinePolicy(pvInfoDict):
 			shorttermstore_plugin_url, 
 			# We want to store 3 days worth of data in the MTS.
 			'pb://localhost?name=MTS&rootFolder=${ARCHAPPL_MEDIUM_TERM_FOLDER}&partitionGranularity=PARTITION_DAY&hold=4&gather=1', 
-			'blackhole://localhost?name=LTS'
+                        longtermstore_blackhole_plugin_url
 			]
 		pvPolicyDict['policyName'] = '2HzPVs';
 	else:

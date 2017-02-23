@@ -347,7 +347,7 @@ case "$1" in
 	echo "          backup_db         : backup         >> ${DB_NAME}  << in ${DB_BACKUP_PATH}">&2
 	echo "          backup_db_list    : backup db list >> ${DB_NAME}  << in ${DB_BACKUP_PATH}">&2
 	echo "          restore_db <date> : restore db     >> ${DB_NAME}  << ">&2
-	echo "          select_all_from_tables_in_db       >> ${DB_NAME}  << ">&2
+	echo "          select_all_from_tables             >> ${DB_NAME}  << ">&2
 	echo "">&2 	
 	exit 0
 esac
