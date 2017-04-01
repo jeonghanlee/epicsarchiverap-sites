@@ -118,8 +118,9 @@ function status() {
     printf "     LD_LIBRARY_PATH %s\n" "${LD_LIBRARY_PATH}";
     printf "     EPICS_CA_ADDR_LIST %s\n" "${EPICS_CA_ADDR_LIST}";
     printf "\n";
-    systemctl is-active firewalld >/dev/null 2>&1 && printf "\n\n>>>> FIREWALLD IS RUNNING!!!! \n"
-    printf "\n>>>> Status outputs \n" ;
+    systemctl is-active firewalld >/dev/null 2>&1 && printf "\n>>>> FIREWALLD IS RUNNING!!!! IS IT RIGHT?\n"
+    printf "\n";
+    printf ">>>> Status outputs \n" ;
     printf "   > Web url \n";
     printf "     http://%s:17665/mgmt/ui/index.html\n" "${_HOST_NAME}";
     printf "                         OR\n";

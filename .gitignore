@@ -46,4 +46,5 @@ doc_*
 *.snm
 #*
 *.jar
-
+db
+test*
