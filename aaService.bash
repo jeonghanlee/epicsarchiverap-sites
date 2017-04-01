@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-#  Copyright (c) 2016 Jeong Han Lee
-#  Copyright (c) 2016 European Spallation Source ERIC
+#  Copyright (c) 2016 - Present Jeong Han Lee
+#  Copyright (c) 2016 - Present European Spallation Source ERIC
 #
 #  The program is free software: you can redistribute
 #  it and/or modify it under the terms of the GNU General Public License
@@ -47,6 +47,8 @@ function startTomcatAtLocation() {
     export CATALINA_HOME=$TOMCAT_HOME
     export CATALINA_BASE=${SERVICE_TOP}/${SERVICE_NAME};
 
+
+    
     echo ""
     echo ">> Starting TOMCAT at ${CATALINA_BASE}"
 
@@ -67,6 +69,10 @@ function startTomcatAtLocation() {
         -pidfile ${CATALINA_BASE}/pid \
         org.apache.catalina.startup.Bootstrap start
     popd
+
+    # make sure, ${TOMCAT_USER} can write something in ${ARCHAPPL_STROAGE_TOP}
+    chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_STORAGE_TOP}
+    # make sure, ${TOMCAT_USER} can write something in ${CATALINA}/logs 
     chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${CATALINA_BASE}/logs
     # An user with ${TOMCAT_CROUP} can stop the service in the following 
     # chown ${TOMCAT_USER}.${TOMCAT_GROUP} ${CATALINA_BASE}/pid
@@ -112,7 +118,8 @@ function status() {
     printf "     LD_LIBRARY_PATH %s\n" "${LD_LIBRARY_PATH}";
     printf "     EPICS_CA_ADDR_LIST %s\n" "${EPICS_CA_ADDR_LIST}";
     printf "\n";
-    printf ">>>> Status outputs \n" ;
+    systemctl is-active firewalld >/dev/null 2>&1 && printf "\n\n>>>> FIREWALLD IS RUNNING!!!! \n"
+    printf "\n>>>> Status outputs \n" ;
     printf "   > Web url \n";
     printf "     http://%s:17665/mgmt/ui/index.html\n" "${_HOST_NAME}";
     printf "                         OR\n";
@@ -158,6 +165,7 @@ function start() {
     checkIfArchappl
     checkIfRoot;
 
+    
     for service in ${tomcat_services[@]}; do
 	startTomcatAtLocation "${ARCHAPPL_TOP}" "${service}";
     done
