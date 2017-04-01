@@ -18,7 +18,7 @@
 #
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
-# Date   : 
+# Date   : Saturday, April  1 22:45:45 CEST 2017
 # version : 0.2.3
 #
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -169,6 +169,18 @@ function __system_ctl_enable_start(){
     __end_func ${func_name};
 }
 
+function __system_ctl_stop_disable(){
+    
+    local func_name=${FUNCNAME[*]};  __ini_func ${func_name};
+
+    printf "Stop and Disable the following service(s) : %s\n" "${1}";
+
+    ${SUDO_CMD} systemctl start ${1}.service;
+    ${SUDO_CMD} systemctl disable ${1}.service;
+
+    __end_func ${func_name};
+}
+
 
 
 function mariadb_setup() {
@@ -292,6 +304,8 @@ function packages_preparation_for_archappl(){
 
     __system_ctl_enable_start "ntpd mariadb tomcat"
 
+    
+
     # ${SUDO_CMD} usermod -a -G ${tomcat_group} ${_USER_NAME};
     # ${SUDO_CMD} ln -sf ${TOMCAT_HOME}/${MARIADB_CONNECTORJ_JAR} ${TOMCAT_LIB}/${MARIADB_CONNECTORJ_JAR}
     
@@ -342,14 +356,18 @@ function disable_virbro0() {
     __end_func ${func_name};
 }
 
-# firewalld has the strange behaviours, which I don't understand how it works with EPICS IOC and Archappl,
-# Since ESS has a clear rule (no firewall) inside the control network, I turn off it completely and leave the
-# empty function for reference.
 
-function firewall_setup_for_ca() {
+# To understand firewalld service in CentOS is painful. And ESS has the clear rule in the control network.
+# Thus, I stop and disable firewalld now. 
+# Saturday, April  1 22:42:55 CEST 2017, jhlee
+
+
+function disable_firewalld() {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
 
+    __system_ctl_stop_disable "firewalld"
+    
     __end_func ${func_name};
 }
 
@@ -359,13 +377,13 @@ function firewall_setup_for_ca() {
 #
 #
 
-checkIfArchappl
+checkIfArchappl;
 
 declare EPICS_LOG=${SC_TOP}/epics.log;
 
 . ${SC_TOP}/setEnvAA.bash
 
-sudo_start
+sudo_start;
 
 # root
 preparation;
@@ -377,17 +395,20 @@ packages_preparation_for_archappl;
 #
 prepare_storage;
 
+disable_firewalld;
+
 # an user
 printf "EPICS Base installation is ongoing in background process\n";
 printf "The installation log is %s\n" "${EPICS_LOG}";
+
 ( epics_setup&>${EPICS_LOG})&
 epics_proc=$!
 nice xterm -title "EPICS Installation Status" -geometry 140x15+0+0  -e "nice watch -n 2 tail -n 10 ${EPICS_LOG}"&
 
 
-mariadb_setup
+mariadb_setup;
 
-disable_virbro0
+disable_virbro0;
 
 
 printf "\nMariaDB Setup is done. And the option %s is selected \n" "$1";
