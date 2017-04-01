@@ -175,7 +175,7 @@ function __system_ctl_stop_disable(){
 
     printf "Stop and Disable the following service(s) : %s\n" "${1}";
 
-    ${SUDO_CMD} systemctl start ${1}.service;
+    ${SUDO_CMD} systemctl stop ${1}.service;
     ${SUDO_CMD} systemctl disable ${1}.service;
 
     __end_func ${func_name};
@@ -366,7 +366,7 @@ function disable_firewalld() {
 
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
 
-    __system_ctl_stop_disable "firewalld"
+     __system_ctl_stop_disable "firewalld"
     
     __end_func ${func_name};
 }

@@ -1,7 +1,7 @@
 # -*- mode: sh -*-
 #
-#  Copyright (c) 2016 Jeong Han Lee
-#  Copyright (c) 2016 European Spallation Source ERIC
+#  Copyright (c) 2016 - Present Jeong Han Lee
+#  Copyright (c) 2016 - Present European Spallation Source ERIC
 #
 #  The program is free software: you can redistribute
 #  it and/or modify it under the terms of the GNU General Public License
@@ -17,9 +17,10 @@
 #  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
 #
 #  Author  : Jeong Han Lee
-#  Email   : han.lee@esss.se
-#  Date    : Monday, January 30 11:19:13 CET 2017
-#  Version : 0.0.2
+#  Email   : jeonghan.lee@gmail.com
+
+#  Date    : Thursday, March 30 13:55:51 CEST 2017
+#  Version : 0.0.5
 
 
 ROOT_UID=0 
@@ -223,3 +224,68 @@ function checkIfDir() {
     echo "${result}"
 
 }
+
+function checkIfFile() {
+
+    local file=$1
+    local result=""
+    if [ ! -e "$file" ]; then
+	result=$NON_EXIST
+	# doesn't exist
+    else
+	result=$EXIST
+	# exist
+    fi
+    echo "${result}"	 
+}
+
+
+
+function checkIfVar() {
+
+    local var=$1
+    local result=""
+    if [ -z "$var" ]; then
+	result=$NON_EXIST
+	# doesn't exist
+    else
+	result=$EXIST
+	# exist
+    fi
+    echo "${result}"	 
+}
+
+
+# This function is really dangerous
+# use it at your risk.
+
+function removeAllFiles() {
+    
+    local dir=$1
+
+    if [ -z "$dir" ]; then
+	printf "%s should be defined fisrt\n";
+	exit
+    fi
+
+    
+    if [ ! -d "$dir" ]; then
+	echo "No $dir" 
+	exit
+    else
+	dir1=/tmp/dummpy_$RANDOM
+	mkdir -p $dir1
+	rsync -a --delete $dir1 $dir
+	
+	rm -rf $dir1
+	rm -rf $dir
+    fi
+}
+
+
+function command_exists() {
+    
+    command -v "$1" >/dev/null 2>&1
+    
+}
+
