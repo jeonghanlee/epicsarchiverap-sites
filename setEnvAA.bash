@@ -18,7 +18,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.1.3
+# version : 0.1.4
 
 export THIS_SCRIPT=$(realpath "$0")
 export THIS_TOP="$(dirname "$THIS_SCRIPT")"
@@ -29,7 +29,7 @@ export THIS_TOP="$(dirname "$THIS_SCRIPT")"
 
 declare hostname_cmd="$(hostname)"
 export  _HOST_NAME="$(tr -d ' ' <<< $hostname_cmd )"
-export  _HOST_IP="$(ping -n  -c 1 ${_HOST_NAME} | awk 'BEGIN {FS="[=]|[ ]"} NR==2 {print $4}' | cut -d: -f1)";
+export  _HOST_IP="$(ip -4 route get 8.8.8.8 | awk {'print $7'} | tr -d '\n')";
 export  _USER_NAME="$(whoami)"
 
 
