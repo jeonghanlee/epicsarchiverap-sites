@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-#  Copyright (c) 2016 Jeong Han Lee
-#  Copyright (c) 2016 European Spallation Source ERIC
+#  Copyright (c) 2016 - Present Jeong Han Lee
+#  Copyright (c) 2016 - Present European Spallation Source ERIC
 #
 #  The program is free software: you can redistribute
 #  it and/or modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.2.3-rc3
+# version : 0.2.3
 #
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME="$(basename "$SC_SCRIPT")"
@@ -369,10 +369,13 @@ sudo_start
 
 # root
 preparation;
-prepare_storage;
 
 # root
 packages_preparation_for_archappl;
+
+# TOMCAT GROUP / USER should be ready before preparing a stroage
+#
+prepare_storage;
 
 # an user
 printf "EPICS Base installation is ongoing in background process\n";
