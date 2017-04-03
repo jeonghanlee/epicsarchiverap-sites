@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : Thursday, February 16 15:03:29 CET 2017
-# version : 0.9.8-rc0
+# version : 0.9.8-rc1
 #
 # 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -140,11 +140,9 @@ echo "Done deploying a new release from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}"
 
 ##
 ##
-## Change owner and its group recursively in the archappl directory
-## The symbolic link stays as root.root
+## Change owner and its group any new added files in the archappl directory
 ##
 ${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_TOP}/
-# ${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_STORAGE_TOP}
 
 ${SUDO_CMD} -k;
 

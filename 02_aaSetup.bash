@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.8-rc0
+# version : 0.9.8-rc1
 #
 #
 # Generic : Global variables - read-only
@@ -35,24 +35,43 @@ declare -gr SUDO_CMD="sudo";
 declare -g SUDO_PID="";
 
 
+
+function prepare_storage() {
+
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+    __checkstr ${SUDO_CMD};
+    
+    printf "\n.... Make STS/MTS/LTS dirs at ARCHAPPL_STORAGE_TOP as %s\n" "${ARCHAPPL_STORAGE_TOP}";
+    ${SUDO_CMD} mkdir -p {${ARCHAPPL_SHORT_TERM_FOLDER},${ARCHAPPL_MEDIUM_TERM_FOLDER},${ARCHAPPL_LONG_TERM_FOLDER}};
+    printf ".... Change its owner to %s\n" "${TOMCAT_USER}"
+    ${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_STORAGE_TOP}
+    printf ".... It is recommended to check the permission in %s\n\n" "${ARCHAPPL_STORAGE_TOP}"
+       tree -pug  -L 2 ${ARCHAPPL_STORAGE_TOP};
+
+    __end_func ${func_name};
+}
+
+
+
 function tomcat_user_conf() {
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
     
+    printf "\n.... Creating >> %s << user for Archappl at %s .... \n" "${TOMCAT_USER}" "${TOMCAT_USER_HOME}"
     ${SUDO_CMD} useradd -g nobody -s /sbin/nologin -d ${TOMCAT_USER_HOME} ${TOMCAT_USER}
-    ${SUDO_CMD} -u ${TOMCAT_USER}  mkdir -p ${TOMCAT_USER_HOME}
+    ${SUDO_CMD} mkdir -p ${TOMCAT_USER_HOME}
 
+    printf ".... Add the user >> %s << to to %s ... \n" "${_USER_NAME}" "${TOMCAT_GROUP}"
     # add the user to tomcat group 
     ${SUDO_CMD} usermod -a -G ${TOMCAT_GROUP} ${_USER_NAME};
 
+   
+    ## Change owner and its group recursively in the archappl directory.
+    ## Symbolic link also has the TOMCAT_USER.TOMCAT_GROUP
     ##
-    ##
-    ## Change owner and its group recursively in the archappl directory
-    ## The symbolic link stays as root.root
-    ##
-    ${SUDO_CMD} chown ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_TOP}
-    ${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_STORAGE_TOP}
-
-    __end_func ${func_name};
+    printf ".... Changing %s ownership with %s\n" "${ARCHAPPL_TOP}" "${TOMCAT_USER}"
+    ${SUDO_CMD} chown -h ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_TOP}
+    ${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_TOP}/
+     __end_func ${func_name};
 }
 
 
@@ -61,7 +80,6 @@ checkIfArchappl
 ${SUDO_CMD} -v
 
 . ${SC_TOP}/setEnvAA.bash
-
 
 
 
@@ -85,16 +103,12 @@ fi
 
 declare -r SC_DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE};
 
-${SUDO_CMD} -u ${TOMCAT_USER}  mkdir -p ${SC_DEPLOY_DIR}
+${SUDO_CMD}  mkdir -p ${SC_DEPLOY_DIR}
 
 ${SUDO_CMD} ln -s ${SC_DEPLOY_DIR} ${ARCHAPPL_TOP}
 
 
 popd
-
-
-
-tomcat_user_conf
 
 
 
@@ -289,6 +303,17 @@ EOF
 #
 ${SUDO_CMD} mv ${tomcat_context_container} ${ARCHAPPL_TOP}/mgmt/conf/ ; 
 popd
+
+
+# We put everything in /opt/archappl before this line, 
+# So, it is now change the owner of this directory
+# to TOMCAT USER
+
+tomcat_user_conf;
+
+# TOMCAT GROUP / USER should be ready before preparing a stroage
+#
+prepare_storage;
 
 
 
