@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-#  Copyright (c) 2016 Jeong Han Lee
-#  Copyright (c) 2016 European Spallation Source ERIC
+#  Copyright (c) 2016 - Present Jeong Han Lee
+#  Copyright (c) 2016 - Present European Spallation Source ERIC
 #
 #  The program is free software: you can redistribute
 #  it and/or modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : 
-# version : 0.9.7
+# version : 0.9.8-rc0
 #
 #
 # Generic : Global variables - read-only
@@ -39,10 +39,19 @@ function tomcat_user_conf() {
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
     
     ${SUDO_CMD} useradd -g nobody -s /sbin/nologin -d ${TOMCAT_USER_HOME} ${TOMCAT_USER}
-    ${SUDO_CMD} mkdir -p ${TOMCAT_USER_HOME}
+    ${SUDO_CMD} -u ${TOMCAT_USER}  mkdir -p ${TOMCAT_USER_HOME}
 
     # add the user to tomcat group 
     ${SUDO_CMD} usermod -a -G ${TOMCAT_GROUP} ${_USER_NAME};
+
+    ##
+    ##
+    ## Change owner and its group recursively in the archappl directory
+    ## The symbolic link stays as root.root
+    ##
+    ${SUDO_CMD} chown ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_TOP}
+    ${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_STORAGE_TOP}
+
     __end_func ${func_name};
 }
 
@@ -52,6 +61,8 @@ checkIfArchappl
 ${SUDO_CMD} -v
 
 . ${SC_TOP}/setEnvAA.bash
+
+
 
 
 printf "\n%s\n" "->"
@@ -74,14 +85,17 @@ fi
 
 declare -r SC_DEPLOY_DIR=${ARCHAPPL_TOP}-${SC_LOGDATE};
 
-${SUDO_CMD} mkdir -p ${SC_DEPLOY_DIR}
+${SUDO_CMD} -u ${TOMCAT_USER}  mkdir -p ${SC_DEPLOY_DIR}
 
 ${SUDO_CMD} ln -s ${SC_DEPLOY_DIR} ${ARCHAPPL_TOP}
+
 
 popd
 
 
+
 tomcat_user_conf
+
 
 
 

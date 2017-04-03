@@ -143,8 +143,8 @@ echo "Done deploying a new release from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}"
 ## Change owner and its group recursively in the archappl directory
 ## The symbolic link stays as root.root
 ##
-${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_TOP}
-${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_STORAGE_TOP}
+${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_TOP}/
+# ${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_STORAGE_TOP}
 
 ${SUDO_CMD} -k;
 
