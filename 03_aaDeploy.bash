@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-#  Copyright (c) 2016 Jeong Han Lee
-#  Copyright (c) 2016 European Spallation Source ERIC
+#  Copyright (c) 2016 - Present Jeong Han Lee
+#  Copyright (c) 2016 - Present European Spallation Source ERIC
 #
 #  The program is free software: you can redistribute
 #  it and/or modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : han.lee@esss.se
 # Date   : Thursday, February 16 15:03:29 CET 2017
-# version : 0.9.7
+# version : 0.9.8-rc0
 #
 # 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -143,8 +143,8 @@ echo "Done deploying a new release from ${WARSRC_DIR} onto ${ARCHAPPL_TOP}"
 ## Change owner and its group recursively in the archappl directory
 ## The symbolic link stays as root.root
 ##
-${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_TOP}/
-
+${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_TOP}
+${SUDO_CMD} chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_STORAGE_TOP}
 
 ${SUDO_CMD} -k;
 
