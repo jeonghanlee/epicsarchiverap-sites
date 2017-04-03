@@ -70,11 +70,8 @@ function startTomcatAtLocation() {
         org.apache.catalina.startup.Bootstrap start
     popd
 
-    # Move all chown into 03_aaDeploy.bash
-    # make sure, ${TOMCAT_USER} can write something in ${ARCHAPPL_STROAGE_TOP}
-    # chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${ARCHAPPL_STORAGE_TOP}
     # make sure, ${TOMCAT_USER} can write something in ${CATALINA}/logs 
-    #    chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${CATALINA_BASE}/logs
+    chown -R ${TOMCAT_USER}.${TOMCAT_GROUP} ${CATALINA_BASE}/logs
     # An user with ${TOMCAT_CROUP} can stop the service in the following 
     # chown ${TOMCAT_USER}.${TOMCAT_GROUP} ${CATALINA_BASE}/pid
     chmod 640 ${CATALINA_BASE}/logs/${SERVICE_NAME}_catalina.out
