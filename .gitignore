@@ -8,8 +8,8 @@ retrieval.war
 .#*
 *~
 epicsarchiverap
-epicsarchiverap-*
-epicsarchiverap_*
+epicsarchiverap-[0-9]*
+epicsarchiverap_[0-9]*
 mariadb-connector*
 *.out
 *.log
