@@ -66,7 +66,8 @@ Timestamp               modificationTime       : [RDB] TBD
 boolean                 paused                 : [RDB] TBD
 &gt;&gt;
 float                   samplingPeriod         : [RDB] samplingPeriod, should be defined in policies.py
-                                                 samplingPeriod&#39;s unit is [bytes / event count], so it is related with the computedBytesPerEvent
+                                                 samplingPeriod&#39;s unit is [bytes / event count], so it is related
+                                                 with the computedBytesPerEvent
 &gt;&gt;
 SamplingMethod          samplingMethod         : [RDB] samplingMethod, should be defined in policies.py
                                                  enum SamplingMethod { SCAN, MONITOR, DONT_ARCHIVE }
@@ -86,7 +87,9 @@ boolean                 usePVAccess            : [RDB] If PV has the V4\_PREFIX 
 &gt;&gt;
 String                  controllingPV          : [??] controlPV, should be defined in policies.py
                                                  Another PV that can be used to conditionally archive the PV.
-boolean                 useDBEProperties       : [??] DBE\_PROPERTY, this event will be triggered by the IOC whenever the properties (extended attributes) of the channel change</code></pre>
+&gt;&gt;
+boolean                 useDBEProperties       : [??] DBE\_PROPERTY, this event will be triggered by the IOC whenever the properties
+                                                 (extended attributes) of the channel change</code></pre>
 <h2 id="epics-record-field-data">EPICS Record Field Data</h2>
 <pre><code>* .NAME : EPICS Record Name
 * .ADEL : EPICS monitor parameters - Archive Deadband used by archiver monitors
