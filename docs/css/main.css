@@ -1,0 +1,126 @@
+html {
+  background: white;
+}
+
+/* site_header */
+
+body {
+    color: black;
+    width: 1024px; 
+    margin: 0 auto;
+    padding-bottom: 50px;
+    font-family: Helvetica,Arial,'Liberation Sans',FreeSans,sans-serif;
+    font-size: 14px;
+    /* background-color: #029FE0; */
+    
+}
+
+.page {
+    min-height: 600px;
+}
+
+.pageheader {
+    height: 110px;
+    background-color: #029FE0;
+}
+
+
+.apptitle {
+    padding-left: 1.00em;
+    padding-top: 1.0em;
+    font-family: Helvetica,sans-serif;
+    color: white;
+    font-size: 2em;
+    display: inline-block;
+    font-weight: bold;
+    float:left;
+}
+
+#siteimages{
+    float: right;
+    padding-top: 0.5em;
+}
+
+/* site_navbar */
+
+
+
+.navbar{
+    background-color: #029FE0;
+}
+
+.nav {
+    border-top-style: solid;
+    border-top-color: white;
+    border-top-width: 0.0625em;
+    border-bottom-style: solid;
+    border-bottom-color: white;
+    border-bottom-width: 0.5em;
+    
+}
+
+ul.mainmenu {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+
+}
+
+/* Float the list items side by side */
+ul.mainmenu li {
+    float: left;
+}
+
+
+
+/* Style the links inside the list items */
+ul.mainmenu li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 0.875em 1em;
+    text-decoration: none;
+    transition: 0.5s;
+    font-size: 1em;
+}
+
+
+/* Change background color of links on hover */
+ul.mainmenu li a:hover {
+    background-color:#1272A9;
+    /* #357EC7; */
+}
+
+ul.mainmenu li a.active {
+    border-style: solid;
+    border-color: white;
+    border-width: 0.0625em;
+}
+
+
+/* Hide the list item that contains the link that should open and close the topnav on small screens */
+ul.mainmenu li.icon {
+    display: none;
+}
+
+
+    
+.page p {
+    font-size: 1em;
+    line-height: 1.25em;
+    margin: 1.25em 1.25em 1em 0em;
+    text-align: justify;
+}
+
+
+/* .page p:first-letter { */
+/*     font-size: 3.5em; */
+/*     line-height: 1em; */
+/* } */
+
+/* .page p + p:first-letter { */
+/*     font-size: 1em; */
+/*     line-height: 1.25em; */
+/* } */
+
