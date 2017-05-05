@@ -1,0 +1,113 @@
+<h1 id="the-data-that-the-archiver-appliance-holds">The data that the Archiver Appliance holds</h1>
+<h1 id="motivation">Motivation</h1>
+<p>The Archiver Appliance (Archappl) collects the PV value, and its time stamp. It is the self-evidence. But I couldn't answer if we ask ourselves in the following question: Are they any other data which Archappl could archive? And I've got the same or similar questions from many others. Of course, we should know what kind of data we are collecting through the Archappl. So, here is the first trial to answer this question.</p>
+<h1 id="archiving-data-per-a-process-variable-pv">Archiving Data per a Process Variable (PV)</h1>
+<p>The actual data are saving in the archiver appliance may use many variables defined in PVTypeInfo. One can look at its java source in ./src/main/org/epics/archiverappliance/config/PVTypeInfo.java. Some data are transferred MetaInfo.java to PVTypeInfo within PVTypeInfo class. Please see in ./src/main/org/epics/archiverappliance/config/MetaInfo.java if one would like to see MetaInfo itself.</p>
+<p>Note that [RDB] represents that the variable is recorded in MySQL or Maria Database and [EPICSR] does the variable comes from the EPICS Record field.</p>
+<pre><code>Data Type               Variable               : Comments
+&gt;&gt;
+&gt;&gt;
+String                  pvName                 : [RDB] the name of PV 
+&gt;&gt;
+ArchDBRTypes            DBRType                : [RDB] The DBRType of the PV
+                                                 Enum ArchDBRTypes
+                                                 &gt;&gt;&gt; DBR_SCALAR_BYTE
+                                                 &gt;&gt;&gt; DBR_SCALAR_DOUBLE 
+                                                 &gt;&gt;&gt; DBR_SCALAR_ENUM 
+                                                 &gt;&gt;&gt; DBR_SCALAR_FLOAT 
+                                                 &gt;&gt;&gt; DBR_SCALAR_INT 
+                                                 &gt;&gt;&gt; DBR_SCALAR_SHORT 
+                                                 &gt;&gt;&gt; DBR_SCALAR_STRING 
+                                                 &gt;&gt;&gt; DBR_V4_GENERIC_BYTES 
+                                                 &gt;&gt;&gt; DBR_WAVEFORM_BYTE 
+                                                 &gt;&gt;&gt; DBR_WAVEFORM_DOUBLE 
+                                                 &gt;&gt;&gt; DBR_WAVEFORM_ENUM 
+                                                 &gt;&gt;&gt; DBR_WAVEFORM_FLOAT 
+                                                 &gt;&gt;&gt; DBR_WAVEFORM_INT 
+                                                 &gt;&gt;&gt; DBR_WAVEFORM_SHORT 
+                                                 &gt;&gt;&gt; DBR_WAVEFORM_STRING
+&gt;&gt;                                               
+boolean                 isScalar               : [RDB as scalar] Is this a scalar? True, if elementCount = 1
+&gt;&gt;
+int                     elementCount           : [RDB][EPICSR] .NELM
+&gt;&gt;
+String                  applianceIdentity      : [RDB] Which appliance owns this PV
+                                                 Within &lt;identity&gt; &lt;/identity&gt; in appliances.xml file
+&gt;&gt;
+String                  hostName               : [RDB] IOC where this PV came from last time.
+&gt;&gt;
+&gt;&gt; Info from the dbr_ctrl structures
+double                  lowerAlarmLimit        : [RDB][EPICSR] .LOLO 
+double                  lowerCtrlLimit         : [RDB][EPICSR] .DRVL
+double                  lowerDisplayLimit      : [RDB][EPICSR] .LOPR
+double                  lowerWarningLimit      : [RDB][EPICSR] .LOW
+double                  upperAlarmLimit        : [RDB][EPICSR] .HIHI
+double                  upperCtrlLimit         : [RDB][EPICSR] .DRVH
+double                  upperDisplayLimit      : [RDB][EPICSR] .HOPR
+double                  upperWarningLimit      : [RDB][EPICSR] .HIGH
+double                  precision              : [RDB][EPICSR] .PREC
+double                  units                  : [RDB][EPICSR] .EGU
+&gt;&gt;
+&gt;&gt; 
+float                   computedEventRate      : [RDB] event count / second 
+                                                 The sampled event rate in events per second.
+&gt;&gt;
+float                   computedStorageRate    : [RDB] bytes / second 
+                                                 The sampled storage in bytes per seconds.
+&gt;&gt;
+int                     computedBytesPerEvent  : [RDB] computedStorageRate / computedEventRate
+&gt;&gt;
+float                   userSpecifiedEventRate : [RDB] TBD
+&gt;&gt;
+Timestamp               creationTime           : [RDB] TBD
+&gt;&gt;
+Timestamp               modificationTime       : [RDB] TBD
+&gt;&gt;
+boolean                 paused                 : [RDB] TBD
+&gt;&gt;
+float                   samplingPeriod         : [RDB] samplingPeriod, should be defined in policies.py
+                                                 samplingPeriod&#39;s unit is [bytes / event count], so it is related with the computedBytesPerEvent
+&gt;&gt;
+SamplingMethod          samplingMethod         : [RDB] samplingMethod, should be defined in policies.py
+                                                 enum SamplingMethod { SCAN, MONITOR, DONT_ARCHIVE }
+&gt;&gt;
+String                  policyName             : [RDB] policyName, should be defined in policies.py
+&gt;&gt;
+String[]                dataStores             : [RDB] dataStores, should be defined in policies.py 
+                                                 An array of StoragePlugin URL&#39;s that can be parsed by StoragePluginURLParser.
+                                                 These form the stages of data storage for the PV. For example, STS, MTS, and LTS. 
+&gt;&gt;
+HashMap&lt;String, String&gt; extraFields            : [RDB][EPICSR] .ADEL, .MDEL, .SCAN, .NAME, .RTYP
+&gt;&gt;
+String[]                archiveFields          : [RDB] should be defined in policies.py according to RTYP
+                                                 A optional array of fields that will be archived as part of archiving the .VAL field for this PV
+&gt;&gt;
+boolean                 usePVAccess            : [RDB] If PV has the V4\_PREFIX = &quot;pva://&quot;, it is True (See PVNames.java)
+&gt;&gt;
+String                  controllingPV          : [??] controlPV, should be defined in policies.py
+                                                 Another PV that can be used to conditionally archive the PV.
+boolean                 useDBEProperties       : [??] DBE\_PROPERTY, this event will be triggered by the IOC whenever the properties (extended attributes) of the channel change</code></pre>
+<h2 id="epics-record-field-data">EPICS Record Field Data</h2>
+<pre><code>* .NAME : EPICS Record Name
+* .ADEL : EPICS monitor parameters - Archive Deadband used by archiver monitors
+* .MDEL : EPICS monitor parameters - Monitor Deadband used for all other types of monitors
+* .SCAN : EPICS record common field 
+* .RTYP : EPICS record psudo field - Record type name
+* .LOLO : lower alarm limit
+* .DRVL : lower control limit
+* .LOPR : lower display limit
+* .LOW  : lower warning limit
+* .HIHI : upper alarm limit
+* .DRVH : upper control limit
+* .HOPR : upper display limit
+* .HIGH : upper warning limit
+* .PREC : precision
+* .EGU  : unit
+* .NELM : element count of the PV&#39;s value, are defined in aaoRecord, aaiRecord, subArrayRecord, histogramRecord, waveformRecord
+</code></pre>
+<h1 id="contact">Contact</h1>
+<ul>
+<li>author : Jeong Han Lee</li>
+<li>email : han.lee@esss.se</li>
+<li>revision : v0.1</li>
+</ul>

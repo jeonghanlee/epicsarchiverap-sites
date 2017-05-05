@@ -1,8 +1,50 @@
----
-layout: default
-title: Site-Specific EPICS Archiver Appliance 
----
-<div class="blurb">
-	<h1>Hi there, I'm Jeong Han Lee!</h1>
-	<p>I'm working to update this site. </p>
-</div><!-- /.blurb -->
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- https://developers.google.com/speed/libraries/  -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="/css/main.css">
+   <script> 
+    $(function(){
+    $("#includedMainContent").load("aa_site.html");
+    $("#includedDataContent").load("data_in_aa.html"); 
+    });
+</scrpit>
+  
+</head>
+
+<body>
+
+<div class="pageheader">
+<span class="apptitle" id="archiveInstallationTitle">Site Specific EPICS Archiver Appliance Guide</span>
+<span id="siteimages"><a href="https://europeanspallationsource.se/"><img src="/img/ESS_Logo_Frugal_White-on-blue_cmyk.png" width="159px" height="100px"></img></a></span>
+</div>
+
+<div class="navbar">
+<div class="nav">
+<ul class="mainmenu">
+<li><a href="index.html">Home</a></li>
+<li><a href="about.html">About</a></li>
+<li><a href="https://github.com/jeonghanlee/epicsarchiverap-sites">github.com</a></li>
+</ul>
+</div>
+</div>
+
+<div class="container">
+  
+ <div id="includedMainContent"></div>
+ <div id="includedDataContent"></div>
+</div><!-- /.container -->
+
+  <footer>
+    <ul>
+      <li><a href="mailto:jeonghan.lee@gmail.com">email</a></li>
+      <li><a href="https://github.com/jeonghanlee/epicsarchiverap-sites">github.com/jeonghanlee/epicsarchiverap-sites</a></li>
+    </ul>
+  </footer>
+</body>
+</html>
