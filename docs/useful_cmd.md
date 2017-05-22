@@ -12,7 +12,7 @@ curl -s "http://10.0.4.22:17668/retrieval/data/getData.json?pv=sileeHost:calcExa
 ```
 
 * Get the meta data only for the archived data
-
 ```
 curl -s "http://10.0.4.22:17668/retrieval/data/getData.json?pv=sileeHost:calcExample1&fetchLatestMetadata=true" | head -3
+
 ```

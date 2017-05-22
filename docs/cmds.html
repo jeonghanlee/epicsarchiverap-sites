@@ -4,6 +4,6 @@
 <pre><code>curl -s &quot;http://10.0.4.22:17668/retrieval/data/getData.json?pv=sileeHost:calcExample1&quot;</code></pre></li>
 <li><p>Get the archived data with the meta data</p>
 <pre><code>curl -s &quot;http://10.0.4.22:17668/retrieval/data/getData.json?pv=sileeHost:calcExample1&amp;fetchLatestMetadata=true&quot;</code></pre></li>
-<li><p>Get the meta data only for the archived data</p></li>
+<li><p>Get the meta data only for the archived data ``` curl -s &quot;http://10.0.4.22:17668/retrieval/data/getData.json?pv=sileeHost:calcExample1&amp;fetchLatestMetadata=true&quot; | head -3</p></li>
 </ul>
-<pre><code>curl -s &quot;http://10.0.4.22:17668/retrieval/data/getData.json?pv=sileeHost:calcExample1&amp;fetchLatestMetadata=true&quot; | head -3</code></pre>
+<p>```</p>
