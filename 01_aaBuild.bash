@@ -127,7 +127,7 @@ function archappl_build() {
     export BUILDS_ALL_TIME=${ARCHAPPL_VERSION}
 
     pushd $git_src_dir;
-    ant;
+    ant $1;
     popd;
 
     __end_func ${func_name};
@@ -147,6 +147,7 @@ else
     case "$1" in
 	loc)
 	    set_archappl_version "$1"
+	    archappl_build "clean"
 	    archappl_build
 	    ;;
 	*)

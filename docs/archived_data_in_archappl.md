@@ -120,6 +120,22 @@ boolean                 useDBEProperties       : [??] DBE\_PROPERTY, this event 
 
 ```
 
+##
+
+Three more fields are saved in Archappl through PVMetrics.java
+
+```
+cnxlostepsecs               connection Last Lost time with  EpochSeconds 
+                            : from getData.json, it is in fields. The time stamp of the last archived data in Archappl
+
+cnxregainedepsecs           connection regain               System.currentTimeMillis()/1000
+                            : from getData.json, it is in fields. The time stamp of the first archived date in Archappl after reconnection
+    
+startup                     true or false
+                            : from getData.json, it is in fields. True, when Archappl starts or the PV is resumed
+                                                                  Not shown, when IOC restarts, the PV is reconnected to Archappl
+
+```
 
 
 

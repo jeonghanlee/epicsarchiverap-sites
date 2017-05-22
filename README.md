@@ -69,7 +69,17 @@ $ bash 03_aaDeploy.bash
 * Modifying the static contents, images, and css for the ESS site specific information
 
 ## aaService.bash
-* Service start/stop/restart
+* Service start/stop/restart/status
+
+
+# In case that one would like to install the local modified epicsarchiverap without changing other configurations.
+
+``` 
+$ bash 01_aaBuild.bash loc
+$ bash  bash 03_aaDeploy.bash 
+```
+The version number which one installs via the local modification is defined with the loc suffix, e.g., ```archappl_v0.0.1__H92a3f40_B2017May22-1248-05CEST_Tloc```.
+
 
 # Commands
 

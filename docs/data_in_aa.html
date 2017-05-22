@@ -108,6 +108,18 @@ boolean                 useDBEProperties       : [??] DBE\_PROPERTY, this event 
 * .EGU  : unit
 * .NELM : element count of the PV&#39;s value, are defined in aaoRecord, aaiRecord, subArrayRecord, histogramRecord, waveformRecord
 </code></pre>
+<h2 id="section"></h2>
+<p>Three more fields are saved in Archappl through PVMetrics.java</p>
+<pre><code>cnxlostepsecs               connection Last Lost time with  EpochSeconds 
+                            : from getData.json, it is in fields. The time stamp of the last archived data in Archappl
+
+cnxregainedepsecs           connection regain               System.currentTimeMillis()/1000
+                            : from getData.json, it is in fields. The time stamp of the first archived date in Archappl after reconnection
+    
+startup                     true or false
+                            : from getData.json, it is in fields. True, when Archappl starts or the PV is resumed
+                                                                  Not shown, when IOC restarts, the PV is reconnected to Archappl
+</code></pre>
 <h1 id="contact">Contact</h1>
 <ul>
 <li>author : Jeong Han Lee</li>

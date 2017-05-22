@@ -38,22 +38,22 @@ set +a
 declare -a pv_dir=()
 
 function ts() {
-	local pv=$2
-	local stroage=$1
-	pv2dir $pv;
-	# assume PV has AA:BB
-	# length of array is  ${#array[@]}
-	echo ""
-	ls --almost-all -o -g  --human-readable --time-style=iso -v  $stroage/"${pv_dir[0]}"/"${pv_dir[1]}"*
-	echo ""
+    local pv=$2
+    local stroage=$1
+    pv2dir $pv;
+    # assume PV has AA:BB
+    # length of array is  ${#array[@]}
+    echo ""
+    ls --almost-all -o -g  --human-readable --time-style=iso -v  $stroage/"${pv_dir[0]}"/"${pv_dir[1]}"*
+    echo ""
 }
 
 function pv2dir() {
 
-	local pv=$1
-	IFS=':'; 
-	pv_dir=($pv); 
-	unset IFS;
+    local pv=$1
+    IFS=':'; 
+    pv_dir=($pv); 
+    unset IFS;
 }
 
 

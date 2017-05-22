@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-#  Copyright (c) 2016 Jeong Han Lee
-#  Copyright (c) 2016 European Spallation Source ERIC
+#  Copyright (c) 2016 - Present Jeong Han Lee
+#  Copyright (c) 2016 - Present European Spallation Source ERIC
 #
 #  The program is free software: you can redistribute
 #  it and/or modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : jeonghan.lee@gmail.com
 # Date   : 
-# version : 0.0.3
+# version : 0.0.4
 #
 
 
@@ -173,7 +173,7 @@ function drop_tables () {
 			  
 
 
-function fill_db() {
+function fill_tables() {
     
     local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
     local aa_deploy_db_tables=${SC_TOP}/${AA_GIT_NAME}/src/main/org/epics/archiverappliance/config/persistence/archappl_mysql.sql
@@ -303,18 +303,18 @@ case "$1" in
 	db_drop 
 	show_dbs
 	;;
-    fill_db)
-	fill_db
+    fill_tbs)
+	fill_tables
 	show_tables
 	;;
-    show_tables)
+    show_tbs)
 	show_tables
 	;;
-    drop_tables)
+    drop_tbs)
 	drop_tables
 	show_tables
 	;;
-    select_all_from_tables)
+    select_all_from_tbs)
 	select_all_from_tables_in_db
 	;;
     backup_db)
@@ -341,13 +341,13 @@ case "$1" in
 	echo "          show_dbs          : show DBs in    >> ${HOSTNAME} << ">&2
 	echo "          create_db         : create         >> ${DB_NAME}  << ">&2
 	echo "          drop_db           : drop           >> ${DB_NAME}  << ">&2
-	echo "          fill_db           : fill tables in >> ${DB_NAME}  << ">&2
-	echo "          show_tables       : show tables in >> ${DB_NAME}  << ">&2
-	echo "          drop_tables       : drop tables in >> ${DB_NAME}  << ">&2
+	echo "          fill_tbs          : fill tables in >> ${DB_NAME}  << ">&2
+	echo "          show_tbs          : show tables in >> ${DB_NAME}  << ">&2
+	echo "          drop_tbs          : drop tables in >> ${DB_NAME}  << ">&2
 	echo "          backup_db         : backup         >> ${DB_NAME}  << in ${DB_BACKUP_PATH}">&2
 	echo "          backup_db_list    : backup db list >> ${DB_NAME}  << in ${DB_BACKUP_PATH}">&2
 	echo "          restore_db <date> : restore db     >> ${DB_NAME}  << ">&2
-	echo "          select_all_from_tables             >> ${DB_NAME}  << ">&2
+	echo "          select_all_from_tbs                >> ${DB_NAME}  << ">&2
 	echo "">&2 	
 	exit 0
 esac

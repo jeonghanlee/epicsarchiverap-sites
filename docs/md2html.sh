@@ -24,3 +24,4 @@
 
 pandoc -f markdown archived_data_in_archappl.md > data_in_aa.html
 pandoc -f markdown archappl_site.md > aa_site.html
+pandoc -f markdown useful_cmd.md > cmds.html
