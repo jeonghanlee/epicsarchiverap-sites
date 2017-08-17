@@ -116,5 +116,9 @@ Select master or one of tags which can be built, followed by [ENTER]:
 ![Connection Example](aa_site_specific.png)
 
 
+# Alternative way to setup a site-specific (ESS) EPICS Archiver Appliance with Ansible
+Since July, 2017, ESS provide a way to setup the Archiver Appliance with Ansible. If one wants to use the ansible to setup the Archiver Appliance, please visit at  https://bitbucket.org/europeanspallationsource/ics-ans-archappl for further information. Please contact directly the repository owner if one has any questions on it. 
+
+
 # Acknowledgement
 A special word of thanks goes to Murali Shankar who develops the Archiver Appliance and answers my stupid questions again and again and again.
