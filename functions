@@ -97,7 +97,7 @@ function git_clone() {
 #
 function git_selection() {
 
-    local func_name=${FUNCNAME[*]}; ini_func ${func_name};
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
 
     local git_ckoutcmd=""
     local checked_git_src=""
@@ -177,7 +177,7 @@ function git_selection() {
 
     git submodule update --init --recursive
     
-    end_func ${func_name}
+    __end_func ${func_name}
  
 }
 
