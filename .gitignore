@@ -48,3 +48,5 @@ doc_*
 *.jar
 db
 test*
+tmp*
+

@@ -22,18 +22,39 @@
 #
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
+declare -gr SC_SCRIPTNAME=${0##*/}
 declare -gr SC_TOP="$(dirname "$SC_SCRIPT")"
-declare -gr SC_DATE="$(date +%Y%m%d-%H%M)"
 
 
-function setup_conf() {
+set -a
+. ${SC_TOP}/archappl_systemd.conf
+set +a
 
-    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
-    
-    pushd ${DEV_HOME}
-    m4 -DSOURCE_PATH=${SOURCE_PATH} ${SC_TOP}/epicsarchiverap-sites.service.m4  > ${SC_TOP}/epicsarchiverap-sites.service
-    popd
-    __end_func ${func_name};
-}
+. ${SC_TOP}/../functions
 
 
+declare -gr SUDO_CMD="sudo";
+
+
+${SUDO_CMD} -v
+
+
+pushd ${SC_TOP}
+
+mkdir -p tmp
+
+cat > ./tmp/${AA_SYSTEMD_UNIT_M4} <<EOF
+include(\`${AA_SYSTEMD_CONF_M4}')
+AA_SYSTEMD_UNIT(\`${SC_TOP}')
+EOF
+
+
+m4 ./tmp/${AA_SYSTEMD_UNIT_M4}  > ./tmp/${AA_SYSTEMD_UNIT}
+
+${SUDO_CMD} install -m 644 ./tmp/${AA_SYSTEMD_UNIT} ${SD_UNIT_PATH01}
+
+popd
+
+
+#${SUDO_CMD} systemctl enable ${AA_SYSTEMD_UNIT};
+#${SUDO_CMD} systemctl start  ${AA_SYSTEMD_UNIT};
