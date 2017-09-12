@@ -19,7 +19,7 @@
 # Author : Jeong Han Lee
 # email  : jeonghan.lee@gmail.com
 # Date   : 
-# version : 0.0.1
+# version : 0.0.2
 #
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -46,7 +46,7 @@ mkdir -p tmp
 
 cat > ./tmp/${AA_SYSTEMD_UNIT_M4} <<EOF
 include(\`${AA_SYSTEMD_CONF_M4}')
-AA_SYSTEMD_UNIT(\`${SC_TOP}../')
+AA_SYSTEMD_UNIT(\`${SC_TOP}/../')
 EOF
 
 
