@@ -356,6 +356,11 @@ function disable_firewalld() {
 }
 
 
+function disable_selinux() {
+    local func_name=${FUNCNAME[*]}; __ini_func ${func_name};
+
+    __end_func ${func_name};
+}
 
 #
 #
