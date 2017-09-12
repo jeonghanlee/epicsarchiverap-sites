@@ -6,9 +6,8 @@ Documentation=https://jeonghanlee.github.io/epicsarchiverap-sites/
 After=network.target
 
 [Service]
-ExecStart=/bin/bash $1/aaService.bash start
-ExecStop=/bin/bash $1/aaService.bash stop
-Restart=/bin/bash $1/aaService.bash restart
+ExecStart=/bin/bash -c "$1/aaService.bash start"
+ExecStop=/bin/bash -c "$1/aaService.bash stop"
 Type=forking
 
 [Install]

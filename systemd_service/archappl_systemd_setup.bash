@@ -46,7 +46,7 @@ mkdir -p tmp
 
 cat > ./tmp/${AA_SYSTEMD_UNIT_M4} <<EOF
 include(\`${AA_SYSTEMD_CONF_M4}')
-AA_SYSTEMD_UNIT(\`${SC_TOP}')
+AA_SYSTEMD_UNIT(\`${SC_TOP}../')
 EOF
 
 
@@ -56,6 +56,7 @@ ${SUDO_CMD} install -m 644 ./tmp/${AA_SYSTEMD_UNIT} ${SD_UNIT_PATH01}
 
 popd
 
+${SUDO_CMD} systemctl daemon-reload;
 
 ${SUDO_CMD} systemctl enable ${AA_SYSTEMD_UNIT};
 ${SUDO_CMD} systemctl start  ${AA_SYSTEMD_UNIT};
