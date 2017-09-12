@@ -1,5 +1,6 @@
 #!/bin/bash
 #
+#  Copyright (c) 2017 - Present Jeong Han Lee
 #  Copyright (c) 2017 - Present European Spallation Source ERIC
 #
 #  The program is free software: you can redistribute
@@ -56,5 +57,5 @@ ${SUDO_CMD} install -m 644 ./tmp/${AA_SYSTEMD_UNIT} ${SD_UNIT_PATH01}
 popd
 
 
-#${SUDO_CMD} systemctl enable ${AA_SYSTEMD_UNIT};
-#${SUDO_CMD} systemctl start  ${AA_SYSTEMD_UNIT};
+${SUDO_CMD} systemctl enable ${AA_SYSTEMD_UNIT};
+${SUDO_CMD} systemctl start  ${AA_SYSTEMD_UNIT};
