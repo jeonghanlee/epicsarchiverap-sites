@@ -18,8 +18,8 @@
 #
 # Author : Jeong Han Lee
 # email  : jeonghan.lee@gmail.com
-# Date   : 
-# version : 0.0.2
+# Date   : Wednesday, September 13 10:47:26 CEST 2017
+# version : 0.0.3
 #
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
@@ -59,4 +59,6 @@ popd
 ${SUDO_CMD} systemctl daemon-reload;
 
 ${SUDO_CMD} systemctl enable ${AA_SYSTEMD_UNIT};
-${SUDO_CMD} systemctl start  ${AA_SYSTEMD_UNIT};
+#${SUDO_CMD} systemctl start  ${AA_SYSTEMD_UNIT};
+
+exit 0;
