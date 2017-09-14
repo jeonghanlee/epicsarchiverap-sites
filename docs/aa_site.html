@@ -1,7 +1,9 @@
 <h1 id="a-site-specific-ess-epics-archiver-appliance-deployment">A Site-Specific (ESS) EPICS Archiver Appliance Deployment</h1>
 <h1 id="requirements">Requirements</h1>
 <ul>
-<li>CentOS 7 (Tested with 7.2 1511 &amp; 7.3 1611)</li>
+<li>CentOS 7.2 1511</li>
+<li>CentOS 7.3 1611</li>
+<li>CentOS 7.4 1709</li>
 </ul>
 <h1 id="license">License</h1>
 <ul>
@@ -14,8 +16,9 @@
 <pre><code>$ curl -L https://git.io/vXSN6 -o aa_init.bash
 $ bash aa_init.bash 
 $ cd epicsarchiverap-sites/
-$ bash 00_preAA.bash all
-$ bash 01_aaBuild.bash 
+$ bash 00_preAA.bash all</code></pre>
+<p>One should reboot the system.</p>
+<pre><code>$ bash 01_aaBuild.bash 
 $ bash 02_aaSetup.bash 
 $ bash 03_aaDeploy.bash
 $ bash systemd_service/archappl_systemd_setup.bash </code></pre>
@@ -23,7 +26,8 @@ $ bash systemd_service/archappl_systemd_setup.bash </code></pre>
 <pre><code>$ sudo systemctl start  archappl
 $ sudo systemctl stop   archappl
 $ sudo systemctl status archappl</code></pre>
-<h1 id="after-the-archiver-appliance-is-configured-in-the-case-when-one-would-like-to-modify-any-source-codes-in-the-epicsarchiverap-one-can-also-install-this-local-modified-epicsarchiverap-with-the-following-commands">After the archiver appliance is configured, in the case when one would like to modify any source codes in the epicsarchiverap, one can also install this local modified epicsarchiverap with the following commands :</h1>
+<h1 id="local-update-or-development">Local Update or Development</h1>
+<p>After the archiver appliance is configured, in the case when one would like to modify any source codes in the epicsarchiverap, one can also install this local modified epicsarchiverap with the following commands :</p>
 <pre><code>$ bash 01_aaBuild.bash loc
 $ bash 03_aaDeploy.bash </code></pre>
 <p>The 01_aaBuild.bash with the <strong>loc</strong> will compile the modified codes in the epicsarchiverep. The version number which one installs via the local modification is defined with the loc suffix, e.g., <code>archappl_v0.0.1__H92a3f40_B2017May22-1248-05CEST_Tloc</code>.</p>

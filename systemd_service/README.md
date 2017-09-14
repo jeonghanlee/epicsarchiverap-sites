@@ -1,26 +1,10 @@
-In oder to use the systemd service,
-
-one should disable SELINUX first.
-
+Due to unknown reasons, systemd service for archappl is installed inproperly. In this case, one MUST disable SELINUX in /etc/selinux/config by
 ```
-$ sudo sestatus 
-
-SELinux status:                 enabled
-SELinuxfs mount:                /sys/fs/selinux
-SELinux root directory:         /etc/selinux
-Loaded policy name:             targeted
-Current mode:                   enforcing
-Mode from config file:          enforcing
-Policy MLS status:              enabled
-Policy deny_unknown status:     allowed
-Max kernel policy version:      28
-```
-
-Change
 SELINUX=disabled
-in /etc/selinux/config
+```
 
-Reboot
+After this, the system MUST be rebooted. One can check its status via
+
 ```
 $ sudo sestatus
 sudo] password for aauser: 

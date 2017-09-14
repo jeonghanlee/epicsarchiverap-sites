@@ -4,7 +4,9 @@ A Site-Specific (ESS) EPICS Archiver Appliance Deployment
 
 # Requirements
 
-* CentOS 7 (Tested with 7.2 1511 & 7.3 1611) 
+* CentOS 7.2 1511
+* CentOS 7.3 1611
+* CentOS 7.4 1709
 
 # License
 
@@ -21,6 +23,9 @@ $ curl -L https://git.io/vXSN6 -o aa_init.bash
 $ bash aa_init.bash 
 $ cd epicsarchiverap-sites/
 $ bash 00_preAA.bash all
+```
+One should reboot the system. 
+```
 $ bash 01_aaBuild.bash 
 $ bash 02_aaSetup.bash 
 $ bash 03_aaDeploy.bash
@@ -34,7 +39,9 @@ $ sudo systemctl stop   archappl
 $ sudo systemctl status archappl
 ```
 
-# After the archiver appliance is configured, in the case when one would like to modify any source codes in the epicsarchiverap, one can also install this local modified epicsarchiverap with the following commands : 
+# Local Update or Development
+
+After the archiver appliance is configured, in the case when one would like to modify any source codes in the epicsarchiverap, one can also install this local modified epicsarchiverap with the following commands : 
 ``` 
 $ bash 01_aaBuild.bash loc
 $ bash 03_aaDeploy.bash 
